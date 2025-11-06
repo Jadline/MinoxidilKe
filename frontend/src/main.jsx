@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './App.css'
 import App from './App.jsx'
 import {QueryClient,QueryClientProvider} from '@tanstack/react-query'
-import { ProductsProvider } from './Contexts/productContext.jsx'
+import { ProductsProvider } from './contexts/ProductContext.jsx'
 import {GoogleOAuthProvider} from '@react-oauth/google'
 import {Toaster} from 'react-hot-toast'
 
