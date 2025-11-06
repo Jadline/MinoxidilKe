@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
+// import { useProducts } from "../contexts/ProductContext";
+// import { useProducts } from "../contexts/ProductContext";
 import { useProducts } from "../contexts/ProductContext";
-
 export default function ProtectedRoute({ children }) {
   const { currentUser } = useProducts();
 
