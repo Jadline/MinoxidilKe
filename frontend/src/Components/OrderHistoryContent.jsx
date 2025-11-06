@@ -4,6 +4,10 @@ import { useProducts } from "../contexts/ProductContext";
 export default function OrderHistoryContent() {
   const { orders } = useProducts();
 
+  if(!orders) return (
+    <p>You have not placed any orders yet</p>
+  )
+
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:pb-24">

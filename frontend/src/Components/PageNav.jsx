@@ -179,7 +179,7 @@ export default function PageNav() {
                       <Bars3Icon aria-hidden="true" className="size-6" />
                     </button>
 
-                    <a
+                    {/* <a
                       href="#"
                       className="ml-2 p-2 text-gray-400 hover:text-gray-500"
                     >
@@ -188,7 +188,7 @@ export default function PageNav() {
                         aria-hidden="true"
                         className="size-6"
                       />
-                    </a>
+                    </a> */}
                   </div>
 
                   <a href="#" className="lg:hidden">
@@ -199,7 +199,7 @@ export default function PageNav() {
                     <div className="flex items-center lg:ml-8">
                       <div className="flex space-x-8">
                         <div className="hidden lg:flex">
-                          <a
+                          {/* <a
                             href="#"
                             className="-m-2 p-2 text-gray-400 hover:text-gray-500"
                           >
@@ -208,7 +208,7 @@ export default function PageNav() {
                               aria-hidden="true"
                               className="size-6"
                             />
-                          </a>
+                          </a> */}
                         </div>
 
                         <div className="flex cursor-pointer">
