@@ -210,6 +210,13 @@ export default function AccountInfo() {
                   Sign Up
                 </button>
               </div>
+                 <div className="mt-10 flex items-center gap-x-6">
+                <div className="w-full flex-1 border-t border-white/10" />
+                <p className="text-sm/6 font-medium text-nowrap text-white">
+                  Or 
+                </p>
+                <div className="w-full flex-1 border-t border-white/10" />
+              </div>
               <div className="mt-10 flex items-center gap-x-6">
                 <div className="w-full flex-1 border-t border-white/10" />
                 <p
@@ -223,16 +230,10 @@ export default function AccountInfo() {
             </form>
 
             <div>
-              <div className="mt-10 flex items-center gap-x-6">
-                <div className="w-full flex-1 border-t border-white/10" />
-                <p className="text-sm/6 font-medium text-nowrap text-white">
-                  Or continue with
-                </p>
-                <div className="w-full flex-1 border-t border-white/10" />
-              </div>
+           
 
               <div className="mt-6 grid grid-cols-1 ">
-                <GoogleLogin
+                {/* <GoogleLogin
                  text="signup_with"
                   onSuccess={async (credentialResponse) => {
                     try {
@@ -261,7 +262,7 @@ export default function AccountInfo() {
                     alert("Google Login Failed");
                   }}
                 />
-             
+              */}
               </div>
             </div>
           </div>

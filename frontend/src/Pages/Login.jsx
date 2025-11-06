@@ -7,6 +7,7 @@ import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { useProducts } from "../contexts/ProductContext";
 import toast from "react-hot-toast";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function Login() {
   const { setCurrentUser } = useProducts();
@@ -174,6 +175,13 @@ export default function Login() {
                   Login
                 </button>
               </div>
+                 <div className="mt-10 flex items-center gap-x-6">
+                <div className="w-full flex-1 border-t border-white/10" />
+                <p className="text-sm/6 font-medium text-nowrap text-white">
+                  Or 
+                </p>
+                <div className="w-full flex-1 border-t border-white/10" />
+              </div>
               <div className="mt-10 flex items-center gap-x-6">
                 <div className="w-full flex-1 border-t border-white/10" />
                 <p
@@ -187,21 +195,21 @@ export default function Login() {
             </form>
 
             <div>
-              <div className="mt-10 flex items-center gap-x-6">
+              {/* <div className="mt-10 flex items-center gap-x-6">
                 <div className="w-full flex-1 border-t border-white/10" />
                 <p className="text-sm/6 font-medium text-nowrap text-white">
                   Or continue with
                 </p>
                 <div className="w-full flex-1 border-t border-white/10" />
-              </div>
+              </div> */}
 
               <div className="mt-6 grid grid-cols-1 ">
-                <GoogleLogin
+                {/* <GoogleLogin
                   text="continue_with"
                   onSuccess={async (credentialResponse) => {
                     try {
                       const res = await axios.post(
-                        "http://localhost:3000/api/v1/account/googleLogin",
+                        `${BASE_URL}/v1/account/googleLogin`,
                         {
                           credential: credentialResponse.credential,
                         }
@@ -224,7 +232,7 @@ export default function Login() {
                   onError={() => {
                     alert("Google Login Failed");
                   }}
-                />
+                /> */}
               </div>
             </div>
           </div>
