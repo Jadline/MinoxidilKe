@@ -1,6 +1,6 @@
 import axios from 'axios'
-
-const CONTACT_URL = 'http://127.0.0.1:3000/api/v1/contact'
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const CONTACT_URL = `${BASE_URL}/api/v1/contact`
 export async function sendEmail(formdata){
     try{
         const response = axios.post(CONTACT_URL,formdata,{

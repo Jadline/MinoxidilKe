@@ -5,6 +5,7 @@ import { TrashIcon } from "@heroicons/react/20/solid";
 import { useProducts } from "../contexts/ProductContext";
 import { createOrder } from "../Services/createOrder";
 import toast from "react-hot-toast";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const paymentMethods = [
   { id: "mpesa", title: "M-Pesa" },
@@ -51,7 +52,7 @@ export default function OrderSummary() {
 
   const { mutateAsync: notifyMpesaPayment } = useMutation({
     mutationFn: (data) =>
-      fetch("http://localhost:3000/api/v1/mpesa-notify", {
+      fetch(`${BASE_URL}/api/v1/mpesa-notify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

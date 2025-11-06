@@ -1,7 +1,9 @@
 import axios from 'axios'
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+console.log('base url',BASE_URL)
  export async function fetchProducts(qs){
     try {
-        const response = await  axios.get(`http://127.0.0.1:3000/api/v1/products?${qs}`)
+        const response = await  axios.get(`${BASE_URL}/api/v1/products?${qs}`)
         const {data,total} = await response.data
         
         return {

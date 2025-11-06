@@ -1,6 +1,6 @@
 import axios from 'axios';
-
-const LOGIN_URL = 'http://127.0.0.1:3000/api/v1/account/loginUser';
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const LOGIN_URL = `${BASE_URL}/api/v1/account/loginUser`;
 
 export async function loginUser(logininfo) {
   try {

@@ -1,5 +1,6 @@
 import axios from 'axios';
-const ordersURL = 'http://127.0.0.1:3000/api/v1/orders';
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const ordersURL = `${BASE_URL}/api/v1/orders`;
 
 export async function getOrders() {
   try {

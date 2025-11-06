@@ -17,6 +17,7 @@ import { HeartIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { useProducts } from "../contexts/ProductContext";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const defaultproduct = {
   name: "Kirkland minoxidil for men",
@@ -110,7 +111,7 @@ export default function ProductOverview() {
     const fetchReviews = async () => {
       try {
         const res = await fetch(
-          `http://127.0.0.1:3000/api/v1/reviews/${product._id}`
+          `${BASE_URL}/api/v1/reviews/${product._id}`
         );
         const data = await res.json();
         if (Array.isArray(data)) {
@@ -149,7 +150,7 @@ export default function ProductOverview() {
         return;
       }
 
-      const res = await fetch("http://127.0.0.1:3000/api/v1/reviews", {
+      const res = await fetch(`${BASE_URL}/api/v1/reviews`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

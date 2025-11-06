@@ -1,6 +1,7 @@
 
 import axios from 'axios'
-const REGISTER_URL = 'http://127.0.0.1:3000/api/v1/account/registerUser'
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const REGISTER_URL = `${BASE_URL}/api/v1/account/registerUser`
 export async function registerUser(registrationinfo){
     try{
         const response = await axios.post(REGISTER_URL,registrationinfo,{
