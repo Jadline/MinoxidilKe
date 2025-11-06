@@ -24,7 +24,7 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { useProducts } from "../Contexts/productContext";
+import { useProducts } from "../Contexts/ProductContext";
 import UserDropdown from "./UserDropdown";
 
 const navigation = {
@@ -38,11 +38,9 @@ const navigation = {
 export default function PageNav() {
   const { cartCount } = useProducts();
   const [open, setOpen] = useState(false);
- 
 
   return (
     <div className="bg-white">
-      
       <Dialog open={open} onClose={setOpen} className="relative z-40 lg:hidden">
         <DialogBackdrop
           transition
@@ -64,8 +62,6 @@ export default function PageNav() {
                 <XMarkIcon aria-hidden="true" className="size-6" />
               </button>
             </div>
-
-          
 
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
               {navigation.pages.map((page) => (
@@ -100,7 +96,6 @@ export default function PageNav() {
             </div>
 
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-           
               <form>
                 <div className="-ml-2 inline-grid grid-cols-1">
                   <Link to="/">
@@ -115,10 +110,8 @@ export default function PageNav() {
 
       <header className="relative">
         <nav aria-label="Top">
-        
           <div className="bg-gradient-to-r from-[#000080] via-[#0066cc] to-[#39a9db]">
             <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-             
               <form className="hidden lg:block lg:flex-1">
                 <div className="-ml-2 inline-grid grid-cols-1">
                   <Link to="/">
@@ -149,24 +142,17 @@ export default function PageNav() {
             </div>
           </div>
 
-         
           <div className="bg-white">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="border-b border-gray-200">
                 <div className="flex h-16 items-center justify-between">
-                 
                   <div className="flex items-center space-x-2">
-                   
                     {/* <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
                       MK
                     </div> */}
-                    
-
-                 
                   </div>
 
                   <div className="hidden h-full lg:flex">
-                   
                     <PopoverGroup className="inset-x-0 bottom-0 px-4">
                       <div className="flex h-full justify-center space-x-8">
                         {navigation.pages.map((page) => (
@@ -182,7 +168,6 @@ export default function PageNav() {
                     </PopoverGroup>
                   </div>
 
-                
                   <div className="flex flex-1 items-center lg:hidden">
                     <button
                       type="button"
@@ -193,7 +178,6 @@ export default function PageNav() {
                       <Bars3Icon aria-hidden="true" className="size-6" />
                     </button>
 
-                  
                     <a
                       href="#"
                       className="ml-2 p-2 text-gray-400 hover:text-gray-500"
@@ -206,10 +190,8 @@ export default function PageNav() {
                     </a>
                   </div>
 
-               
                   <a href="#" className="lg:hidden">
                     <span className="sr-only">Your Company</span>
-                  
                   </a>
 
                   <div className="flex flex-1 items-center justify-end">
@@ -234,7 +216,6 @@ export default function PageNav() {
                             <UserIcon aria-hidden="true" className="size-6" />
                           </button>
                           <UserDropdown />
-                          
                         </div>
                       </div>
 

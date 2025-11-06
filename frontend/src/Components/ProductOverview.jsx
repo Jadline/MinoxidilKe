@@ -1,7 +1,7 @@
- import { FaArrowRight } from 'react-icons/fa';
- import { FaWhatsapp } from 'react-icons/fa';
- import Reviews from './Reviews';
- import { useState,useEffect } from 'react';
+import { FaArrowRight } from "react-icons/fa";
+import { FaWhatsapp } from "react-icons/fa";
+import Reviews from "./Reviews";
+import { useState, useEffect } from "react";
 import {
   Disclosure,
   DisclosureButton,
@@ -11,162 +11,170 @@ import {
   TabList,
   TabPanel,
   TabPanels,
-} from '@headlessui/react'
-import { StarIcon } from '@heroicons/react/20/solid'
-import { HeartIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline'
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useProducts } from '../Contexts/productContext';
+} from "@headlessui/react";
+import { StarIcon } from "@heroicons/react/20/solid";
+import { HeartIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useProducts } from "../Contexts/ProductContext";
 
 const defaultproduct = {
-  name: 'Kirkland minoxidil for men',
-  price: 'Ksh 2600',
+  name: "Kirkland minoxidil for men",
+  price: "Ksh 2600",
   rating: 4,
-  images : [
+  images: [
     {
       id: 1,
-      name: 'Angled view',
-      src: 'minoxidilformen.png',
-      alt: 'Angled front view with bag zipped and handles upright.',
+      name: "Angled view",
+      src: "minoxidilformen.png",
+      alt: "Angled front view with bag zipped and handles upright.",
     },
   ],
 
   colors: [
-    { id: 'washed-black', name: 'Washed Black', classes: 'bg-gray-700 checked:outline-gray-700' },
-    { id: 'white', name: 'White', classes: 'bg-white checked:outline-gray-400' },
-    { id: 'washed-gray', name: 'Washed Gray', classes: 'bg-gray-500 checked:outline-gray-500' },
+    {
+      id: "washed-black",
+      name: "Washed Black",
+      classes: "bg-gray-700 checked:outline-gray-700",
+    },
+    {
+      id: "white",
+      name: "White",
+      classes: "bg-white checked:outline-gray-400",
+    },
+    {
+      id: "washed-gray",
+      name: "Washed Gray",
+      classes: "bg-gray-500 checked:outline-gray-500",
+    },
   ],
   description: `
     <p>Kirkland Minoxidil 5% Foam is a fast-absorbing hair regrowth treatment for men dealing with thinning or hereditary hair loss. It reactivates dormant follicles to promote thicker, fuller hair. The foam is gentle, quick-drying, and ideal for everyday use.</p>
   `,
   details: [
     {
-      name: 'Features',
+      name: "Features",
       items: [
-        'Contains 5% Minoxidil for effective hair regrowth.',
-        'Dries quickly with no greasy residue',
-        'Mess-free design suitable for daily routines.',
-        'Alcohol-free and safe for sensitive skin.',
-        'Noticeable improvement within 3–6 months of consistent use',
-        'Offers quality results at a lower cost compared to branded options.',
+        "Contains 5% Minoxidil for effective hair regrowth.",
+        "Dries quickly with no greasy residue",
+        "Mess-free design suitable for daily routines.",
+        "Alcohol-free and safe for sensitive skin.",
+        "Noticeable improvement within 3–6 months of consistent use",
+        "Offers quality results at a lower cost compared to branded options.",
       ],
     },
-    
+
     {
-      name: 'Shipping',
+      name: "Shipping",
       items: [
-        'Free shipping on orders over Ksh 5000',
-        'International shipping available',
-        '1–2 business days within Nairobi.',
-        '2–4 days nationwide',
+        "Free shipping on orders over Ksh 5000",
+        "International shipping available",
+        "1–2 business days within Nairobi.",
+        "2–4 days nationwide",
       ],
     },
     {
-      name: 'Returns',
+      name: "Returns",
       items: [
-        'Easy return requests',
-        'Eligible for return or exchange within 7 days if unopened.',
-        '60 day return window',
+        "Easy return requests",
+        "Eligible for return or exchange within 7 days if unopened.",
+        "60 day return window",
       ],
     },
-   {
-  name: 'Reviews',
-  items: [
-    'James K. –“This product really works! My hair started filling in after 2 months of consistent use.”',
-    'Brian M. – “Good value for money. I’ve tried Rogaine before but Kirkland gives the same results for less.”',
-    'Kelvin O. – “Fast delivery and original product. Customer service was super helpful too!”',
-    'Samuel N. – “Noticed reduced shedding after 3 weeks. The foam feels light and non-greasy.”',
-    'Peter M. – “Highly recommend! Genuine Kirkland minoxidil and affordable pricing.”',
+    {
+      name: "Reviews",
+      items: [
+        "James K. –“This product really works! My hair started filling in after 2 months of consistent use.”",
+        "Brian M. – “Good value for money. I’ve tried Rogaine before but Kirkland gives the same results for less.”",
+        "Kelvin O. – “Fast delivery and original product. Customer service was super helpful too!”",
+        "Samuel N. – “Noticed reduced shedding after 3 weeks. The foam feels light and non-greasy.”",
+        "Peter M. – “Highly recommend! Genuine Kirkland minoxidil and affordable pricing.”",
+      ],
+    },
   ],
-},
-  ],
-}
+};
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(" ");
 }
 
 export default function ProductOverview() {
-  
-  const {setCart} = useProducts()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const product = location.state?.product || defaultproduct
+  const { setCart } = useProducts();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const product = location.state?.product || defaultproduct;
 
-   const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    
     const fetchReviews = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:3000/api/v1/reviews/${product._id}`);
+        const res = await fetch(
+          `http://127.0.0.1:3000/api/v1/reviews/${product._id}`
+        );
         const data = await res.json();
         if (Array.isArray(data)) {
-        setReviews(data); 
-      } else if (data.reviews) {
-        setReviews(data.reviews); 
-      } else {
-        console.warn("Unexpected reviews format:", data);
-      }
+          setReviews(data);
+        } else if (data.reviews) {
+          setReviews(data.reviews);
+        } else {
+          console.warn("Unexpected reviews format:", data);
+        }
       } catch (err) {
-        console.error('Error fetching reviews:', err);
+        console.error("Error fetching reviews:", err);
       }
     };
     fetchReviews();
   }, [product._id]);
 
+  const images = product.images?.length
+    ? product.images
+    : [
+        {
+          id: 1,
+          name: product.name,
+          src: product.imageSrc || "default-image.png",
+          alt: product.imageAlt || product.name,
+        },
+      ];
 
-  const images = product.images?.length ? product.images : [
-  {
-    id: 1,
-    name: product.name,
-    src: product.imageSrc || 'default-image.png',
-    alt: product.imageAlt || product.name,
-  }
-];
+  console.log(product);
 
-  console.log(product)
-
-   const handleAddReview = async (reviewData) => {
+  const handleAddReview = async (reviewData) => {
     try {
-      const token = localStorage.getItem('userToken'); 
+      const token = localStorage.getItem("userToken");
       if (!token) {
-        alert('Please log in to submit a review.');
-        navigate('/login');
+        alert("Please log in to submit a review.");
+        navigate("/login");
         return;
       }
 
-      const res = await fetch('http://127.0.0.1:3000/api/v1/reviews', {
-        method: 'POST',
+      const res = await fetch("http://127.0.0.1:3000/api/v1/reviews", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(reviewData),
       });
 
       const data = await res.json();
-      console.log('Review response:', data);
+      console.log("Review response:", data);
       if (data && data._id) {
-        setReviews((prev) => [data, ...prev]); 
+        setReviews((prev) => [data, ...prev]);
       } else {
-        
-        alert(data.message || 'Error submitting review.');
+        alert(data.message || "Error submitting review.");
       }
     } catch (err) {
-      console.error('Error adding review:', err);
+      console.error("Error adding review:", err);
     }
   };
 
- 
-
-  if(!product) <p>Loading....</p>
+  if (!product) <p>Loading....</p>;
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
         <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
-        
           <TabGroup className="flex flex-col-reverse">
-           
             <div className="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
               <TabList className="grid grid-cols-4 gap-6">
                 {images?.map((image) => (
@@ -176,7 +184,11 @@ export default function ProductOverview() {
                   >
                     <span className="sr-only">{image.name}</span>
                     <span className="absolute inset-0 overflow-hidden rounded-md">
-                      <img alt="" src={image.src} className="size-full object-cover" />
+                      <img
+                        alt=""
+                        src={image.src}
+                        className="size-full object-cover"
+                      />
                     </span>
                     <span
                       aria-hidden="true"
@@ -190,22 +202,28 @@ export default function ProductOverview() {
             <TabPanels>
               {images.map((image) => (
                 <TabPanel key={image.id}>
-                  <img alt={image.alt} src={image.src} className="aspect-square w-full object-contain sm:rounded-lg bg-gradient-to-t from-black/20 via-[#ffff]/10 to-black/10" />
+                  <img
+                    alt={image.alt}
+                    src={image.src}
+                    className="aspect-square w-full object-contain sm:rounded-lg bg-gradient-to-t from-black/20 via-[#ffff]/10 to-black/10"
+                  />
                 </TabPanel>
               ))}
             </TabPanels>
           </TabGroup>
 
-         
           <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{product.name}</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+              {product.name}
+            </h1>
 
             <div className="mt-3">
               <h2 className="sr-only">Product information</h2>
-              <p className="text-3xl tracking-tight text-gray-900">Ksh {product.price}</p>
+              <p className="text-3xl tracking-tight text-gray-900">
+                Ksh {product.price}
+              </p>
             </div>
 
-          
             <div className="mt-3">
               <h3 className="sr-only">Reviews</h3>
               <div className="flex items-center">
@@ -215,8 +233,10 @@ export default function ProductOverview() {
                       key={rating}
                       aria-hidden="true"
                       className={classNames(
-                        product.rating > rating ? 'text-indigo-500' : 'text-gray-300',
-                        'size-5 shrink-0',
+                        product.rating > rating
+                          ? "text-indigo-500"
+                          : "text-gray-300",
+                        "size-5 shrink-0"
                       )}
                     />
                   ))}
@@ -235,62 +255,59 @@ export default function ProductOverview() {
             </div>
 
             <form className="mt-6">
-             
               <div>
-  <fieldset
-    aria-label="Choose a color"
-    className="mt-2 flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded-md"
-  >
-    <a
-      href={`https://wa.me/254796866058?text=Hi! I’d like to know more about this product.`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-3"
-    >
-      <FaWhatsapp size="32" color="green" />
-      <span className="text-blue-600">Redirect to WhatsApp for more info</span>
-      <FaArrowRight />
-    </a>
-  </fieldset>
-</div>
-
+                <fieldset
+                  aria-label="Choose a color"
+                  className="mt-2 flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded-md"
+                >
+                  <a
+                    href={`https://wa.me/254796866058?text=Hi! I’d like to know more about this product.`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3"
+                  >
+                    <FaWhatsapp size="32" color="green" />
+                    <span className="text-blue-600">
+                      Redirect to WhatsApp for more info
+                    </span>
+                    <FaArrowRight />
+                  </a>
+                </fieldset>
+              </div>
 
               <div className="mt-10 flex">
                 <button
-                onClick={
-                  (e) => {
-                    e.preventDefault()
-                   
-                    setCart((prevcart) =>{
-                      const existingproduct = prevcart.find((item) => item.id === product.id)
-                      if(existingproduct){
-                        return prevcart.map((item) => item.id === product.id ? {...item,quantity : item.quantity + 1} : item) 
-                      }
-                      else {
-                        return [...prevcart,{...product, quantity : 1}]
-                      }
-                      
-                    })
+                  onClick={(e) => {
+                    e.preventDefault();
 
-                  } }
-      
+                    setCart((prevcart) => {
+                      const existingproduct = prevcart.find(
+                        (item) => item.id === product.id
+                      );
+                      if (existingproduct) {
+                        return prevcart.map((item) =>
+                          item.id === product.id
+                            ? { ...item, quantity: item.quantity + 1 }
+                            : item
+                        );
+                      } else {
+                        return [...prevcart, { ...product, quantity: 1 }];
+                      }
+                    });
+                  }}
                   className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-hidden sm:w-full"
                 >
                   Add to Cart
                 </button>
 
                 <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  navigate('/products')
-
-                }}
-                  
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/products");
+                  }}
                   className="ml-4 flex items-center justify-center rounded-md px-3 py-3 text-white gap-2 bg-indigo-600"
                 >
-                  Continue Shopping  <FaArrowRight/>
-
-                
+                  Continue Shopping <FaArrowRight />
                 </button>
               </div>
             </form>
@@ -321,27 +338,29 @@ export default function ProductOverview() {
                       </DisclosureButton>
                     </h3>
                     <DisclosurePanel className="pb-6">
-                      <ul role="list" className="list-disc space-y-1 pl-5 text-sm/6 text-gray-700 marker:text-gray-300">
+                      <ul
+                        role="list"
+                        className="list-disc space-y-1 pl-5 text-sm/6 text-gray-700 marker:text-gray-300"
+                      >
                         {detail.items.map((item) => (
                           <li key={item} className="pl-2">
                             {item}
                           </li>
                         ))}
                       </ul>
-                      
                     </DisclosurePanel>
                   </Disclosure>
                 ))}
               </div>
-               <Reviews
-              productId={product._id}
-              reviews={reviews}
-              onAddReview={handleAddReview}
-            />
+              <Reviews
+                productId={product._id}
+                reviews={reviews}
+                onAddReview={handleAddReview}
+              />
             </section>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
