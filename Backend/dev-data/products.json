@@ -1,0 +1,666 @@
+{
+    "products": [
+        {
+            "id": 1,
+            "name": "Kirkland Minoxidil for Men",
+            "price": 2600,
+            "quantityLabel": "1 bottle",
+            "imageSrc": "minoxidilformen.png",
+            "imageAlt": "Kirkland minoxidil for men bottle",
+            "rating": 4,
+            "inStock": true,
+            "category": "Hair Growth Treatments",
+            "leadTime": "3–4 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "minoxidilformen.png",
+                    "alt": "Front view of Kirkland Minoxidil for Men."
+                }
+            ],
+            "description": "Kirkland Minoxidil 5% Foam is a fast-absorbing hair regrowth treatment for men dealing with thinning or hereditary hair loss. It reactivates dormant follicles to promote thicker, fuller hair. The foam is gentle, quick-drying, and ideal for everyday use.",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "Contains 5% Minoxidil for effective hair regrowth.",
+                        "Dries quickly with no greasy residue.",
+                        "Mess-free design suitable for daily routines.",
+                        "Alcohol-free and safe for sensitive skin.",
+                        "Noticeable improvement within 3–6 months of consistent use.",
+                        "Offers quality results at a lower cost compared to branded options."
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+               
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Kirkland Minoxidil for Women",
+            "price": 2600,
+            "quantityLabel": "1 bottle",
+            "imageSrc": "minoxidilforwomen.png",
+            "imageAlt": "Kirkland minoxidil for women bottle",
+            "rating": 5,
+            "inStock": true,
+            "category": "Hair Growth Treatments",
+            "leadTime": null,
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "minoxidilformen.png",
+                    "alt": "Front view of Kirkland Minoxidil for Men."
+                }
+            ],
+            "description": "Kirkland Minoxidil for Women is a proven hair regrowth treatment formulated to help women experiencing thinning hair or gradual hair loss. Its 5% topical solution revitalizes hair follicles from the root, promoting natural regrowth and fuller, thicker hair. Easy to apply and dermatologist-tested, this treatment helps restore confidence and a healthier-looking hairline over consistent use.",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "Contains 5% Minoxidil, the only FDA-approved ingredient for women’s hair regrowth.",
+                        "Reactivates dormant hair follicles to promote new growth",
+                        "Noticeable improvement in hair thickness and coverage within 2–4 months of regular use.",
+                        "Absorbs quickly without leaving residue on the scalp",
+                        "Comes with a precision dropper for targeted use.",
+                        "From Kirkland Signature — known for quality and effectiveness."
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "Rogaine for Men",
+            "price": 2500,
+            "quantityLabel": "1 bottle",
+            "imageSrc": "rogaine.png",
+            "imageAlt": "Rogaine for men",
+            "rating": 4,
+            "inStock": true,
+            "category": "Hair Growth Treatments",
+            "leadTime": "3–4 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "rogaine.png",
+                    "alt": "Front view of rogaine for men."
+                }
+            ],
+            "description": "topical hair loss treatment with the primary feature of using 5% Minoxidil as its active ingredient. It is specifically formulated to address male pattern baldness and general thinning on the top of the scalp (vertex)",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "Contains 5% Minoxidil for revitalizing hair follicles.",
+                        "Stimulates hair regrowth",
+                        "Visible results possible in as little as 12 weeks with consistent use.",
+                        "Available in both a quick-drying, unscented foam and a topical solution with a dropper",
+                        "Uses alpha-hydroxy acid (AHA) to exfoliate the skin,",
+                        "Treatment requires continuous, twice-daily application to maintain any hair regrowth;"
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+               
+            ]
+        },
+        {
+            "id": 4,
+            "name": "Pure Essential Rosemary Oil",
+            "price": 2500,
+            "quantityLabel": "30ml fl/0z",
+            "imageSrc": "rosemary.png",
+            "imageAlt": "Pure Essential Rosemary Oil",
+            "rating": 4,
+            "inStock": true,
+            "category": "Natural Oils",
+            "leadTime": "1-2 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "rosemary.png",
+                    "alt": "Front view of rosemary oil."
+                }
+            ],
+            "description": "potent oil with diverse features, including strong antioxidant, anti-inflammatory, and antimicrobial properties. Its pungent, herbaceous aroma is used in aromatherapy to boost mental clarity, memory, and concentration, while also providing stress relief. It is widely used for skin and hair care to improve circulation, moisturize, fight acne, and stimulate hair growth.",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "celebrated for stimulating hair follicles",
+                        "It can help treat dandruff, dry and itchy scalps, and prevent premature baldness",
+                        "protect the skin from damage, reduce redness.",
+                        "help tighten skin and reduce the appearance of pores.",
+                        "help relieve various types of pain"
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+              
+            ]
+        },
+        {
+            "id": 5,
+            "name": "DHT Blockers Complex",
+            "price": 1400,
+            "quantityLabel": "60 capsules",
+            "imageSrc": "dhtblockerscomplex.png",
+            "imageAlt": "DHT Blockers Complex",
+            "rating": 4,
+            "inStock": true,
+            "category": "Hair Supplements",
+            "leadTime": "1-2 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "dhtblockerscomplex.png",
+                    "alt": "Front view of dht blockers."
+                }
+            ],
+            "description": "DHT blocker complex capsules are dietary supplements designed to combat hair loss by using a blend of natural ingredients, vitamins, and minerals that help manage the levels of dihydrotestosterone (DHT) in the body.",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "Has anti-inflammatory properties that support scalp health",
+                        "Nourishes hair follicles and regulating hormone levels.",
+                        "Promotes new, thicker, and fuller hair growth",
+                        "Support for Hormonal Balance ",
+                        "Reduced Hair Fall and Shedding"
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "name": "Batana Oil",
+            "price": 1500,
+            "quantityLabel": "118ml",
+            "imageSrc": "batanaoil.png",
+            "imageAlt": "batanaoil",
+            "rating": 4,
+            "inStock": true,
+            "category": "Natural Oils",
+            "leadTime": "3-7 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "batanaoil.png",
+                    "alt": "Front view of batanaoil."
+                }
+            ],
+            "description": "Batana oil's key features include its source from the American oil palm nut, a deep golden-brown color, and an earthy scent. It is rich in essential fatty acids, vitamins Vitamin E ,Vitamin A and antioxidants that deeply moisturize hair and skin, repair damage, reduce frizz, and soothe scalp irritation. It is also noted for being a natural, cold-pressed oil free from synthetic additives. ",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "Hydrates hair, repairs split ends, and enhances elasticity and resilience.",
+                        "Nourishes hair follicles ",
+                        "supports the hair's natural renewal cycle, contributing to thicker, fuller hair",
+                        "Reduces breakage, tames frizz, and enhances shine. ",
+                        " Conditions hair follicles and helps alleviate dry, irritated scalp conditions. "
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "name": "DHT Blockers Vegetarian",
+            "price": 1400,
+            "quantityLabel": "60 capsules",
+            "imageSrc": "dhtvegetarian.png",
+            "imageAlt": "dht blockers vegetarian",
+            "rating": 4,
+            "inStock": true,
+            "category": "Natural Oils",
+            "leadTime": "2-4 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "dhtvegetarian.png",
+                    "alt": "Front view of DHT blockers vegetarian."
+                }
+            ],
+            "description": "DHT blocker Vegetarian capsules are dietary supplements designed to combat hair loss by using a blend of natural ingredients, vitamins, and minerals that help manage the levels of dihydrotestosterone (DHT) in the body. ",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "Has anti-inflammatory properties that support scalp health",
+                        "Nourishes hair follicles and regulating hormone levels.",
+                        "Promotes new, thicker, and fuller hair growth",
+                        "Support for Hormonal Balance ",
+                        "Reduced Hair Fall and Shedding"
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+            
+            ]
+        },
+        {
+            "id": 8,
+            "name": "Collagen Gummies",
+            "price": 1600,
+            "quantityLabel": "60 capsules",
+            "imageSrc": "collagengummies.png",
+            "imageAlt": "Collagen Gummies",
+            "rating": 4,
+            "inStock": true,
+            "category": "Hair Supplements",
+            "leadTime": "2-4 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "collagengummies.png",
+                    "alt": "Front view of Collagen Gummies."
+                }
+            ],
+            "description": "Collagen gummies may support skin elasticity and hydration, strengthen hair and nails, improve joint health and mobility, and aid in muscle mass and recovery. Some formulations may also support heart health by improving artery stiffness and gut health by supporting the integrity of the gut lining.",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "Improves skin elasticity and hydration",
+                        "Improve the strength and appearance of hair and nails.",
+                        "Can help reduce joint pain and improve mobility.",
+                        "Aids muscle growth and recovery"
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+               
+            ]
+        },
+        {
+            "id": 9,
+            "name": "Derma Stamp",
+            "price": 500,
+            "quantityLabel": "1 piece",
+            "imageSrc": "dermastamp.png",
+            "imageAlt": "Derma Stamp",
+            "rating": 4,
+            "inStock": true,
+            "category": "Scalp Tools",
+            "leadTime": "2-4 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "dermastamp.png",
+                    "alt": "Front view of Derma Stamp"
+                }
+            ],
+            "description": "Derma stamping benefits include stimulating collagen and elastin production to reduce wrinkles, scars (especially acne scars), and stretch marks, and improving skin texture, tone, and hyperpigmentation. It also enhances the effectiveness of skincare products by increasing their absorption and can promote hair growth on the scalp. ",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "Improves skin elasticity and hydration",
+                        "Improve the strength and appearance of hair and nails.",
+                        "Can help reduce joint pain and improve mobility.",
+                        "Aids muscle growth and recovery"
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+              
+            ]
+        },
+        {
+            "id": 10,
+            "name": "Nizoral Anti-dandruff Shampoo",
+            "price": 2700,
+            "quantityLabel": "200ml",
+            "imageSrc": "nizoralshampoo.png",
+            "imageAlt": "Nizoral Anti-dandruff Shampoo",
+            "rating": 4,
+            "inStock": true,
+            "category": "Shampoos & Cleaners",
+            "leadTime": "2-4 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "nizoralshampoo.png",
+                    "alt": "Front view of Nizoral Shampoo"
+                }
+            ],
+            "description": "Nizoral anti-dandruff shampoo features a key ingredient, ketoconazole, to fight dandruff at its root cause by controlling the fungus that causes flaking, scaling, and itching. It is clinically proven to relieve dandruff symptoms and can be used twice a week to control the condition. The shampoo is gentle enough for color-treated and chemically processed hair, rinses clean, and has a fresh scent. ",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        " Contains ketoconazole, a powerful antifungal ingredient that targets the root cause of dandruff",
+                        " maintain a healthy scalp and prevent dandruff from returning.",
+                        " Safe for use on color-treated and chemically processed hair.",
+                        "Creates a thick, rich lather that rinses clean and leaves hair with a fresh scent.",
+                        "Only needs to be used twice a week for effective dandruff control."
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 11,
+            "name": "Derma Roller",
+            "price": 500,
+            "quantityLabel": "1 piece",
+            "imageSrc": "dermaroller.png",
+            "imageAlt": "Derma Roller",
+            "rating": 4,
+            "inStock": true,
+            "category": "Scalp Tools",
+            "leadTime": "1-2 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "dermaroller.png",
+                    "alt": "Front view of Derma Roller"
+                }
+            ],
+            "description": "A derma roller is a skincare device featuring a handle and a roller head covered in tiny microneedles, typically made of titanium or stainless steel. Key features include the needle length, which varies for different purposes, an ergonomic handle for a comfortable grip, and a durable, often rust-resistant construction. Some models are pre-sterilized for immediate use.",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "Made from titanium",
+                        "can be used on various parts of the face, neck, and body, and some are suitable for the scalp or beard area ",
+                        " Reduces wrinkles and fine lines.",
+                        "Improves skin texture and tone.",
+                        "micro-channels created by the needles allow skincare products to penetrate the skin more effectively. "
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+                
+            ]
+        },
+        {
+            "id": 12,
+            "name": "Cold-Pressed Pumpkin Seed Oil",
+            "price": 2000,
+            "quantityLabel": "300 softgels",
+            "imageSrc": "pumpkinseedoil.png",
+            "imageAlt": "Cold-Pressed Pumpkin Seed Oil",
+            "rating": 4,
+            "inStock": true,
+            "category": "Hair Supplements",
+            "leadTime": "1-3 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "pumpkinseedoil.png",
+                    "alt": "Front view of Pumpkin Seed oil"
+                }
+            ],
+            "description": "Pumpkin seed oil features include its rich nutrient profile of omega-3 and -6 fatty acids, zinc, and antioxidants like vitamin E, which nourish hair follicles, strengthen strands, and provide moisture. It is also known for potentially stimulating hair growth by blocking the hormone DHT and can be used topically to improve scalp health, shine, and manageability.",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "Promotes hair growth",
+                        "contains essential fatty acids (omega-3 and -6), zinc, magnesium, and antioxidants like vitamin E, which support hair follicle health",
+                        "helps fortify hair strands and prevents breakage ",
+                        "Its fatty acids help the hair and scalp retain moisture",
+                        "helps reduce inflammation and improve scalp circulation ",
+                        "adds a natural shine to hair",
+                        "antioxidants in the oil can protect hair from environmental stressors like UV rays"
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+                
+            ]
+        },
+        {
+            "id": 13,
+            "name": "Kirkland Minoxidil for Men",
+            "price": 2500,
+            "quantityLabel": "60ml",
+            "imageSrc": "minoxidilunscented.png",
+            "imageAlt": "Kirkland minoxidil for men",
+            "rating": 4,
+            "inStock": true,
+            "category": "Hair Growth Treatments",
+            "leadTime": "2-3 days",
+            "images": [
+                {
+                    "id": 1,
+                    "name": "Front view",
+                    "src": "minoxidilunscented.png",
+                    "alt": "Front view of Minoxidil for men"
+                }
+            ],
+            "description": "Kirkland Minoxidil 5% Foam is a fast-absorbing hair regrowth treatment for men dealing with thinning or hereditary hair loss. It reactivates dormant follicles to promote thicker, fuller hair. The foam is gentle, quick-drying, and ideal for everyday use",
+            "details": [
+                {
+                    "name": "Features",
+                    "items": [
+                        "Contains 5% Minoxidil for effective hair regrowth.",
+                        "Dries quickly with no greasy residue.",
+                        "Mess-free design suitable for daily routines.",
+                        "Alcohol-free and safe for sensitive skin.",
+                        "Noticeable improvement within 3–6 months of consistent use.",
+                        "Offers quality results at a lower cost compared to branded options."
+                    ]
+                },
+                {
+                    "name": "Shipping",
+                    "items": [
+                        "Free shipping on orders over Ksh 5000.",
+                        "International shipping available.",
+                        "1–2 business days within Nairobi.",
+                        "2–4 days nationwide."
+                    ]
+                },
+                {
+                    "name": "Returns",
+                    "items": [
+                        "Easy return requests.",
+                        "Eligible for return or exchange within 7 days if unopened.",
+                        "60 day return window."
+                    ]
+                }
+            ]
+        }
+    ]
+}

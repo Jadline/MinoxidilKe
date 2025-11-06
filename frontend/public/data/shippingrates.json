@@ -1,0 +1,51 @@
+{
+  "Central": [
+    { "city": "Nairobi", "rate": 300 },
+    { "city": "Thika", "rate": 350 },
+    { "city": "Murang'a", "rate": 370 },
+    { "city": "Nyeri", "rate": 400 },
+    { "city": "Kiambu", "rate": 330 }
+  ],
+  "Coast": [
+    { "city": "Mombasa", "rate": 500 },
+    { "city": "Malindi", "rate": 520 },
+    { "city": "Kilifi", "rate": 530 },
+    { "city": "Kwale", "rate": 540 },
+    { "city": "Lamu", "rate": 600 }
+  ],
+  "Rift Valley": [
+    { "city": "Nakuru", "rate": 400 },
+    { "city": "Eldoret", "rate": 420 },
+    { "city": "Naivasha", "rate": 390 },
+    { "city": "Kericho", "rate": 410 },
+    { "city": "Bomet", "rate": 430 }
+  ],
+  "Western": [
+    { "city": "Kakamega", "rate": 450 },
+    { "city": "Bungoma", "rate": 460 },
+    { "city": "Busia", "rate": 480 },
+    { "city": "Vihiga", "rate": 440 }
+  ],
+  "Nyanza": [
+    { "city": "Kisumu", "rate": 450 },
+    { "city": "Homa Bay", "rate": 470 },
+    { "city": "Migori", "rate": 480 },
+    { "city": "Siaya", "rate": 460 },
+    { "city": "Kisii", "rate": 490 }
+  ],
+  "Eastern": [
+    { "city": "Meru", "rate": 400 },
+    { "city": "Embu", "rate": 380 },
+    { "city": "Isiolo", "rate": 420 },
+    { "city": "Kitui", "rate": 430 },
+    { "city": "Machakos", "rate": 390 }
+  ],
+  "North Eastern": [
+    { "city": "Garissa", "rate": 550 },
+    { "city": "Wajir", "rate": 600 },
+    { "city": "Mandera", "rate": 650 }
+  ],
+  "Other": [
+    { "city": "Other Town", "rate": 600 }
+  ]
+}
