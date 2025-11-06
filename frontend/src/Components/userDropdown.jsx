@@ -11,7 +11,7 @@ import {
 } from "@heroicons/react/20/solid";
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
-import { useProducts } from "../Contexts/ProductContext";
+import { useProducts } from "../contexts/ProductContext";
 import { useNavigate } from "react-router-dom";
 
 export default function UserDropdown() {

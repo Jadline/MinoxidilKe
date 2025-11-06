@@ -1,28 +1,24 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { useProducts } from "../Contexts/productContext";
+import { useProducts } from "../contexts/ProductContext";
 import { MenuItems } from "@headlessui/react";
 
-
-
-
 export default function PaginationComponent() {
-  const { currentPage, setCurrentPage, totalPages,itemsperPage,totalItems} =
+  const { currentPage, setCurrentPage, totalPages, itemsperPage, totalItems } =
     useProducts();
-    
-    const indexOfLastItem = Math.min(currentPage * itemsperPage, totalItems);
-    const indexofFirstItem = (currentPage - 1) * itemsperPage;
 
+  const indexOfLastItem = Math.min(currentPage * itemsperPage, totalItems);
+  const indexofFirstItem = (currentPage - 1) * itemsperPage;
 
-    function handleNext(){
-        if(currentPage < totalPages){
-            setCurrentPage((prev) => prev + 1)
-        }
+  function handleNext() {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
     }
-    function handlePrevious(){
-        if(currentPage > 1){
-            setCurrentPage((prev) => prev - 1)
-        }
+  }
+  function handlePrevious() {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
     }
+  }
   return (
     <div className="flex items-center justify-between border-t border-white/10 px-4 py-3 sm:px-6">
       <div className="flex flex-1 justify-between sm:hidden">
@@ -42,9 +38,15 @@ export default function PaginationComponent() {
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-gray-500">
-            Showing <span className="font-medium">{totalItems === 0 ? 0 : indexofFirstItem + 1}</span> to{" "}
-            <span className="font-medium">{Math.min(indexOfLastItem,totalItems)}</span> of{" "}
-            <span className="font-medium">{totalItems}</span> results
+            Showing{" "}
+            <span className="font-medium">
+              {totalItems === 0 ? 0 : indexofFirstItem + 1}
+            </span>{" "}
+            to{" "}
+            <span className="font-medium">
+              {Math.min(indexOfLastItem, totalItems)}
+            </span>{" "}
+            of <span className="font-medium">{totalItems}</span> results
           </p>
         </div>
         <div>
@@ -73,7 +75,7 @@ export default function PaginationComponent() {
               </button>
             ))}
             <button
-             onClick={handleNext}
+              onClick={handleNext}
               className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 inset-ring inset-ring-gray-700 hover:bg-white/5 focus:z-20 focus:outline-offset-0"
             >
               <span className="sr-only">Next</span>

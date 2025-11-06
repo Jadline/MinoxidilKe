@@ -150,5 +150,5 @@ function useProducts() {
     throw new Error("useProducts must be used within a ProductsProvider");
   return context;
 }
-
+/* eslint-disable react-refresh/only-export-components */
 export { ProductsProvider, useProducts };

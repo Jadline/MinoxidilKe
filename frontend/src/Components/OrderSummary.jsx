@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { TrashIcon } from "@heroicons/react/20/solid";
-import { useProducts } from "../Contexts/productContext";
+import { useProducts } from "../contexts/ProductContext";
 import { createOrder } from "../Services/createOrder";
 import toast from "react-hot-toast";
 
@@ -26,19 +26,18 @@ export default function OrderSummary() {
   const queryClient = useQueryClient();
 
   const { register, handleSubmit, watch, formState } = useForm({
-     defaultValues: {
-    paymentType: "mpesa", 
-  },
+    defaultValues: {
+      paymentType: "mpesa",
+    },
   });
   const { errors } = formState;
   const paymentType = watch("paymentType");
 
-  
   const { mutate: saveOrder } = useMutation({
     mutationFn: (data) => createOrder(data),
     onSuccess: () => {
-      toast.success('Order created successfully!')
-    
+      toast.success("Order created successfully!");
+
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       setCart([]);
       setSelectedCity("");
@@ -46,12 +45,10 @@ export default function OrderSummary() {
     },
     onError: (err) => {
       console.error(err);
-      toast.error(err?.response?.data?.message || "Failed to save order")
-     
+      toast.error(err?.response?.data?.message || "Failed to save order");
     },
   });
 
- 
   const { mutateAsync: notifyMpesaPayment } = useMutation({
     mutationFn: (data) =>
       fetch("http://localhost:3000/api/v1/mpesa-notify", {
@@ -60,29 +57,26 @@ export default function OrderSummary() {
         body: JSON.stringify(data),
       }).then((res) => res.json()),
     onSuccess: () => {
-      toast.success('Payment notification received! We will verify shortly.')
-      
+      toast.success("Payment notification received! We will verify shortly.");
     },
     onError: (err) => {
       console.error(err);
-      toast.error('Failed to send payment notification. Try again.')
-     
+      toast.error("Failed to send payment notification. Try again.");
     },
   });
-
 
   async function handleMpesaNotification() {
     const mpesaNumber = watch("mpesaNumber");
     const mpesaDescription = watch("mpesaDescription");
 
     if (!mpesaNumber) {
-      toast.error('"Please enter the phone number you used for M-Pesa."')
-    
+      toast.error('"Please enter the phone number you used for M-Pesa."');
+
       return;
     }
 
     const payload = {
-      phone: mpesaNumber.replace(/^0/, "254"), 
+      phone: mpesaNumber.replace(/^0/, "254"),
       description: mpesaDescription || "",
       orderNumber: "ORD-" + Math.floor(100000 + Math.random() * 900000),
     };
@@ -92,8 +86,8 @@ export default function OrderSummary() {
 
   async function onhandleSubmit(data) {
     if (cart.length === 0) {
-      toast.error("Your cart is empty!")
-    
+      toast.error("Your cart is empty!");
+
       return;
     }
 
@@ -119,8 +113,7 @@ export default function OrderSummary() {
       date: new Date().toISOString(),
       paymentType: data.paymentType,
       mpesaDetails: data.mpesaNumber || null,
-      paymentStatus:
-        data.paymentType === "mpesa" ? "pending" : "unpaid", 
+      paymentStatus: data.paymentType === "mpesa" ? "pending" : "unpaid",
     };
 
     saveOrder(newOrder);
@@ -135,9 +128,7 @@ export default function OrderSummary() {
           onSubmit={handleSubmit(onhandleSubmit)}
           className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16"
         >
-        
           <div>
-          
             <div>
               <h2 className="text-lg font-medium text-gray-900">
                 Contact information
@@ -177,7 +168,9 @@ export default function OrderSummary() {
                 </label>
                 <input
                   type="tel"
-                  {...register("phoneNumber", { required: "This field is required" })}
+                  {...register("phoneNumber", {
+                    required: "This field is required",
+                  })}
                   className="mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
                 {errors.phoneNumber && (
@@ -186,7 +179,6 @@ export default function OrderSummary() {
               </div>
             </div>
 
-          
             <div className="mt-10 border-t border-gray-200 pt-10">
               <h2 className="text-lg font-medium text-gray-900">Payment</h2>
 
@@ -203,7 +195,9 @@ export default function OrderSummary() {
                         })}
                         className="size-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />
-                      <span className="ml-3 text-sm text-gray-700">{method.title}</span>
+                      <span className="ml-3 text-sm text-gray-700">
+                        {method.title}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -211,12 +205,22 @@ export default function OrderSummary() {
 
               {paymentType === "mpesa" && (
                 <div className="mt-6 space-y-3 bg-gray-50 p-4 rounded-md border">
-                  <p className="text-gray-700 font-medium">Pay with Safaricom M-Pesa:</p>
+                  <p className="text-gray-700 font-medium">
+                    Pay with Safaricom M-Pesa:
+                  </p>
                   <ol className="list-decimal list-inside text-gray-700">
-                    <li>Select <strong>Lipa na M-Pesa → Pay Bill</strong></li>
-                    <li>Business Number: <strong>522533</strong></li>
-                    <li>Account Number: <strong>8023258</strong></li>
-                    <li>Amount: <strong>{OrderTotal}</strong></li>
+                    <li>
+                      Select <strong>Lipa na M-Pesa → Pay Bill</strong>
+                    </li>
+                    <li>
+                      Business Number: <strong>522533</strong>
+                    </li>
+                    <li>
+                      Account Number: <strong>8023258</strong>
+                    </li>
+                    <li>
+                      Amount: <strong>{OrderTotal}</strong>
+                    </li>
                     <li>Enter your M-Pesa PIN and confirm payment</li>
                   </ol>
 
@@ -251,14 +255,14 @@ export default function OrderSummary() {
                   </button>
 
                   <p className="text-sm text-gray-500 mt-2">
-                    After making payment on M-Pesa, click "I’ve Made Payment" to notify us.
+                    After making payment on M-Pesa, click "I’ve Made Payment" to
+                    notify us.
                   </p>
                 </div>
               )}
             </div>
           </div>
 
-         
           <div className="mt-10 lg:mt-0">
             <h2 className="text-lg font-medium text-gray-900">Order summary</h2>
             <div className="mt-4 rounded-lg border bg-white shadow-sm">
@@ -272,11 +276,15 @@ export default function OrderSummary() {
                     />
                     <div className="ml-6 flex flex-1 flex-col">
                       <div className="flex justify-between">
-                        <h4 className="text-sm font-medium text-gray-700">{product.title}</h4>
+                        <h4 className="text-sm font-medium text-gray-700">
+                          {product.title}
+                        </h4>
                         <button
                           type="button"
                           onClick={() =>
-                            setCart((prev) => prev.filter((i) => i.id !== product.id))
+                            setCart((prev) =>
+                              prev.filter((i) => i.id !== product.id)
+                            )
                           }
                           className="text-gray-400 hover:text-gray-600"
                         >

@@ -1,75 +1,75 @@
-import { useMutation } from "@tanstack/react-query"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
-import { loginUser } from "../Services/loginUser"
-import axios from 'axios'
-import {GoogleLogin} from '@react-oauth/google'
-import { useProducts } from "../Contexts/productContext"
-import toast from "react-hot-toast"
-
+import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../Services/loginUser";
+import axios from "axios";
+import { GoogleLogin } from "@react-oauth/google";
+import { useProducts } from "../contexts/ProductContext";
+import toast from "react-hot-toast";
 
 export default function Login() {
-  const{setCurrentUser} = useProducts()
- const navigate = useNavigate()
+  const { setCurrentUser } = useProducts();
+  const navigate = useNavigate();
 
-    const { mutate: mutateLogin } = useMutation({
-  mutationFn: (data) => loginUser(data),
-  onSuccess: (res) => {
-    console.log('login response', res);
-     if (!res?.token) {
-      toast.success('Login failed')
-     
-      return;
-    }
-    localStorage.setItem("userToken", res.token);
-    setCurrentUser(res.user);
-   
-    toast.success('Login Successful!')
-    navigate('/'); 
-  },
-  onError: (error) => {
-    console.error(error);
-    
-    toast.error(error.response?.data?.message || "Email or password is incorrect")
-  
+  const { mutate: mutateLogin } = useMutation({
+    mutationFn: (data) => loginUser(data),
+    onSuccess: (res) => {
+      console.log("login response", res);
+      if (!res?.token) {
+        toast.success("Login failed");
+
+        return;
+      }
+      localStorage.setItem("userToken", res.token);
+      setCurrentUser(res.user);
+
+      toast.success("Login Successful!");
+      navigate("/");
+    },
+    onError: (error) => {
+      console.error(error);
+
+      toast.error(
+        error.response?.data?.message || "Email or password is incorrect"
+      );
+    },
+  });
+
+  const { register, reset, formState, handleSubmit } = useForm();
+  const { errors } = formState;
+
+  function onhandleSubmit(data) {
+    console.log("logging in data", data);
+    mutateLogin(data);
+    reset();
   }
-});
-
-
- 
-
-    const {register,reset,formState,handleSubmit} = useForm()
-    const {errors} = formState
-
-    function onhandleSubmit(data){
-
-        console.log('logging in data',data)
-        mutateLogin(data)
-        reset()
-      
-
-    }
-
 
   return (
     <>
-      
       <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gradient-to-r from-[#000080] via-[#0066cc] to-[#39a9db] ">
         <div className="sm:mx-auto sm:w-full sm:max-w-md  flex justify-center flex-col items-center">
-           <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-center text-white font-bold text-lg">
-                      MK
-           </div>
-          <h2 className="mt-6 text-center text-2xl/9 font-bold tracking-tight text-white">Login in to your account</h2>
+          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-center text-white font-bold text-lg">
+            MK
+          </div>
+          <h2 className="mt-6 text-center text-2xl/9 font-bold tracking-tight text-white">
+            Login in to your account
+          </h2>
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]  ">
           <div className="bg-gray-800/50 px-6 py-12 outline -outline-offset-1 outline-white/10 sm:rounded-lg sm:px-12 ">
-            <form action="#" method="POST" className="space-y-6 " onSubmit={handleSubmit(onhandleSubmit)}>
-           
-
+            <form
+              action="#"
+              method="POST"
+              className="space-y-6 "
+              onSubmit={handleSubmit(onhandleSubmit)}
+            >
               <div>
-                <label htmlFor="email" className="block text-sm/6 font-medium text-white">
+                <label
+                  htmlFor="email"
+                  className="block text-sm/6 font-medium text-white"
+                >
                   Email address
                 </label>
                 <div className="mt-2">
@@ -79,15 +79,20 @@ export default function Login() {
                     type="email"
                     required
                     autoComplete="email"
-                    {...register('email',{required : 'This field is required'})}
+                    {...register("email", {
+                      required: "This field is required",
+                    })}
                     className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                   />
                 </div>
-                  {errors?.email && <p>{errors?.email.message}</p>}
+                {errors?.email && <p>{errors?.email.message}</p>}
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm/6 font-medium text-white">
+                <label
+                  htmlFor="password"
+                  className="block text-sm/6 font-medium text-white"
+                >
                   Password
                 </label>
                 <div className="mt-2">
@@ -97,17 +102,17 @@ export default function Login() {
                     type="password"
                     required
                     autoComplete="current-password"
-                    {...register('password',{
-                        required : 'This field is required',
-                        minLength : {
-                            value : 4,
-                            message : 'The password should be atleast 4 characters'
-                        }
+                    {...register("password", {
+                      required: "This field is required",
+                      minLength: {
+                        value: 4,
+                        message: "The password should be atleast 4 characters",
+                      },
                     })}
                     className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                   />
                 </div>
-                  {errors?.password && <p>{errors?.password?.message}</p>}
+                {errors?.password && <p>{errors?.password?.message}</p>}
               </div>
 
               <div className="flex items-center justify-between">
@@ -118,7 +123,7 @@ export default function Login() {
                         id="remember-me"
                         name="remember-me"
                         type="checkbox"
-                        {...register('rememberMe')}
+                        {...register("rememberMe")}
                         className="col-start-1 row-start-1 appearance-none rounded-sm border border-white/10 bg-white/5 checked:border-indigo-500 checked:bg-indigo-500 indeterminate:border-indigo-500 indeterminate:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
                       />
                       <svg
@@ -143,13 +148,19 @@ export default function Login() {
                       </svg>
                     </div>
                   </div>
-                  <label htmlFor="remember-me" className="block text-sm/6 text-white">
+                  <label
+                    htmlFor="remember-me"
+                    className="block text-sm/6 text-white"
+                  >
                     Remember me
                   </label>
                 </div>
 
                 <div className="text-sm/6">
-                  <a href="#" className="font-semibold text-indigo-400 hover:text-indigo-300">
+                  <a
+                    href="#"
+                    className="font-semibold text-indigo-400 hover:text-indigo-300"
+                  >
                     Forgot password?
                   </a>
                 </div>
@@ -165,11 +176,12 @@ export default function Login() {
               </div>
               <div className="mt-10 flex items-center gap-x-6">
                 <div className="w-full flex-1 border-t border-white/10" />
-                <p 
-                onClick={() => navigate('/account')}
-                className="text-sm/6 font-medium text-nowrap text-white cursor-pointer"
-              
-                >Sign Up</p>
+                <p
+                  onClick={() => navigate("/account")}
+                  className="text-sm/6 font-medium text-nowrap text-white cursor-pointer"
+                >
+                  Sign Up
+                </p>
                 <div className="w-full flex-1 border-t border-white/10" />
               </div>
             </form>
@@ -177,16 +189,17 @@ export default function Login() {
             <div>
               <div className="mt-10 flex items-center gap-x-6">
                 <div className="w-full flex-1 border-t border-white/10" />
-                <p className="text-sm/6 font-medium text-nowrap text-white">Or continue with</p>
+                <p className="text-sm/6 font-medium text-nowrap text-white">
+                  Or continue with
+                </p>
                 <div className="w-full flex-1 border-t border-white/10" />
               </div>
 
               <div className="mt-6 grid grid-cols-1 ">
-                 <GoogleLogin
-                 text="continue_with"
+                <GoogleLogin
+                  text="continue_with"
                   onSuccess={async (credentialResponse) => {
                     try {
-                     
                       const res = await axios.post(
                         "http://localhost:3000/api/v1/account/googleLogin",
                         {
@@ -194,13 +207,12 @@ export default function Login() {
                         }
                       );
 
-                     
                       localStorage.setItem("userToken", res.data.token);
 
                       setCurrentUser(res.data.user);
 
                       alert("Google login successful!");
-                      navigate("/"); 
+                      navigate("/");
                     } catch (error) {
                       console.error(
                         "Google login error:",
@@ -213,19 +225,21 @@ export default function Login() {
                     alert("Google Login Failed");
                   }}
                 />
-             
               </div>
             </div>
           </div>
 
           <p className="mt-10 text-center text-sm/6 text-gray-400">
-            Not a member?{' '}
-            <a href="#" className="font-semibold text-indigo-400 hover:text-indigo-300">
+            Not a member?{" "}
+            <a
+              href="#"
+              className="font-semibold text-indigo-400 hover:text-indigo-300"
+            >
               Start a 14 day free trial
             </a>
           </p>
         </div>
       </div>
     </>
-  )
+  );
 }

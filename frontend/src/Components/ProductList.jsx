@@ -1,29 +1,26 @@
-import { StarIcon } from '@heroicons/react/20/solid'
-import { useState } from 'react'
-import ProductQuickView from './ProductQuickView'
-import { useNavigate } from 'react-router-dom'
-import { useProducts } from '../Contexts/productContext'
-import Spinner from './Spinner'
-
+import { StarIcon } from "@heroicons/react/20/solid";
+import { useState } from "react";
+import ProductQuickView from "./ProductQuickView";
+import { useNavigate } from "react-router-dom";
+import { useProducts } from "../contexts/ProductContext";
+import Spinner from "./Spinner";
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(" ");
 }
 
 export default function ProductList() {
-  const {products,setCart,isLoadingProducts,productsError} = useProducts()
-  const navigate = useNavigate()
-  const [open, setOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState(null)
- 
-  const handleQuickView = (product) => {
-    setSelectedProduct(product)
-    setOpen(true)
-  }
-    if (isLoadingProducts) return <Spinner/>;
-    if (productsError) return <p>There was an error fetching products data</p>;
-  
+  const { products, setCart, isLoadingProducts, productsError } = useProducts();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
+  const handleQuickView = (product) => {
+    setSelectedProduct(product);
+    setOpen(true);
+  };
+  if (isLoadingProducts) return <Spinner />;
+  if (productsError) return <p>There was an error fetching products data</p>;
 
   return (
     <div className="bg-white">
@@ -35,10 +32,9 @@ export default function ProductList() {
             <div
               key={product.id}
               onClick={() => {
-              
-                if(product) navigate('/product-details',{state : {product}})
+                if (product)
+                  navigate("/product-details", { state: { product } });
               }}
-            
               className="group relative border-r border-b border-gray-200 p-4 sm:p-6"
             >
               <img
@@ -48,19 +44,18 @@ export default function ProductList() {
               />
 
               <button
-  onClick={(e) => {
-    e.stopPropagation(); 
-    handleQuickView(product);
-  }}
-  className="mt-3 w-3/4 rounded-md bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
->
-  Quick View
-</button>
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleQuickView(product);
+                }}
+                className="mt-3 w-3/4 rounded-md bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+              >
+                Quick View
+              </button>
 
               <div className="pt-10 pb-4 text-left">
                 <h3 className="text-sm font-medium text-gray-900">
-                  <p className='relative'>{product.name}</p>
-                  
+                  <p className="relative">{product.name}</p>
                 </h3>
 
                 <div className="mt-3 flex items-center gap-3">
@@ -70,8 +65,10 @@ export default function ProductList() {
                         key={rating}
                         aria-hidden="true"
                         className={classNames(
-                          product.rating > rating ? 'text-yellow-400' : 'text-gray-200',
-                          'size-5 shrink-0',
+                          product.rating > rating
+                            ? "text-yellow-400"
+                            : "text-gray-200",
+                          "size-5 shrink-0"
                         )}
                       />
                     ))}
@@ -93,16 +90,14 @@ export default function ProductList() {
         </div>
       </div>
 
-    
       {open && (
         <ProductQuickView
           open={open}
           setOpen={setOpen}
           product={selectedProduct}
-         
           setCart={setCart}
         />
       )}
     </div>
-  )
+  );
 }
