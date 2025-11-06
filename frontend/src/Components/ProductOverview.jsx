@@ -15,6 +15,8 @@ import {
 import { StarIcon } from "@heroicons/react/20/solid";
 import { HeartIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+// import { useProducts } from "../contexts/ProductContext";
+// import { useProducts } from "../contexts/ProductContext";
 import { useProducts } from "../contexts/ProductContext";
 
 const defaultproduct = {
