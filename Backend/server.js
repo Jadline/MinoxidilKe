@@ -1,6 +1,7 @@
 
 const dotenv = require('dotenv')
 const mongoose = require('mongoose')
+const redis = require('redis')
 
 dotenv.config({path : './config.env'})
 
@@ -21,6 +22,17 @@ async function connectDB(){
 
 connectDB()
 
+const redisClient = redis.createClient({
+    url : process.env.REDIS_URL,
+      socket: {
+    tls: true, 
+    rejectUnauthorized: false,
+  },
+})
+
+redisClient.connect()
+    .then(() => console.log('Connected to redis'))
+    .catch((error) => console.error('There was an error connecting to redis',error))
 
 
 const port = process.env.PORT || 3000
@@ -28,3 +40,5 @@ const port = process.env.PORT || 3000
 app.listen(port,() => {
     console.log('app is running on port',port)
 })
+
+module.exports = redisClient;

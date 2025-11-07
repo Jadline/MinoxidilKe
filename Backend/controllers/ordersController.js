@@ -1,11 +1,32 @@
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
+const redisClient = require('../server')
 
 async function getAllOrders(req, res) {
   try {
-    const orders = await Order.find({ userId: req.user._id }); // match field in schema
+    const userId = req.user._id;
+    const cacheKey = `orders:${userId}`
+
+    const cachedOrders = await redisClient.get(cacheKey)
+
+    if(cachedOrders){
+      console.log(`Cache hit for user ${userId}`)
+      const orders = JSON.parse(cachedOrders)
+
+      return res.status(200).json({
+        status : 'success',
+        source : 'cache',
+        results : orders.length,
+        data : {orders},
+      })
+    }
+
+    const orders = await Order.find({userId});
+    await redisClient.setEx(cacheKey,3600,JSON.stringify(orders))
+
     res.status(200).json({
       status: 'success',
+      source : 'db',
       results: orders.length,
       data: { orders },
     });
@@ -16,7 +37,7 @@ async function getAllOrders(req, res) {
 
 async function addOrder(req, res) {
   try {
-    console.log("🟢 Received order body:", req.body);
+    console.log("Received order body:", req.body);
 
     const orderData = {
       ...req.body,
@@ -27,8 +48,12 @@ async function addOrder(req, res) {
 
     const order = await Order.create(orderData);
 
+    const cacheKey = `orders:${req.user._id}`
+    await redisClient.del(cacheKey)
+
     res.status(201).json({
       status: 'success',
+      message : "Order added successfully",
       data: { order },
     });
   } catch (err) {

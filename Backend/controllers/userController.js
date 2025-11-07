@@ -8,7 +8,7 @@ async function signupUser(req,res){
 
     const existingUser = await User.findOne({email})
     if(existingUser){
-        res.status(400).json({
+        return res.status(400).json({
             message : 'Email is already in use'
         })
     }
@@ -45,7 +45,7 @@ async function loginUser(req,res){
     }
     const isMatch = await bcrypt.compare(password,user.password)
     if(!isMatch){
-        return res.status(404).json({
+        return res.status(401).json({
             message : 'Invalid credentials'
         })
     }
