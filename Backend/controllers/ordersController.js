@@ -1,6 +1,6 @@
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
-const redisClient = require('../server')
+const redisClient = require('../redisClient')
 
 async function getAllOrders(req, res) {
   try {

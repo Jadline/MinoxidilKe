@@ -1,5 +1,5 @@
 const Product = require('../models/productModel');
-const redisClient = require('../server')
+const redisClient = require('../redisClient')
 
 async function fetchAllProducts(req, res) {
   try {
