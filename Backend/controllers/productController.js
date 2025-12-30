@@ -1,17 +1,15 @@
 const Product = require('../models/productModel');
-const redisClient = require('../redisClient')
 
 async function fetchAllProducts(req, res) {
   try {
+    // 1️⃣ Filters
     const queryObj = { ...(req.parsedFilters || {}) };
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
 
     let query = Product.find(queryObj);
 
-  
-
-   
+    // 2️⃣ Sorting
     if (req.query.sort) {
       const sortOption = req.query.sort;
       let sortCriteria = {};
@@ -36,26 +34,18 @@ async function fetchAllProducts(req, res) {
       query = query.sort(sortCriteria);
     }
 
-    
+    // 3️⃣ Pagination
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 5;
     const skip = (page - 1) * limit;
 
     query = query.skip(skip).limit(limit);
 
-    const cacheKey = `products:${JSON.stringify(req.query)}`
-
-    const cachedData = await redisClient.get(cacheKey)
-    if(cachedData){
-      console.log('Cache hit!')
-      return res.status(200).json(JSON.parse(cachedData))
-    }
-
-    console.log('Cache miss! Fetching from mongoDB')
+    // 4️⃣ Query DB
     const total = await Product.countDocuments(queryObj);
-
     const products = await query;
 
+    // 5️⃣ Empty state
     if (!products || products.length === 0) {
       return res.status(200).json({
         status: 'success',
@@ -65,18 +55,14 @@ async function fetchAllProducts(req, res) {
       });
     }
 
-  const response = {
-    status : 'success',
-    results : products.length,
-    total,
-    data : {products}
-  }
+    // 6️⃣ Success response
+    res.status(200).json({
+      status: 'success',
+      results: products.length,
+      total,
+      data: { products },
+    });
 
-  await redisClient.setEx(cacheKey,3600,JSON.stringify(response));
-
-  res.status(200).json(response)
-
-  
   } catch (err) {
     res.status(500).json({
       status: 'fail',
