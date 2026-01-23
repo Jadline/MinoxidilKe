@@ -133,3 +133,4 @@ async function fetchAllProducts(req, res) {
 }
 
 module.exports = fetchAllProducts;
+module.exports.buildCacheKey = buildCacheKey;

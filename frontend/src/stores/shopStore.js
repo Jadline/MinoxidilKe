@@ -21,5 +21,11 @@ export const useShopStore = create((set) => ({
 
   setsortBy: (sortBy) => set({ sortBy, currentPage: 1 }),
 
-  setCurrentPage: (page) => set({ currentPage: page }),
+  setCurrentPage: (pageOrUpdater) =>
+    set((state) => ({
+      currentPage:
+        typeof pageOrUpdater === "function"
+          ? pageOrUpdater(state.currentPage)
+          : pageOrUpdater,
+    })),
 }));
