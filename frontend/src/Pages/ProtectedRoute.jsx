@@ -1,9 +1,8 @@
 import { Navigate } from "react-router-dom";
-// import { useProducts } from "../contexts/ProductContext";
-// import { useProducts } from "../contexts/ProductContext";
-import { useProducts } from "../contexts/ProductContext";
+import { useUserStore } from "../stores/userStore";
+
 export default function ProtectedRoute({ children }) {
-  const { currentUser } = useProducts();
+  const currentUser = useUserStore((state) => state.currentUser);
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;

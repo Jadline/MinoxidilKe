@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { useProducts } from "../contexts/ProductContext";
+import { useOrders } from "../hooks/useOrders";
 
 export default function OrderHistoryContent() {
-  const { orders } = useProducts();
+  const { orders } = useOrders();
 
   if(!orders) return (
     <p>You have not placed any orders yet</p>

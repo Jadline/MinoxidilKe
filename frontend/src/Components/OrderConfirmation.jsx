@@ -1,8 +1,8 @@
-import { useProducts } from "../contexts/ProductContext";
+import { useOrders } from "../hooks/useOrders";
 import Spinner from "./Spinner";
 
 export default function OrderConfirmation() {
-  const { orders, isLoadingOrders, ordersError } = useProducts();
+  const { orders, isLoadingOrders, ordersError } = useOrders();
 
   if (!orders || orders.length === 0) {
     return (

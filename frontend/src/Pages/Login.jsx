@@ -5,12 +5,12 @@ import { useNavigate } from "react-router-dom";
 import { loginUser } from "../Services/loginUser";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
-import { useProducts } from "../contexts/ProductContext";
+import { useUserStore } from "../stores/userStore";
 import toast from "react-hot-toast";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function Login() {
-  const { setCurrentUser } = useProducts();
+  const setCurrentUser = useUserStore((state) => state.setCurrentUser);
   const navigate = useNavigate();
 
   const { mutate: mutateLogin } = useMutation({

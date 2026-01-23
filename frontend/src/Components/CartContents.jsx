@@ -2,19 +2,22 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { CheckIcon, ClockIcon } from "@heroicons/react/20/solid";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useProducts } from "../contexts/ProductContext";
+import { useCartStore } from "../stores/cartStore";
 import toast from "react-hot-toast";
 
 export default function CartContents() {
   const {
     cart,
     setCart,
-    Total,
-    OrderTotal,
     setShippingCost,
     selectedCity,
     setSelectedCity,
-  } = useProducts();
+    subtotal,
+    orderTotal,
+  } = useCartStore();
+
+  const Total = subtotal();
+  const OrderTotal = orderTotal();
   const [allCities, setAllCities] = useState([]);
 
   const navigate = useNavigate();
@@ -46,9 +49,7 @@ export default function CartContents() {
       setShippingCost(0);
     }
   }, [allCities, selectedCity, setShippingCost]);
-  useEffect(() => {
-    localStorage.setItem("selectedCity", selectedCity);
-  }, [selectedCity]);
+  // selectedCity is persisted via Zustand's cart store; no extra localStorage effect needed
 
   function handleDelete(id) {
     setCart((prevcart) => prevcart.filter((cartitem) => cartitem.id !== id));
@@ -179,7 +180,7 @@ export default function CartContents() {
 
           {/* Order summary */}
           <div className="mt-10 sm:ml-32 sm:pl-6">
-            <div className="rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:p-8">
+            <div className="rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:p-8 shadow-sm">
               <h2 className="sr-only">Order summary</h2>
 
               <div className="flow-root">

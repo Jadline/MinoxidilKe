@@ -1,10 +1,15 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { useProducts } from "../contexts/ProductContext";
 import { MenuItems } from "@headlessui/react";
+import { useShopStore } from "../stores/shopStore";
+import { useShopProducts } from "../hooks/useShopProducts";
 
 export default function PaginationComponent() {
-  const { currentPage, setCurrentPage, totalPages, itemsperPage, totalItems } =
-    useProducts();
+  const currentPage = useShopStore((state) => state.currentPage);
+  const setCurrentPage = useShopStore((state) => state.setCurrentPage);
+  const itemsperPage = useShopStore((state) => state.itemsperPage);
+  const { totalItems } = useShopProducts();
+
+  const totalPages = itemsperPage > 0 ? Math.ceil(totalItems / itemsperPage) : 0;
 
   const indexOfLastItem = Math.min(currentPage * itemsperPage, totalItems);
   const indexofFirstItem = (currentPage - 1) * itemsperPage;
@@ -19,18 +24,24 @@ export default function PaginationComponent() {
       setCurrentPage((prev) => prev - 1);
     }
   }
+
+  const isFirstPage = currentPage === 1;
+  const isLastPage = currentPage === totalPages || totalPages === 0;
+
   return (
     <div className="flex items-center justify-between border-t border-white/10 px-4 py-3 sm:px-6">
       <div className="flex flex-1 justify-between sm:hidden">
         <button
-          onClick={handlePrevious}      
-          className="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white/10"
+          onClick={handlePrevious}
+          disabled={isFirstPage}
+          className="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Previous
         </button>
         <button
-          onClick={handleNext}    
-          className="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white/10"
+          onClick={handleNext}
+          disabled={isLastPage}
+          className="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Next
         </button>
@@ -56,7 +67,8 @@ export default function PaginationComponent() {
           >
             <button
               onClick={handlePrevious}
-              className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 inset-ring inset-ring-gray-700 hover:bg-white/5 focus:z-20 focus:outline-offset-0"
+              disabled={isFirstPage}
+              className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 inset-ring inset-ring-gray-700 hover:bg-white/5 focus:z-20 focus:outline-offset-0 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span className="sr-only">Previous</span>
               <ChevronLeftIcon aria-hidden="true" className="size-5" />
@@ -76,7 +88,8 @@ export default function PaginationComponent() {
             ))}
             <button
               onClick={handleNext}
-              className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 inset-ring inset-ring-gray-700 hover:bg-white/5 focus:z-20 focus:outline-offset-0"
+              disabled={isLastPage}
+              className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 inset-ring inset-ring-gray-700 hover:bg-white/5 focus:z-20 focus:outline-offset-0 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span className="sr-only">Next</span>
               <ChevronRightIcon aria-hidden="true" className="size-5" />

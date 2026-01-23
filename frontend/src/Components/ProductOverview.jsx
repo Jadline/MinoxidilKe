@@ -16,7 +16,7 @@ import { StarIcon } from "@heroicons/react/20/solid";
 import { HeartIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
-import { useProducts } from "../contexts/ProductContext";
+import { useCartStore } from "../stores/cartStore";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const defaultproduct = {
@@ -100,7 +100,7 @@ function classNames(...classes) {
 }
 
 export default function ProductOverview() {
-  const { setCart } = useProducts();
+  const { setCart } = useCartStore();
   const navigate = useNavigate();
   const location = useLocation();
   const product = location.state?.product || defaultproduct;

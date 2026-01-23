@@ -10,12 +10,13 @@ import {
   UserPlusIcon,
 } from "@heroicons/react/20/solid";
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
-import { Link } from "react-router-dom";
-import { useProducts } from "../contexts/ProductContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useUserStore } from "../stores/userStore";
+import { useCartStore } from "../stores/cartStore";
 
 export default function UserDropdown() {
-  const { currentUser, setCurrentUser, setCart } = useProducts();
+  const { currentUser, setCurrentUser } = useUserStore();
+  const { setCart } = useCartStore();
   const navigate = useNavigate();
 
   const handleLogout = () => {

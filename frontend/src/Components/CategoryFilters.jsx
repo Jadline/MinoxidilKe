@@ -9,7 +9,7 @@ import {
 } from "@headlessui/react";
 import { ChevronDownIcon, FunnelIcon } from "@heroicons/react/20/solid";
 
-import { useProducts } from "../contexts/ProductContext";
+import { useShopStore } from "../stores/shopStore";
 
 const filters = {
   price: [
@@ -47,8 +47,7 @@ function classNames(...classes) {
 }
 
 export default function CategoryFilters() {
-  const { selectedFilters, setSelectedFilters } = useProducts();
-  const { sortBy, setsortBy } = useProducts();
+  const { selectedFilters, setSelectedFilters, sortBy, setsortBy } = useShopStore();
 
   function handleFilterChange(filterType, value, checked) {
     setSelectedFilters((prev) => {
@@ -106,7 +105,10 @@ export default function CategoryFilters() {
                   aria-hidden="true"
                   className="mr-2 size-5 flex-none text-gray-400 group-hover:text-gray-500"
                 />
-                {selectedFilters.price.length + selectedFilters.category.length}
+                <span>
+                  Filters (
+                  {selectedFilters.price.length + selectedFilters.category.length})
+                </span>
               </DisclosureButton>
             </div>
             <div className="pl-6">

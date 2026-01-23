@@ -24,8 +24,7 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
-// import { useProducts } from "../Contexts/ProductContext";
-import { useProducts } from "../contexts/ProductContext";
+import { useCartStore } from "../stores/cartStore";
 import UserDropdown from "./UserDropdown";
 
 const navigation = {
@@ -37,7 +36,9 @@ const navigation = {
 };
 
 export default function PageNav() {
-  const { cartCount } = useProducts();
+  const cartCount = useCartStore((state) =>
+    state.cart.reduce((sum, item) => sum + item.quantity, 0)
+  );
   const [open, setOpen] = useState(false);
 
   return (

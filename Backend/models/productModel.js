@@ -13,10 +13,7 @@ const detailSchema = new mongoose.Schema({
         required : true
     },
     items : [String],
-
-
 })
-
 
 const ProductSchema = new mongoose.Schema({
     id : {
@@ -42,7 +39,11 @@ const ProductSchema = new mongoose.Schema({
     images : [imageSchema],
     description : String,
     details : [detailSchema]
-
 })
+
+// Indexes to speed up filtered and sorted product queries
+ProductSchema.index({ category: 1, price: 1 });
+ProductSchema.index({ name: 1 });
+
 const Product = mongoose.model('Product',ProductSchema);
 module.exports = Product;

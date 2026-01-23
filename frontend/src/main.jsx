@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import './App.css'
 import App from './App.jsx'
 import {QueryClient,QueryClientProvider} from '@tanstack/react-query'
-import { ProductsProvider } from './contexts/ProductContext.jsx'
 
 import {GoogleOAuthProvider} from '@react-oauth/google'
 import {Toaster} from 'react-hot-toast'
@@ -13,11 +12,9 @@ const queryclient = new QueryClient()
 createRoot(document.getElementById('root')).render(
   <StrictMode>
    <QueryClientProvider client={queryclient}>
-    <ProductsProvider>
       <GoogleOAuthProvider clientId='797864837841-vnmio34306k8gh8o9sfn0mdqfffs00c5.apps.googleusercontent.com'>
          <App />
       </GoogleOAuthProvider>
-    </ProductsProvider>
    </QueryClientProvider>
     <Toaster 
     position='top-center'

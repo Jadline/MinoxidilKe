@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { TrashIcon } from "@heroicons/react/20/solid";
-import { useProducts } from "../contexts/ProductContext";
+import { useCartStore } from "../stores/cartStore";
 import { createOrder } from "../Services/createOrder";
 import toast from "react-hot-toast";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -15,13 +15,16 @@ const paymentMethods = [
 export default function OrderSummary() {
   const {
     cart,
-    Total,
-    OrderTotal,
     shippingCost,
     setCart,
     selectedCity,
     setSelectedCity,
-  } = useProducts();
+    subtotal,
+    orderTotal,
+  } = useCartStore();
+
+  const Total = subtotal();
+  const OrderTotal = orderTotal();
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -71,7 +74,7 @@ export default function OrderSummary() {
     const mpesaDescription = watch("mpesaDescription");
 
     if (!mpesaNumber) {
-      toast.error('"Please enter the phone number you used for M-Pesa."');
+                      toast.error("Please enter the phone number you used for M-Pesa.");
 
       return;
     }
@@ -278,7 +281,7 @@ export default function OrderSummary() {
                     <div className="ml-6 flex flex-1 flex-col">
                       <div className="flex justify-between">
                         <h4 className="text-sm font-medium text-gray-700">
-                          {product.title}
+                          {product.name}
                         </h4>
                         <button
                           type="button"
@@ -293,7 +296,7 @@ export default function OrderSummary() {
                         </button>
                       </div>
                       <p className="mt-1 text-sm text-gray-500">
-                        {product.price} × {product.quantity}
+                        Ksh {product.price} × {product.quantity}
                       </p>
                     </div>
                   </li>

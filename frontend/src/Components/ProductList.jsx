@@ -2,15 +2,38 @@ import { StarIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
 import ProductQuickView from "./ProductQuickView";
 import { useNavigate } from "react-router-dom";
-import { useProducts } from "../contexts/ProductContext";
-import Spinner from "./Spinner";
+import { useCartStore } from "../stores/cartStore";
+import { useShopProducts } from "../hooks/useShopProducts";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
+function ProductsSkeleton() {
+  return (
+    <div className="bg-white">
+      <div className="mx-auto max-w-7xl overflow-hidden sm:px-6 lg:px-8">
+        <div className="-mx-px grid grid-cols-2 border-l border-gray-200 sm:mx-0 md:grid-cols-3 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="group relative border-r border-b border-gray-200 p-4 sm:p-6 animate-pulse"
+            >
+              <div className="aspect-square rounded-lg bg-gray-200" />
+              <div className="mt-4 h-3 w-3/4 rounded bg-gray-200" />
+              <div className="mt-2 h-3 w-1/2 rounded bg-gray-200" />
+              <div className="mt-4 h-8 w-3/4 rounded bg-gray-200" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProductList() {
-  const { products, setCart, isLoadingProducts, productsError } = useProducts();
+  const { products, isLoadingProducts, productsError } = useShopProducts();
+  const { setCart } = useCartStore();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -19,8 +42,29 @@ export default function ProductList() {
     setSelectedProduct(product);
     setOpen(true);
   };
-  if (isLoadingProducts) return <Spinner />;
-  if (productsError) return <p>There was an error fetching products data</p>;
+
+  if (isLoadingProducts) return <ProductsSkeleton />;
+
+  if (productsError)
+    return (
+      <div className="bg-white py-16 text-center">
+        <p className="text-sm text-red-600">
+          There was an error fetching products. Please try again.
+        </p>
+      </div>
+    );
+
+  if (!products || products.length === 0)
+    return (
+      <div className="bg-white py-24 text-center">
+        <p className="text-lg font-medium text-gray-900">
+          No products found.
+        </p>
+        <p className="mt-2 text-sm text-gray-500">
+          Try clearing some filters or adjusting your search.
+        </p>
+      </div>
+    );
 
   return (
     <div className="bg-white">
@@ -28,14 +72,14 @@ export default function ProductList() {
         <h2 className="sr-only">Products</h2>
 
         <div className="-mx-px grid grid-cols-2 border-l border-gray-200 sm:mx-0 md:grid-cols-3 lg:grid-cols-4">
-          {products?.map((product) => (
+          {products.map((product) => (
             <div
               key={product.id}
               onClick={() => {
                 if (product)
                   navigate("/product-details", { state: { product } });
               }}
-              className="group relative border-r border-b border-gray-200 p-4 sm:p-6"
+              className="group relative border-r border-b border-gray-200 p-4 sm:p-6 cursor-pointer hover:shadow-md transition-shadow duration-150"
             >
               <img
                 alt={product.imageAlt}
@@ -55,7 +99,7 @@ export default function ProductList() {
 
               <div className="pt-10 pb-4 text-left">
                 <h3 className="text-sm font-medium text-gray-900">
-                  <p className="relative">{product.name}</p>
+                  <p className="relative line-clamp-2">{product.name}</p>
                 </h3>
 
                 <div className="mt-3 flex items-center gap-3">
