@@ -12,7 +12,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@upstash/redis": "^1.35.6",
     "axios": "^1.13.1",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
@@ -28,7 +27,6 @@
     "morgan": "^1.10.1",
     "nodemailer": "^7.0.10",
     "oauth-1.0a": "^2.2.6",
-    "redis": "^5.9.0",
     "stripe": "^19.2.0",
     "uuid": "^13.0.0"
   },

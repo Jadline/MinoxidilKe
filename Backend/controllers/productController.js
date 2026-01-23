@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const Product = require('../models/productModel');
-const redisClient = require('../redisClient');
+const ProductCache = require('../models/productCacheModel');
 
 function buildCacheKey(filters, query) {
   const payload = {
@@ -62,17 +62,14 @@ async function fetchAllProducts(req, res) {
 
     const cacheKey = buildCacheKey(queryObj, req.query);
 
-    // 3️⃣ Try cache first
-    if (redisClient?.isOpen) {
-      try {
-        const cached = await redisClient.get(cacheKey);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          return res.status(200).json(parsed);
-        }
-      } catch (cacheErr) {
-        console.error('Redis cache read error:', cacheErr.message);
+    // 3️⃣ Try cache first (MongoDB TTL cache)
+    try {
+      const cacheEntry = await ProductCache.findOne({ key: cacheKey }).lean();
+      if (cacheEntry && cacheEntry.value) {
+        return res.status(200).json(cacheEntry.value);
       }
+    } catch (cacheErr) {
+      console.error('Product cache read error:', cacheErr.message);
     }
 
     // 4️⃣ Query DB in parallel
@@ -90,15 +87,15 @@ async function fetchAllProducts(req, res) {
         data: { products: [] },
       };
 
-      // Cache empty result as well
-      if (redisClient?.isOpen) {
-        try {
-          await redisClient.set(cacheKey, JSON.stringify(response), {
-            EX: 60,
-          });
-        } catch (cacheErr) {
-          console.error('Redis cache write error:', cacheErr.message);
-        }
+      // Cache empty result as well (MongoDB TTL cache)
+      try {
+        await ProductCache.updateOne(
+          { key: cacheKey },
+          { key: cacheKey, value: response, createdAt: new Date() },
+          { upsert: true }
+        );
+      } catch (cacheErr) {
+        console.error('Product cache write error:', cacheErr.message);
       }
 
       return res.status(200).json(response);
@@ -112,15 +109,15 @@ async function fetchAllProducts(req, res) {
       data: { products },
     };
 
-    // Store in cache for subsequent requests
-    if (redisClient?.isOpen) {
-      try {
-        await redisClient.set(cacheKey, JSON.stringify(response), {
-          EX: 60,
-        });
-      } catch (cacheErr) {
-        console.error('Redis cache write error:', cacheErr.message);
-      }
+    // Store in cache for subsequent requests (MongoDB TTL cache)
+    try {
+      await ProductCache.updateOne(
+        { key: cacheKey },
+        { key: cacheKey, value: response, createdAt: new Date() },
+        { upsert: true }
+      );
+    } catch (cacheErr) {
+      console.error('Product cache write error:', cacheErr.message);
     }
 
     res.status(200).json(response);

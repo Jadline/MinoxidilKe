@@ -25,14 +25,13 @@ jest.mock('../models/productModel', () => {
   };
 });
 
-jest.mock('../redisClient', () => ({
-  isOpen: true,
-  get: jest.fn(),
-  set: jest.fn(),
+jest.mock('../models/productCacheModel', () => ({
+  findOne: jest.fn(),
+  updateOne: jest.fn(),
 }));
 
 const Product = require('../models/productModel');
-const redisClient = require('../redisClient');
+const ProductCache = require('../models/productCacheModel');
 
 const createMockRes = () => {
   const res = {};
@@ -81,7 +80,10 @@ describe('fetchAllProducts', () => {
       data: { products: [{ id: 1, name: 'Cached Product' }] },
     };
 
-    redisClient.get.mockResolvedValueOnce(JSON.stringify(cachedResponse));
+    ProductCache.findOne.mockResolvedValueOnce({
+      key: 'some-cache-key',
+      value: cachedResponse,
+    });
 
     const req = {
       query: { sort: 'price-asc', page: '2', limit: '5' },
@@ -91,8 +93,8 @@ describe('fetchAllProducts', () => {
 
     await fetchAllProducts(req, res);
 
-    expect(redisClient.get).toHaveBeenCalledTimes(1);
-    const cacheKey = redisClient.get.mock.calls[0][0];
+    expect(ProductCache.findOne).toHaveBeenCalledTimes(1);
+    const [{ key: cacheKey }] = ProductCache.findOne.mock.calls[0];
     expect(cacheKey).toMatch(/^products:/);
 
     // When cache is hit, DB should not be queried
@@ -105,7 +107,7 @@ describe('fetchAllProducts', () => {
 
   test('queries DB, applies pagination, and caches non-empty results when cache is missing', async () => {
     // No cache
-    redisClient.get.mockResolvedValueOnce(null);
+    ProductCache.findOne.mockResolvedValueOnce(null);
 
     const products = [
       { id: 1, name: 'P1', price: 10 },
@@ -148,16 +150,15 @@ describe('fetchAllProducts', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(expectedResponse);
 
-    // Cached with TTL
-    expect(redisClient.set).toHaveBeenCalledTimes(1);
-    const [cacheKey, cachedValue, options] = redisClient.set.mock.calls[0];
-    expect(cacheKey).toMatch(/^products:/);
-    expect(JSON.parse(cachedValue)).toEqual(expectedResponse);
-    expect(options).toEqual({ EX: 60 });
+    // Cached with TTL via MongoDB
+    expect(ProductCache.updateOne).toHaveBeenCalledTimes(1);
+    const [filter, update] = ProductCache.updateOne.mock.calls[0];
+    expect(filter.key).toMatch(/^products:/);
+    expect(update.value).toEqual(expectedResponse);
   });
 
   test('caches empty product results correctly', async () => {
-    redisClient.get.mockResolvedValueOnce(null);
+    ProductCache.findOne.mockResolvedValueOnce(null);
 
     const emptyProducts = [];
     const queryInstance = {
@@ -189,10 +190,9 @@ describe('fetchAllProducts', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(expectedResponse);
 
-    expect(redisClient.set).toHaveBeenCalledTimes(1);
-    const [cacheKey, cachedValue, options] = redisClient.set.mock.calls[0];
-    expect(cacheKey).toMatch(/^products:/);
-    expect(JSON.parse(cachedValue)).toEqual(expectedResponse);
-    expect(options).toEqual({ EX: 60 });
+    expect(ProductCache.updateOne).toHaveBeenCalledTimes(1);
+    const [filter, update] = ProductCache.updateOne.mock.calls[0];
+    expect(filter.key).toMatch(/^products:/);
+    expect(update.value).toEqual(expectedResponse);
   });
 });
