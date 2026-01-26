@@ -352,7 +352,7 @@ Shipping: Ksh ${order.shippingCost.toLocaleString()}
 Total: Ksh ${order.OrderTotal.toLocaleString()}
 
 ${order.paymentType === 'mpesa' && order.paymentStatus === 'pending' ? 
-  'Payment Pending: Please complete your M-Pesa payment. We'll notify you once payment is confirmed.' : ''}
+  'Payment Pending: Please complete your M-Pesa payment. We\'ll notify you once payment is confirmed.' : ''}
 
 We'll send you another email once your order ships.
 
