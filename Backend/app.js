@@ -31,6 +31,26 @@ app.use('/api/v1/contact',emailRouter)
 app.use('/api/v1/account',userRouter)
 app.use('/api/v1/reviews', reviewRoutes);
 
+// Global error handler middleware (catch any unhandled errors)
+app.use((err, req, res, next) => {
+  console.error('❌ Unhandled error:', err);
+  console.error('Error stack:', err.stack);
+  
+  if (!res.headersSent) {
+    res.status(500).json({
+      status: 'fail',
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    });
+  }
+});
+
+// Test email route (remove in production)
+if (process.env.NODE_ENV !== 'production') {
+  const testEmailRoute = require('./routes/testEmailRoute');
+  app.use('/api/v1/test-email', testEmailRoute);
+}
+
 
 
 

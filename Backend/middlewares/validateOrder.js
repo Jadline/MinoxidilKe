@@ -17,14 +17,25 @@ const validateOrder = [
     .isIn(['mpesa', 'pay-on-delivery'])
     .withMessage('Invalid payment type'),
   body('phoneNumber')
-    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Phone number is required')
     .matches(/^0\d{9}$|^254\d{9}$/)
     .withMessage('Invalid phone number format'),
   body('city')
-    .optional()
     .trim()
     .notEmpty()
-    .withMessage('City cannot be empty'),
+    .withMessage('City is required'),
+  body('streetAddress')
+    .trim()
+    .notEmpty()
+    .withMessage('Street address is required'),
+  body('postalCode')
+    .optional()
+    .trim(),
+  body('deliveryInstructions')
+    .optional()
+    .trim(),
   body('shippingCost')
     .optional()
     .isFloat({ min: 0 })

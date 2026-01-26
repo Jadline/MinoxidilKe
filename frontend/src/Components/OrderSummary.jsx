@@ -1,3 +1,4 @@
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +14,9 @@ const paymentMethods = [
 ];
 
 export default function OrderSummary() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isProcessingRef = useRef(false); // Prevent duplicate submissions
+
   const {
     cart,
     shippingCost,
@@ -41,6 +45,8 @@ export default function OrderSummary() {
     mutationFn: (data) => createOrder(data),
     onSuccess: () => {
       toast.success("Order created successfully!");
+      isProcessingRef.current = false;
+      setIsSubmitting(false);
 
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       setCart([]);
@@ -49,6 +55,8 @@ export default function OrderSummary() {
     },
     onError: (err) => {
       console.error(err);
+      isProcessingRef.current = false;
+      setIsSubmitting(false);
       toast.error(err?.response?.data?.message || "Failed to save order");
     },
   });
@@ -89,38 +97,52 @@ export default function OrderSummary() {
   }
 
   async function onhandleSubmit(data) {
-    if (cart.length === 0) {
-      toast.error("Your cart is empty!");
-
+    // Prevent duplicate submissions
+    if (isProcessingRef.current || isSubmitting) {
+      toast.error("Please wait, your order is being processed...");
       return;
     }
 
-    const newOrder = {
-      orderNumber: "ORD-" + Math.floor(100000 + Math.random() * 900000),
-      trackingNumber: "TRK-" + Math.random().toString().slice(2, 14),
-      orderItems: cart.map((item) => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        leadTime: item.leadTime,
-        price: item.price,
-        quantity: item.quantity,
-        imageSrc: item.imageSrc,
-        imageAlt: item.imageAlt,
-      })),
-      shippingCost,
-      city: selectedCity,
-      OrderTotal,
-      Total,
-      email: data.email,
-      phoneNumber: data.phoneNumber,
-      date: new Date().toISOString(),
-      paymentType: data.paymentType,
-      mpesaDetails: data.mpesaNumber || null,
-      paymentStatus: data.paymentType === "mpesa" ? "pending" : "unpaid",
-    };
+    if (cart.length === 0) {
+      toast.error("Your cart is empty!");
+      return;
+    }
 
-    saveOrder(newOrder);
+    // Set processing flags
+    isProcessingRef.current = true;
+    setIsSubmitting(true);
+
+    try {
+      // Backend will generate orderNumber, trackingNumber, and validate prices
+      const newOrder = {
+        orderItems: cart.map((item) => ({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          leadTime: item.leadTime,
+          price: item.price, // Backend will validate and use actual price
+          quantity: item.quantity,
+          imageSrc: item.imageSrc,
+          imageAlt: item.imageAlt,
+        })),
+        shippingCost,
+        city: data.city || selectedCity, // Use form city or fallback to selectedCity
+        streetAddress: data.streetAddress,
+        postalCode: data.postalCode || null,
+        deliveryInstructions: data.deliveryInstructions || null,
+        Total, // Backend will recalculate
+        OrderTotal, // Backend will recalculate
+        phoneNumber: data.phoneNumber,
+        paymentType: data.paymentType,
+        mpesaNumber: data.mpesaNumber || null,
+      };
+
+      saveOrder(newOrder);
+    } catch (error) {
+      // Error handling is done in mutation onError
+      isProcessingRef.current = false;
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -145,7 +167,10 @@ export default function OrderSummary() {
                 <input
                   type="text"
                   {...register("name", { required: "This field is required" })}
-                  className="mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  disabled={isSubmitting}
+                  className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                    isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                 />
                 {errors.name && (
                   <p className="text-red-600">{errors.name.message}</p>
@@ -159,7 +184,10 @@ export default function OrderSummary() {
                 <input
                   type="email"
                   {...register("email", { required: "This field is required" })}
-                  className="mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  disabled={isSubmitting}
+                  className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                    isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                 />
                 {errors.email && (
                   <p className="text-red-600">{errors.email.message}</p>
@@ -175,10 +203,99 @@ export default function OrderSummary() {
                   {...register("phoneNumber", {
                     required: "This field is required",
                   })}
-                  className="mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  disabled={isSubmitting}
+                  className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                    isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                 />
                 {errors.phoneNumber && (
                   <p className="text-red-600">{errors.phoneNumber.message}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-10 border-t border-gray-200 pt-10">
+              <h2 className="text-lg font-medium text-gray-900">
+                Shipping address
+              </h2>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Street Address
+                </label>
+                <input
+                  type="text"
+                  {...register("streetAddress", {
+                    required: "Street address is required",
+                  })}
+                  disabled={isSubmitting}
+                  placeholder="e.g., 123 Main Street, Building Name"
+                  className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                    isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
+                />
+                {errors.streetAddress && (
+                  <p className="text-red-600">{errors.streetAddress.message}</p>
+                )}
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    {...register("city", {
+                      required: "City is required",
+                    })}
+                    disabled={isSubmitting}
+                    placeholder="e.g., Nairobi"
+                    className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                      isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  />
+                  {errors.city && (
+                    <p className="text-red-600">{errors.city.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Postal Code (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    {...register("postalCode")}
+                    disabled={isSubmitting}
+                    placeholder="e.g., 00100"
+                    className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                      isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  />
+                  {errors.postalCode && (
+                    <p className="text-red-600">{errors.postalCode.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Delivery Instructions (Optional)
+                </label>
+                <textarea
+                  {...register("deliveryInstructions")}
+                  disabled={isSubmitting}
+                  rows={3}
+                  placeholder="e.g., Leave at gate, Call before delivery, etc."
+                  className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                    isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
+                />
+                {errors.deliveryInstructions && (
+                  <p className="text-red-600">
+                    {errors.deliveryInstructions.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -197,7 +314,8 @@ export default function OrderSummary() {
                         {...register("paymentType", {
                           required: "Select a payment method",
                         })}
-                        className="size-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        disabled={isSubmitting}
+                        className="size-4 border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                       <span className="ml-3 text-sm text-gray-700">
                         {method.title}
@@ -238,7 +356,10 @@ export default function OrderSummary() {
                         message: "Enter a valid Kenyan phone number",
                       },
                     })}
-                    className="w-full rounded-md border-gray-300 px-3 py-2 shadow-sm"
+                    disabled={isSubmitting}
+                    className={`w-full rounded-md border-gray-300 px-3 py-2 shadow-sm ${
+                      isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
                   />
                   {errors.mpesaNumber && (
                     <p className="text-red-600">{errors.mpesaNumber.message}</p>
@@ -247,13 +368,21 @@ export default function OrderSummary() {
                   <textarea
                     placeholder="Optional: Payment reference or description"
                     {...register("mpesaDescription")}
-                    className="w-full rounded-md border-gray-300 px-3 py-2 shadow-sm mt-2"
+                    disabled={isSubmitting}
+                    className={`w-full rounded-md border-gray-300 px-3 py-2 shadow-sm mt-2 ${
+                      isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
                   />
 
                   <button
                     type="button"
                     onClick={handleMpesaNotification}
-                    className="mt-2 w-full rounded-md bg-green-600 px-4 py-3 text-white hover:bg-green-700"
+                    disabled={isSubmitting}
+                    className={`mt-2 w-full rounded-md px-4 py-3 text-white transition-colors ${
+                      isSubmitting
+                        ? "bg-green-400 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700"
+                    }`}
                   >
                     I’ve Made Payment
                   </button>
@@ -321,9 +450,40 @@ export default function OrderSummary() {
               <div className="border-t px-4 py-6 sm:px-6">
                 <button
                   type="submit"
-                  className="w-full rounded-md bg-indigo-600 px-4 py-3 text-base font-medium text-white hover:bg-indigo-700"
+                  disabled={isSubmitting}
+                  className={`w-full rounded-md px-4 py-3 text-base font-medium text-white transition-colors ${
+                    isSubmitting
+                      ? "bg-indigo-400 cursor-not-allowed"
+                      : "bg-indigo-600 hover:bg-indigo-700"
+                  }`}
                 >
-                  Confirm Order
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Processing Order...
+                    </span>
+                  ) : (
+                    "Confirm Order"
+                  )}
                 </button>
               </div>
             </div>
