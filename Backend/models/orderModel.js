@@ -25,7 +25,7 @@ const orderSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
   paymentType: String,
   mpesaDetails: String,
-  paymentStatus: { type: String, enum: ['pending', 'succeeded', 'failed'], default: 'pending' },
+  paymentStatus: { type: String, enum: ['pending', 'succeeded', 'failed', 'unpaid'], default: 'pending' },
 });
 
 

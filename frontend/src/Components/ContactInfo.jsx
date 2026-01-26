@@ -5,14 +5,15 @@ import toast from "react-hot-toast"
 
 export default function ContactInfo() {
 
-  const{mutate:mutateFormdata} = useMutation({
-    mutationFn : (data) => sendEmail(data),
-    onSuccess : () => {
-      toast.success('Email was sent successfully')
-    
-
-    }
-    
+  const { mutate: mutateFormdata } = useMutation({
+    mutationFn: (data) => sendEmail(data),
+    onSuccess: () => {
+      toast.success('Email was sent successfully');
+    },
+    onError: (error) => {
+      console.error('Error submitting contact form data', error?.message);
+      toast.error('Failed to send email. Please try again.');
+    },
   })
 
   const{register,formState,reset,handleSubmit} = useForm()

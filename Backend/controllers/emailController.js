@@ -1,17 +1,17 @@
 const { MailerSend, EmailParams, Recipient, Sender } = require("mailersend");
 
-
 const mailerSend = new MailerSend({
-  apiKey: process.env.TEST_API_TOKEN,
+  apiKey: process.env.MAILERSEND_API_KEY,
 });
 
 async function sendContactEmail(req, res) {
   const { firstName, lastName, email, phoneNumber, product, message } = req.body;
 
   try {
-    const sentFrom = new Sender("info@test-zxk54v81pk1ljy6v.mlsender.net",'minoxidilKe Shop')
-  
-    const recipients = [new Recipient("njerijadline@gmail.com","MinoxidilKe Admin")];
+    const sentFrom = new Sender("info@test-zxk54v81pk1ljy6v.mlsender.net", 'minoxidilKe Shop');
+
+    const adminEmail = process.env.ADMIN_EMAIL || "njerijadline@gmail.com";
+    const recipients = [new Recipient(adminEmail, "MinoxidilKe Admin")];
 
     const emailParams = new EmailParams()
       .setFrom(sentFrom)

@@ -4,7 +4,14 @@ const jwt = require('jsonwebtoken')
 
 async function signupUser(req,res){
     try{
-        const {firstName,lastName,email,password} = req.body
+        const {firstName,lastName,email,password,confirmPassword} = req.body
+
+    // Validate password confirmation
+    if(password !== confirmPassword){
+        return res.status(400).json({
+            message : 'Passwords do not match'
+        })
+    }
 
     const existingUser = await User.findOne({email})
     if(existingUser){

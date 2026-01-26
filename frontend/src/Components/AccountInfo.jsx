@@ -1,13 +1,15 @@
 import { useMutation } from "@tanstack/react-query";
-
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../Services/registerUser";
-import { GoogleLogin } from "@react-oauth/google";
-import axios from 'axios'
 import toast from "react-hot-toast";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 export default function AccountInfo() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const { mutate: mutateSignUp } = useMutation({
     mutationFn: (data) => registerUser(data),
     onSuccess: () => {
@@ -24,8 +26,9 @@ export default function AccountInfo() {
 
   const navigate = useNavigate();
 
-  const { register, reset, formState, handleSubmit } = useForm();
+  const { register, reset, formState, handleSubmit, watch } = useForm();
   const { errors } = formState;
+  const password = watch("password");
 
   function onhandleSubmit(data) {
     mutateSignUp(data);
@@ -131,13 +134,13 @@ export default function AccountInfo() {
                 >
                   Password
                 </label>
-                <div className="mt-2">
+                <div className="mt-2 relative">
                   <input
                     id="password"
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     {...register("password", {
                       required: "This field is required",
                       minLength: {
@@ -145,10 +148,57 @@ export default function AccountInfo() {
                         message: "The password should be atleast 8 characters",
                       },
                     })}
-                    className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                    className="block w-full rounded-md bg-white/5 px-3 py-1.5 pr-10 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white"
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
                 </div>
-                {errors?.password && <p>{errors?.firstName.password}</p>}
+                {errors?.password && <p className="text-red-400 text-sm mt-1">{errors?.password?.message}</p>}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm/6 font-medium text-white"
+                >
+                  Confirm Password
+                </label>
+                <div className="mt-2 relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    autoComplete="new-password"
+                    {...register("confirmPassword", {
+                      required: "Please confirm your password",
+                      validate: (value) =>
+                        value === password || "Passwords do not match",
+                    })}
+                    className="block w-full rounded-md bg-white/5 px-3 py-1.5 pr-10 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+                {errors?.confirmPassword && <p className="text-red-400 text-sm mt-1">{errors?.confirmPassword?.message}</p>}
               </div>
 
               <div className="flex items-center justify-between">

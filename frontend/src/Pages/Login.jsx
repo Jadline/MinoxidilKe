@@ -7,9 +7,11 @@ import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { useUserStore } from "../stores/userStore";
 import toast from "react-hot-toast";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function Login() {
+  const [showPassword, setShowPassword] = useState(false);
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
   const navigate = useNavigate();
 
@@ -96,11 +98,11 @@ export default function Login() {
                 >
                   Password
                 </label>
-                <div className="mt-2">
+                <div className="mt-2 relative">
                   <input
                     id="password"
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     autoComplete="current-password"
                     {...register("password", {
@@ -110,10 +112,21 @@ export default function Login() {
                         message: "The password should be atleast 4 characters",
                       },
                     })}
-                    className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                    className="block w-full rounded-md bg-white/5 px-3 py-1.5 pr-10 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white"
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
                 </div>
-                {errors?.password && <p>{errors?.password?.message}</p>}
+                {errors?.password && <p className="text-red-400 text-sm mt-1">{errors?.password?.message}</p>}
               </div>
 
               <div className="flex items-center justify-between">
