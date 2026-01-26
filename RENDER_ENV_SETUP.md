@@ -17,17 +17,21 @@ Your backend code loads environment variables from `config.env` locally, but on 
 2. **Add these environment variables:**
 
    ```
-   EMAIL_USER=wanjirucaren005@gmail.com
-   EMAIL_PASS=shjerkzifsnkoqii
-   ADMIN_EMAIL=wanjirucaren005@gmail.com
+   EMAIL_USER=[your-email@gmail.com]
+   EMAIL_PASS=[your-gmail-app-password]
+   ADMIN_EMAIL=[admin-email@gmail.com]
    ```
+   
+   **⚠️ IMPORTANT:** Replace placeholders with your actual values. Never commit actual passwords to Git.
 
 3. **Also ensure these are set (if not already):**
    ```
    PORT=3000
-   DATABASE=mongodb+srv://wanjirucaren005_db_user:8Tsw2ZZpE3VDqxJU@minoxidilke.kffkz15.mongodb.net/minoxidilKeshop?appName=minoxidilKe
-   JWT_SECRET=daltonnjeri2975!
+   DATABASE=[your-mongodb-connection-string]
+   JWT_SECRET=[your-jwt-secret]
    ```
+   
+   **⚠️ IMPORTANT:** Never put actual credentials in documentation files. Use placeholders like `[your-mongodb-connection-string]` instead.
 
 4. **After adding variables:**
    - Click **"Save Changes"**

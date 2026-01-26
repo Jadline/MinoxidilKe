@@ -49,7 +49,7 @@ await transporter.sendMail(mailOptions);
 ### Environment Variables (`Backend/config.env`)
 ```env
 EMAIL_USER=wanjirucaren005@gmail.com
-EMAIL_PASS=shjerkzifsnkoqii  (16 characters, no spaces)
+EMAIL_PASS=[16-character-app-password]  (16 characters, no spaces)
 ADMIN_EMAIL=wanjirucaren005@gmail.com
 ```
 
@@ -96,7 +96,7 @@ Email config: {
 1. **Wrong App Password**
    - Gmail app passwords are 16 characters, no spaces
    - Format: `abcdefghijklmnop` (not `abcd efgh ijkl mnop`)
-   - Current: `shjerkzifsnkoqii` (16 chars ✅)
+   - Format: `[16-character-app-password]` (16 chars, no spaces)
 
 2. **2FA Not Enabled**
    - App passwords require 2-Step Verification

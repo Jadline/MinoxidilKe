@@ -4,6 +4,13 @@ frontend/node_modules/
 
 .env
 backend/config.env
+Backend/config.env
+config.env
+
+# Documentation files that may contain sensitive info
+*_ENV_SETUP.md
+*_TROUBLESHOOTING.md
+DEBUG_*.md
 
 frontend/build/
 dist/

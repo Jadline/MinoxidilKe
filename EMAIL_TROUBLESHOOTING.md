@@ -6,7 +6,7 @@
 
 1. **Fixed EMAIL_PASS Format**
    - **Before:** `EMAIL_PASS=shje rkzi fsnk oqii` (had spaces)
-   - **After:** `EMAIL_PASS=shjerkzifsnkoqii` (removed spaces)
+   - **After:** `EMAIL_PASS=[16-character-app-password]` (removed spaces)
    - Gmail app passwords are 16 characters without spaces
 
 2. **Updated ADMIN_EMAIL**
