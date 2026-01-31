@@ -5,8 +5,6 @@ export const useCartStore = create(
   persist(
     (set, get) => ({
       cart: [],
-      shippingCost: 0,
-      selectedCity: "",
 
       setCart: (updater) => {
         set((state) => {
@@ -18,11 +16,6 @@ export const useCartStore = create(
 
       clearCart: () => set({ cart: [] }),
 
-      setShippingCost: (shippingCost) => set({ shippingCost }),
-
-      setSelectedCity: (selectedCity) => set({ selectedCity }),
-
-      // Derived helpers
       cartCount: () =>
         get().cart.reduce((count, cartitem) => count + cartitem.quantity, 0),
 
@@ -31,8 +24,6 @@ export const useCartStore = create(
           (acc, curItem) => acc + curItem.price * curItem.quantity,
           0
         ),
-
-      orderTotal: () => (get().shippingCost || 0) + get().subtotal(),
     }),
     {
       name: "cart-store",
