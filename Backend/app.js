@@ -53,12 +53,6 @@ app.use((err, req, res, next) => {
   }
 });
 
-// Test email route (remove in production)
-if (process.env.NODE_ENV !== 'production') {
-  const testEmailRoute = require('./routes/testEmailRoute');
-  app.use('/api/v1/test-email', testEmailRoute);
-}
-
 
 
 
