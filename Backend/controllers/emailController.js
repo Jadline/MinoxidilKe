@@ -5,20 +5,36 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
   console.error('❌ Email configuration missing: EMAIL_USER or EMAIL_PASS not set');
 }
 
-// Create reusable transporter using Gmail SMTP
+// Create reusable transporter using Gmail SMTP with explicit settings
 let transporter;
 
 try {
   transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
       user: process.env.EMAIL_USER?.trim(),
       pass: process.env.EMAIL_PASS?.trim(),
     },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000, // 10 seconds
+    socketTimeout: 10000, // 10 seconds
+    // Retry configuration
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 3,
   });
 
-  // Verify transporter configuration on startup (non-blocking)
+  // Verify transporter configuration on startup (non-blocking, with timeout)
+  // Use a timeout to prevent hanging on startup
+  const verifyTimeout = setTimeout(() => {
+    console.warn('⚠️  Email transporter verification is taking too long. Will verify on first email send.');
+  }, 5000); // 5 second warning
+
   transporter.verify((error, success) => {
+    clearTimeout(verifyTimeout);
+    
     if (error) {
       console.error('❌ Email transporter verification failed:', error);
       console.error('Error details:', {
@@ -26,7 +42,18 @@ try {
         command: error.command,
         response: error.response,
       });
-      console.error('⚠️  Email functionality may not work. Check EMAIL_USER and EMAIL_PASS environment variables.');
+      
+      // Provide specific guidance based on error type
+      if (error.code === 'ETIMEDOUT' || error.code === 'ECONNECTION') {
+        console.error('⚠️  Connection timeout - This may be due to:');
+        console.error('   1. Network restrictions on Render');
+        console.error('   2. Gmail blocking connections from this IP');
+        console.error('   3. Firewall settings');
+        console.error('   Email will be attempted on first send, but may fail.');
+        console.error('   Consider using OAuth2 or a different email service for production.');
+      } else {
+        console.error('⚠️  Email functionality may not work. Check EMAIL_USER and EMAIL_PASS environment variables.');
+      }
     } else {
       console.log('✅ Email transporter is ready to send emails');
       console.log('Email config:', {

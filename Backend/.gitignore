@@ -1,2 +1,7 @@
 node_modules/
 config.env/
+
+# Uploaded files (keep folder via .gitkeep)
+public/uploads/*
+!public/uploads/packages/
+!public/uploads/packages/.gitkeep

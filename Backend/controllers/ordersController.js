@@ -64,29 +64,43 @@ async function addOrder(req, res) {
       }
     }
 
-    // Fetch products from database and validate prices/stock
-    const productIds = orderItems.map(item => item.id);
-    const products = await Product.find({ id: { $in: productIds } });
+    // Product items have numeric id; package items have string id like "package-1"
+    const productIds = orderItems
+      .filter((item) => typeof item.id === 'number')
+      .map((item) => item.id);
+    const products = productIds.length > 0 ? await Product.find({ id: { $in: productIds } }) : [];
 
-    if (products.length !== orderItems.length) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'One or more products not found',
-      });
-    }
-
-    // Create a map for quick lookup
     const productMap = {};
-    products.forEach(product => {
+    products.forEach((product) => {
       productMap[product.id] = product;
     });
 
-    // Validate prices, quantities, and stock
     let recalculatedTotal = 0;
     const validatedOrderItems = [];
 
     for (const item of orderItems) {
-      const product = productMap[item.id];
+      const isPackage = typeof item.id === 'string' && item.id.startsWith('package-');
+      if (isPackage) {
+        // Package line item: accept as-is (name, price, quantity from client)
+        const price = Number(item.price) >= 0 ? Number(item.price) : 0;
+        const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
+        validatedOrderItems.push({
+          id: item.id,
+          name: item.name || 'Package',
+          description: item.description || '',
+          leadTime: item.leadTime || '',
+          price,
+          quantity: qty,
+          imageSrc: item.imageSrc || '',
+          imageAlt: item.imageAlt || '',
+          inStock: true,
+        });
+        recalculatedTotal += price * qty;
+        continue;
+      }
+
+      const productId = typeof item.id === 'number' ? item.id : parseInt(item.id, 10);
+      const product = productMap[productId];
 
       if (!product) {
         return res.status(400).json({
@@ -95,7 +109,6 @@ async function addOrder(req, res) {
         });
       }
 
-      // Check stock availability
       if (!product.inStock) {
         return res.status(400).json({
           status: 'fail',

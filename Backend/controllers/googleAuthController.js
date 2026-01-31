@@ -15,45 +15,46 @@ async function googleLogin(req, res) {
     });
 
     const payload = ticket.getPayload();
-    const { email, name, given_name, family_name } = payload;
+    const email = (payload.email || '').trim().toLowerCase();
+    const { name, given_name, family_name } = payload;
 
+    const firstName = given_name || name?.split(' ')[0] || 'User';
+    const lastName = family_name || name?.split(' ').slice(1).join(' ') || '';
 
-    const firstName = given_name || name?.split(" ")[0] || "User";
-    const lastName = family_name || name?.split(" ").slice(1).join(" ") || " ";
-
-    
     let user = await User.findOne({ email });
+    let isNew = false;
 
-  
     if (!user) {
+      const role =
+        process.env.FIRST_ADMIN_EMAIL && process.env.FIRST_ADMIN_EMAIL.trim().toLowerCase() === email
+          ? 'admin'
+          : 'user';
       user = await User.create({
         firstName,
         lastName,
         email,
         password: null,
         isGoogleUser: true,
+        role,
       });
+      isNew = true;
     }
 
-   
     const token = jwt.sign(
-      { 
-        id: user._id, 
-        email: user.email,
-        name : user.firstName
-      },
+      { id: user._id, email: user.email, role: user.role || 'user' },
       process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: '7d' }
     );
 
     res.status(200).json({
-      message: user.isNew ? 'Google sign-up successful' : 'Google login successful',
+      status: 'success',
+      message: isNew ? 'Google sign-up successful' : 'Google login successful',
       token,
       user: {
         id: user._id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        name: user.firstName,
+        role: user.role || 'user',
       },
     });
   } catch (error) {

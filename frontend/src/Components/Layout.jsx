@@ -1,14 +1,13 @@
+import { Outlet } from "react-router-dom";
 import Footer from "./Footer";
 import PageNav from "./PageNav";
 
-function Layout({children}){
-    
-    return(
-        <div className='min-h-screen'>
-        <PageNav/>
-        {children}
-        <Footer/>
-        </div>
-    )
+export default function Layout() {
+  return (
+    <div className="min-h-screen">
+      <PageNav />
+      <Outlet />
+      <Footer />
+    </div>
+  );
 }
-export default Layout

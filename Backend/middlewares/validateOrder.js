@@ -5,8 +5,11 @@ const validateOrder = [
     .isArray({ min: 1 })
     .withMessage('Order must contain at least one item'),
   body('orderItems.*.id')
-    .isInt({ min: 1 })
-    .withMessage('Invalid product ID'),
+    .custom((value) => {
+      if (Number.isInteger(value) && value >= 1) return true;
+      if (typeof value === 'string' && /^package-\d+$/.test(value)) return true;
+      throw new Error('Invalid item ID (product number or package-{id})');
+    }),
   body('orderItems.*.quantity')
     .isInt({ min: 1 })
     .withMessage('Quantity must be at least 1'),

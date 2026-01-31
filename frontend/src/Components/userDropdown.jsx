@@ -15,13 +15,12 @@ import { useUserStore } from "../stores/userStore";
 import { useCartStore } from "../stores/cartStore";
 
 export default function UserDropdown() {
-  const { currentUser, setCurrentUser } = useUserStore();
+  const { currentUser, clearCurrentUser } = useUserStore();
   const { setCart } = useCartStore();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("userToken");
-    setCurrentUser(null);
+    clearCurrentUser();
     setCart([]);
     localStorage.removeItem("cart");
     navigate("/login");
@@ -42,28 +41,42 @@ export default function UserDropdown() {
       >
         {currentUser && (
           <div className="py-1 bg-white">
-            <MenuItem>
-              <button
-                onClick={handleLogout}
-                className="group flex items-center px-4 py-2 text-sm text-gray-700 data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden"
-              >
-                <ArrowRightOnRectangleIcon
-                  aria-hidden="true"
-                  className="mr-3 size-5 text-gray-500 group-data-focus:text-white"
-                />
-                Logout
-              </button>
-            </MenuItem>
+            {currentUser.isAdmin && (
+              <MenuItem>
+                <button
+                  onClick={() => navigate("/admin")}
+                  className="group flex items-center px-4 py-2 text-sm text-gray-700 data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden w-full text-left"
+                >
+                  <PencilSquareIcon
+                    aria-hidden="true"
+                    className="mr-3 size-5 text-gray-500 group-data-focus:text-white"
+                  />
+                  Admin Dashboard
+                </button>
+              </MenuItem>
+            )}
             <MenuItem>
               <button
                 onClick={() => navigate("/order-history")}
-                className="group flex items-center px-4 py-2 text-sm text-gray-700 data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden"
+                className="group flex items-center px-4 py-2 text-sm text-gray-700 data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden w-full text-left"
               >
                 <ArchiveBoxIcon
                   aria-hidden="true"
                   className="mr-3 size-5 text-gray-500 group-data-focus:text-white"
                 />
                 Orders
+              </button>
+            </MenuItem>
+            <MenuItem>
+              <button
+                onClick={handleLogout}
+                className="group flex items-center px-4 py-2 text-sm text-gray-700 data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden w-full text-left"
+              >
+                <ArrowRightOnRectangleIcon
+                  aria-hidden="true"
+                  className="mr-3 size-5 text-gray-500 group-data-focus:text-white"
+                />
+                Logout
               </button>
             </MenuItem>
           </div>

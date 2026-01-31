@@ -1,16 +1,55 @@
 // src/api.js
-import axios from 'axios';
+import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-// Create an axios instance
 const api = axios.create({
-  baseURL: BASE_URL, // now all requests will prepend this
+  baseURL: BASE_URL,
+  headers: { "Content-Type": "application/json" },
 });
 
-// Example functions
-export const getProducts = () => api.get('/api/v1/products'); 
+// Attach Bearer token from localStorage when present
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("userToken");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401 && err.config?.url !== "/api/v1/account/loginUser") {
+      localStorage.removeItem("userToken");
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(err);
+  }
+);
+
+export const getProducts = (params) => api.get("/api/v1/products", { params });
 export const getProduct = (id) => api.get(`/api/v1/products/${id}`);
-export const createOrder = (data) => api.post('/api/v1/orders', data);
+export const createOrder = (data) => api.post("/api/v1/orders", data);
+
+// Admin product CRUD (requires admin role on backend)
+export const createProduct = (data) => api.post("/api/v1/products", data);
+export const updateProduct = (id, data) => api.patch(`/api/v1/products/${id}`, data);
+export const deleteProduct = (id) => api.delete(`/api/v1/products/${id}`);
+
+export const getMe = () => api.get("/api/v1/account/me");
+
+// Packages (bundles of products)
+export const getPackages = (params) => api.get("/api/v1/packages", { params });
+export const getPackage = (id) => api.get(`/api/v1/packages/${id}`);
+export const createPackage = (data) => api.post("/api/v1/packages", data);
+export const updatePackage = (id, data) => api.patch(`/api/v1/packages/${id}`, data);
+export const deletePackage = (id) => api.delete(`/api/v1/packages/${id}`);
+
+/** Upload package image (admin). FormData with field "image". Returns { path }. */
+export const uploadPackageImage = (formData) =>
+  api.post("/api/v1/upload/package", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 
 export default api;
