@@ -5,26 +5,22 @@ import { useNavigate } from "react-router-dom";
 import { registerUser } from "../Services/registerUser";
 import toast from "react-hot-toast";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-
 export default function AccountInfo() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
   const { mutate: mutateSignUp } = useMutation({
     mutationFn: (data) => registerUser(data),
     onSuccess: () => {
-      toast.success('Registration was successful!')
-      
+      toast.success("Account created. Please log in.");
+      navigate("/login");
     },
-     onError: (error) => {
-        console.error(error);
-        
-        toast.error(error.response?.data?.message || "Registration failed")
-        
-      }
+    onError: (error) => {
+      const msg = error?.response?.data?.message || "Registration failed";
+      toast.error(msg);
+    },
   });
-
-  const navigate = useNavigate();
 
   const { register, reset, formState, handleSubmit, watch } = useForm();
   const { errors } = formState;
@@ -33,7 +29,6 @@ export default function AccountInfo() {
   function onhandleSubmit(data) {
     mutateSignUp(data);
     reset();
-    navigate("/login");
   }
 
   return (

@@ -6,7 +6,7 @@ const orderSchema = new mongoose.Schema({
   trackingNumber: String,
   orderItems: [
     {
-      id: Number,
+      id: mongoose.Schema.Types.Mixed, // product id (Number) or package cart id (String e.g. "package-1")
       name: String,
       description: String,
       leadTime: String,

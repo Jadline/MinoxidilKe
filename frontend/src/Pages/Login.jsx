@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../Services/loginUser";
-import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { useUserStore } from "../stores/userStore";
 import toast from "react-hot-toast";
@@ -12,30 +11,23 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const setCurrentUser = useUserStore((state) => state.setCurrentUser);
+  const setTokenAndUser = useUserStore((state) => state.setTokenAndUser);
   const navigate = useNavigate();
 
   const { mutate: mutateLogin } = useMutation({
     mutationFn: (data) => loginUser(data),
     onSuccess: (res) => {
-      console.log("login response", res);
-      if (!res?.token) {
-        toast.success("Login failed");
-
+      if (!res?.token || !res?.user) {
+        toast.error("Login failed");
         return;
       }
-      localStorage.setItem("userToken", res.token);
-      setCurrentUser(res.user);
-
-      toast.success("Login Successful!");
-      navigate("/");
+      setTokenAndUser(res.token, res.user);
+      toast.success("Login successful!");
+      navigate(res.user?.role === "admin" ? "/admin" : "/");
     },
     onError: (error) => {
-      console.error(error);
-
-      toast.error(
-        error.response?.data?.message || "Email or password is incorrect"
-      );
+      const msg = error?.response?.data?.message || error?.message || "Email or password is incorrect";
+      toast.error(msg);
     },
   });
 

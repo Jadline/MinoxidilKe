@@ -33,11 +33,8 @@ createRoot(document.getElementById('root')).render(
             color : '#000',
             maxWidth : '50rem',
             padding : '1.6rem 2.4rem'
-
         }
-    }
-    }
-
+    }}
     />
   </StrictMode>,
 )
