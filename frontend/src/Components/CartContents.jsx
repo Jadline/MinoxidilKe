@@ -1,55 +1,13 @@
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { CheckIcon, ClockIcon } from "@heroicons/react/20/solid";
-import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/cartStore";
 import toast from "react-hot-toast";
 
 export default function CartContents() {
-  const {
-    cart,
-    setCart,
-    setShippingCost,
-    selectedCity,
-    setSelectedCity,
-    subtotal,
-    orderTotal,
-  } = useCartStore();
-
+  const { cart, setCart, subtotal } = useCartStore();
   const Total = subtotal();
-  const OrderTotal = orderTotal();
-  const [allCities, setAllCities] = useState([]);
-
   const navigate = useNavigate();
-  useEffect(() => {
-    async function fetchShippingrates() {
-      try {
-        const res = await fetch("./data/shippingrates.json");
-        const data = await res.json();
-        const cities = Object.values(data).flat();
-        console.log("cities", cities);
-        setAllCities(cities);
-      } catch (err) {
-        console.log("There was an error fetching shipping rates data", err);
-      }
-    }
-    fetchShippingrates();
-  }, []);
-  useEffect(() => {
-    if (!selectedCity) {
-      setShippingCost(0);
-      return;
-    }
-    const citydata = allCities.find(
-      (cityitem) => cityitem.city === selectedCity
-    );
-    if (citydata) {
-      setShippingCost(citydata.rate);
-    } else {
-      setShippingCost(0);
-    }
-  }, [allCities, selectedCity, setShippingCost]);
-  // selectedCity is persisted via Zustand's cart store; no extra localStorage effect needed
 
   function handleDelete(id) {
     setCart((prevcart) => prevcart.filter((cartitem) => cartitem.id !== id));
@@ -189,32 +147,6 @@ export default function CartContents() {
                     <dt className="text-gray-600">Subtotal</dt>
                     <dd className="font-medium text-gray-900">Ksh {Total}</dd>
                   </div>
-                  <div className="flex items-center justify-between py-4">
-                    <dt className="text-gray-600">Select your city</dt>
-                    <dd>
-                      <select
-                        value={selectedCity}
-                        onChange={(e) => setSelectedCity(e.target.value)}
-                        className="rounded-md bg-white py-1.5 pr-8 pl-3 text-sm text-gray-900 outline outline-1 outline-gray-300 focus:outline-2 focus:outline-indigo-600"
-                      >
-                        <option value="">-- Select City --</option>
-                        {allCities.map(({ city, rate }) => (
-                          <option key={city} value={city}>
-                            {city} (Ksh {rate})
-                          </option>
-                        ))}
-                      </select>
-                    </dd>
-                  </div>
-
-                  <div className="flex items-center justify-between py-4">
-                    <dt className="text-base font-medium text-gray-900">
-                      Order total
-                    </dt>
-                    <dd className="text-base font-medium text-gray-900">
-                      Ksh {OrderTotal}
-                    </dd>
-                  </div>
                 </dl>
               </div>
             </div>
@@ -226,12 +158,6 @@ export default function CartContents() {
                     toast.error(
                       "Your cart is empty. Please add items before proceeding to checkout."
                     );
-
-                    return;
-                  }
-                  if (!selectedCity) {
-                    toast.error("Please select your city to proceed");
-
                     return;
                   }
                   navigate("/checkout");

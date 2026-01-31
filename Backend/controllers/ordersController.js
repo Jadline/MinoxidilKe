@@ -32,7 +32,11 @@ async function addOrder(req, res) {
       streetAddress,
       postalCode,
       deliveryInstructions,
-      shippingCost 
+      shippingCost,
+      deliveryType,
+      shippingMethodName,
+      pickupLocationName,
+      pickupLocationId,
     } = req.body;
     const userId = req.user._id;
 
@@ -138,7 +142,8 @@ async function addOrder(req, res) {
 
     // Recalculate totals on server
     const recalculatedSubtotal = recalculatedTotal;
-    const recalculatedShippingCost = shippingCost || 0;
+    const isPickup = deliveryType === 'pickup';
+    const recalculatedShippingCost = isPickup ? 0 : (Number(shippingCost) || 0);
     const recalculatedOrderTotal = recalculatedSubtotal + recalculatedShippingCost;
 
     // Generate order number on server (secure, unique)
@@ -154,7 +159,11 @@ async function addOrder(req, res) {
       orderNumber,
       trackingNumber,
       orderItems: validatedOrderItems,
+      deliveryType: deliveryType || 'ship',
+      shippingMethodName: shippingMethodName || null,
       shippingCost: recalculatedShippingCost,
+      pickupLocationName: pickupLocationName || null,
+      pickupLocationId: pickupLocationId || null,
       city: city || '',
       streetAddress: streetAddress || '',
       postalCode: postalCode || null,

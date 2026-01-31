@@ -11,6 +11,9 @@ const emailRouter = require('./routes/emailRoute');
 const userRouter = require('./routes/userRoute');
 const reviewRoutes = require('./routes/reviewRoutes');
 const uploadRouter = require('./routes/uploadRoute');
+const shippingMethodRouter = require('./routes/shippingMethodRoute');
+const pickupLocationRouter = require('./routes/pickupLocationRoute');
+const addressRouter = require('./routes/addressRoute');
 
 const app = express();
 
@@ -38,6 +41,9 @@ app.use('/api/v1/contact',emailRouter)
 app.use('/api/v1/account',userRouter)
 app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/upload', uploadRouter);
+app.use('/api/v1/shipping-methods', shippingMethodRouter);
+app.use('/api/v1/pickup-locations', pickupLocationRouter);
+app.use('/api/v1/addresses', addressRouter);
 
 // Global error handler middleware (catch any unhandled errors)
 app.use((err, req, res, next) => {

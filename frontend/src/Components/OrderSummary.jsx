@@ -1,148 +1,274 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { TrashIcon } from "@heroicons/react/20/solid";
+import { TrashIcon, TruckIcon, BuildingOfficeIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { useCartStore } from "../stores/cartStore";
-import { createOrder } from "../Services/createOrder";
+import { createOrder, getShippingMethods, getPickupLocations, createAddress } from "../api";
 import toast from "react-hot-toast";
-const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const paymentMethods = [
   { id: "mpesa", title: "M-Pesa" },
   { id: "pay-on-delivery", title: "Pay on Delivery" },
 ];
 
+// Kenya first (primary market), then alphabetical
+const COUNTRIES = [
+  "Kenya",
+  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
+  "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi",
+  "Cambodia", "Cameroon", "Canada", "Cape Verde", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic",
+  "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic",
+  "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia",
+  "Fiji", "Finland", "France",
+  "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana",
+  "Haiti", "Honduras", "Hungary",
+  "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Ivory Coast",
+  "Jamaica", "Japan", "Jordan",
+  "Kazakhstan", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan",
+  "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg",
+  "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar",
+  "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway",
+  "Oman",
+  "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal",
+  "Qatar",
+  "Romania", "Russia", "Rwanda",
+  "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria",
+  "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu",
+  "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan",
+  "Vanuatu", "Vatican City", "Venezuela", "Vietnam",
+  "Yemen",
+  "Zambia", "Zimbabwe",
+];
+
+// Country dial codes: Kenya first, then common/regional. Format: { dial: "254", label: "Kenya", flag: "🇰🇪" }
+const COUNTRY_DIAL_CODES = [
+  { dial: "254", label: "Kenya", flag: "🇰🇪" },
+  { dial: "256", label: "Uganda", flag: "🇺🇬" },
+  { dial: "255", label: "Tanzania", flag: "🇹🇿" },
+  { dial: "251", label: "Ethiopia", flag: "🇪🇹" },
+  { dial: "250", label: "Rwanda", flag: "🇷🇼" },
+  { dial: "257", label: "Burundi", flag: "🇧🇮" },
+  { dial: "253", label: "Djibouti", flag: "🇩🇯" },
+  { dial: "252", label: "Somalia", flag: "🇸🇴" },
+  { dial: "249", label: "Sudan", flag: "🇸🇩" },
+  { dial: "211", label: "South Sudan", flag: "🇸🇸" },
+  { dial: "255", label: "Zanzibar", flag: "🇹🇿" },
+  { dial: "27", label: "South Africa", flag: "🇿🇦" },
+  { dial: "234", label: "Nigeria", flag: "🇳🇬" },
+  { dial: "233", label: "Ghana", flag: "🇬🇭" },
+  { dial: "237", label: "Cameroon", flag: "🇨🇲" },
+  { dial: "1", label: "USA/Canada", flag: "🇺🇸" },
+  { dial: "44", label: "United Kingdom", flag: "🇬🇧" },
+  { dial: "91", label: "India", flag: "🇮🇳" },
+  { dial: "971", label: "UAE", flag: "🇦🇪" },
+  { dial: "86", label: "China", flag: "🇨🇳" },
+  { dial: "81", label: "Japan", flag: "🇯🇵" },
+  { dial: "49", label: "Germany", flag: "🇩🇪" },
+  { dial: "33", label: "France", flag: "🇫🇷" },
+  { dial: "61", label: "Australia", flag: "🇦🇺" },
+  { dial: "55", label: "Brazil", flag: "🇧🇷" },
+  { dial: "20", label: "Egypt", flag: "🇪🇬" },
+  { dial: "212", label: "Morocco", flag: "🇲🇦" },
+  { dial: "213", label: "Algeria", flag: "🇩🇿" },
+  { dial: "216", label: "Tunisia", flag: "🇹🇳" },
+  { dial: "260", label: "Zambia", flag: "🇿🇲" },
+  { dial: "263", label: "Zimbabwe", flag: "🇿🇼" },
+  { dial: "258", label: "Mozambique", flag: "🇲🇿" },
+  { dial: "265", label: "Malawi", flag: "🇲🇼" },
+  { dial: "267", label: "Botswana", flag: "🇧🇼" },
+  { dial: "31", label: "Netherlands", flag: "🇳🇱" },
+  { dial: "32", label: "Belgium", flag: "🇧🇪" },
+  { dial: "39", label: "Italy", flag: "🇮🇹" },
+  { dial: "34", label: "Spain", flag: "🇪🇸" },
+  { dial: "353", label: "Ireland", flag: "🇮🇪" },
+  { dial: "254", label: "Other", flag: "🌐" },
+];
+
 export default function OrderSummary() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isProcessingRef = useRef(false); // Prevent duplicate submissions
+  const [deliveryType, setDeliveryType] = useState("ship");
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState(null);
+  const [selectedPickupLocation, setSelectedPickupLocation] = useState(null);
+  const [saveAddressForNextTime, setSaveAddressForNextTime] = useState(false);
+  const [phoneCountryCode, setPhoneCountryCode] = useState("254"); // shipping phone
+  const [contactPhoneCountryCode, setContactPhoneCountryCode] = useState("254"); // contact phone
+  const isProcessingRef = useRef(false);
 
-  const {
-    cart,
-    shippingCost,
-    setCart,
-    selectedCity,
-    setSelectedCity,
-    subtotal,
-    orderTotal,
-  } = useCartStore();
-
+  const { cart, setCart, subtotal } = useCartStore();
   const Total = subtotal();
-  const OrderTotal = orderTotal();
+  const shippingCost = deliveryType === "pickup" ? 0 : (selectedShippingMethod?.costKes ?? 0);
+  const OrderTotal = Total + shippingCost;
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { register, handleSubmit, watch, formState } = useForm({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
       paymentType: "mpesa",
+      country: "Kenya",
+      firstName: "",
+      lastName: "",
+      company: "",
+      streetAddress: "",
+      apartment: "",
+      city: "",
+      postalCode: "",
+      phone: "",
+      name: "",
+      email: "",
+      phoneNumber: "",
+      deliveryInstructions: "",
     },
   });
-  const { errors } = formState;
-  const paymentType = watch("paymentType");
 
-  const { mutate: saveOrder } = useMutation({
+  const country = watch("country");
+  const city = watch("city");
+
+  // Fetch shipping methods when Ship and country/city are set
+  const { data: shippingData } = useQuery({
+    queryKey: ["shipping-methods", country, city],
+    queryFn: () => getShippingMethods({ country: country || "Kenya", city: city || "" }).then((r) => r.data?.data?.shippingMethods ?? []),
+    enabled: deliveryType === "ship" && !!country?.trim(),
+  });
+  const shippingMethods = Array.isArray(shippingData) ? shippingData : [];
+
+  // Fetch pickup locations when Pick up and country set
+  const { data: pickupData } = useQuery({
+    queryKey: ["pickup-locations", country],
+    queryFn: () => getPickupLocations({ country: country || "Kenya" }).then((r) => r.data?.data?.pickupLocations ?? []),
+    enabled: deliveryType === "pickup" && !!country?.trim(),
+  });
+  const pickupLocations = Array.isArray(pickupData) ? pickupData : [];
+
+  // Reset selection when switching delivery type or when list changes
+  useEffect(() => {
+    setSelectedShippingMethod(null);
+    setSelectedPickupLocation(null);
+  }, [deliveryType, country, city]);
+
+  const saveOrderMutation = useMutation({
     mutationFn: (data) => createOrder(data),
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
+      if (saveAddressForNextTime && deliveryType === "ship" && variables.streetAddress && variables.city) {
+        try {
+          await createAddress({
+            country: variables.country,
+            firstName: variables.firstName,
+            lastName: variables.lastName,
+            company: variables.company,
+            streetAddress: variables.streetAddress,
+            apartment: variables.apartment,
+            city: variables.city,
+            postalCode: variables.postalCode,
+            phone: variables.phone || variables.phoneNumber,
+            isDefault: true,
+          });
+        } catch (e) {
+          // non-blocking
+        }
+      }
       toast.success("Order created successfully!");
       isProcessingRef.current = false;
       setIsSubmitting(false);
-
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       setCart([]);
-      setSelectedCity("");
       navigate("/order-confirmation");
     },
     onError: (err) => {
-      console.error(err);
       isProcessingRef.current = false;
       setIsSubmitting(false);
       toast.error(err?.response?.data?.message || "Failed to save order");
     },
   });
 
-  const { mutateAsync: notifyMpesaPayment } = useMutation({
+  const notifyMpesaMutation = useMutation({
     mutationFn: (data) =>
-      fetch(`${BASE_URL}/api/v1/mpesa-notify`, {
+      fetch(`${import.meta.env.VITE_BASE_URL}/api/v1/mpesa-notify`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("userToken")}` },
         body: JSON.stringify(data),
-      }).then((res) => res.json()),
-    onSuccess: () => {
-      toast.success("Payment notification received! We will verify shortly.");
-    },
-    onError: (err) => {
-      console.error(err);
-      toast.error("Failed to send payment notification. Try again.");
-    },
+      }).then((r) => r.json()),
+    onSuccess: () => toast.success("Payment notification received!"),
+    onError: () => toast.error("Failed to send payment notification."),
   });
 
-  async function handleMpesaNotification() {
+  function handleMpesaNotification() {
     const mpesaNumber = watch("mpesaNumber");
-    const mpesaDescription = watch("mpesaDescription");
-
     if (!mpesaNumber) {
-                      toast.error("Please enter the phone number you used for M-Pesa.");
-
+      toast.error("Please enter the phone number you used for M-Pesa.");
       return;
     }
-
-    const payload = {
+    notifyMpesaMutation.mutate({
       phone: mpesaNumber.replace(/^0/, "254"),
-      description: mpesaDescription || "",
+      description: watch("mpesaDescription") || "",
       orderNumber: "ORD-" + Math.floor(100000 + Math.random() * 900000),
-    };
-
-    await notifyMpesaPayment(payload);
+    });
   }
 
-  async function onhandleSubmit(data) {
-    // Prevent duplicate submissions
+  function onhandleSubmit(data) {
     if (isProcessingRef.current || isSubmitting) {
       toast.error("Please wait, your order is being processed...");
       return;
     }
-
     if (cart.length === 0) {
       toast.error("Your cart is empty!");
       return;
     }
+    if (deliveryType === "ship") {
+      if (!data.country || !data.streetAddress || !data.city) {
+        toast.error("Please fill in country, address and city for shipping.");
+        return;
+      }
+      if (!selectedShippingMethod) {
+        toast.error("Please select a shipping method.");
+        return;
+      }
+    } else {
+      if (!selectedPickupLocation) {
+        toast.error("Please select a pickup location.");
+        return;
+      }
+    }
 
-    // Set processing flags
     isProcessingRef.current = true;
     setIsSubmitting(true);
 
-    try {
-      // Backend will generate orderNumber, trackingNumber, and validate prices
-      const newOrder = {
-        orderItems: cart.map((item) => ({
-          id: item.id,
-          name: item.name,
-          description: item.description,
-          leadTime: item.leadTime,
-          price: item.price, // Backend will validate and use actual price
-          quantity: item.quantity,
-          imageSrc: item.imageSrc,
-          imageAlt: item.imageAlt,
-        })),
-        shippingCost,
-        city: data.city || selectedCity, // Use form city or fallback to selectedCity
-        streetAddress: data.streetAddress,
-        postalCode: data.postalCode || null,
-        deliveryInstructions: data.deliveryInstructions || null,
-        Total, // Backend will recalculate
-        OrderTotal, // Backend will recalculate
-        phoneNumber: data.phoneNumber,
-        paymentType: data.paymentType,
-        mpesaNumber: data.mpesaNumber || null,
-      };
+    const fullPhone = (phoneCountryCode + (data.phone || "").replace(/^0+/, "")).trim();
+    const fullContactPhone = (contactPhoneCountryCode + (data.phoneNumber || "").replace(/^0+/, "")).trim();
 
-      saveOrder(newOrder);
-    } catch (error) {
-      // Error handling is done in mutation onError
-      isProcessingRef.current = false;
-      setIsSubmitting(false);
-    }
+    const payload = {
+      orderItems: cart.map((item) => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        leadTime: item.leadTime,
+        price: item.price,
+        quantity: item.quantity,
+        imageSrc: item.imageSrc,
+        imageAlt: item.imageAlt,
+      })),
+      deliveryType,
+      shippingMethodName: selectedShippingMethod?.name ?? null,
+      shippingCost: deliveryType === "ship" ? selectedShippingMethod?.costKes : 0,
+      pickupLocationName: selectedPickupLocation?.name ?? null,
+      pickupLocationId: selectedPickupLocation?._id ?? null,
+      country: data.country || "",
+      firstName: data.firstName || "",
+      lastName: data.lastName || "",
+      company: data.company || "",
+      streetAddress: data.streetAddress || "",
+      apartment: data.apartment || "",
+      city: data.city || "",
+      postalCode: data.postalCode || null,
+      phone: fullPhone,
+      deliveryInstructions: data.deliveryInstructions || null,
+      phoneNumber: fullContactPhone,
+      paymentType: data.paymentType,
+      mpesaNumber: data.mpesaNumber || null,
+    };
+
+    saveOrderMutation.mutate(payload);
   }
 
   return (
@@ -150,340 +276,349 @@ export default function OrderSummary() {
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-24 sm:px-6 lg:px-8">
         <h2 className="sr-only">Checkout</h2>
 
-        <form
-          onSubmit={handleSubmit(onhandleSubmit)}
-          className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16"
-        >
+        <form onSubmit={handleSubmit(onhandleSubmit)} className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
           <div>
-            <div>
-              <h2 className="text-lg font-medium text-gray-900">
-                Contact information
-              </h2>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  {...register("name", { required: "This field is required" })}
-                  disabled={isSubmitting}
-                  className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                    isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
-                  }`}
-                />
-                {errors.name && (
-                  <p className="text-red-600">{errors.name.message}</p>
-                )}
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Email address
-                </label>
-                <input
-                  type="email"
-                  {...register("email", { required: "This field is required" })}
-                  disabled={isSubmitting}
-                  className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                    isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
-                  }`}
-                />
-                {errors.email && (
-                  <p className="text-red-600">{errors.email.message}</p>
-                )}
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  {...register("phoneNumber", {
-                    required: "This field is required",
-                  })}
-                  disabled={isSubmitting}
-                  className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                    isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
-                  }`}
-                />
-                {errors.phoneNumber && (
-                  <p className="text-red-600">{errors.phoneNumber.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-10 border-t border-gray-200 pt-10">
-              <h2 className="text-lg font-medium text-gray-900">
-                Shipping address
-              </h2>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Street Address
-                </label>
-                <input
-                  type="text"
-                  {...register("streetAddress", {
-                    required: "Street address is required",
-                  })}
-                  disabled={isSubmitting}
-                  placeholder="e.g., 123 Main Street, Building Name"
-                  className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                    isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
-                  }`}
-                />
-                {errors.streetAddress && (
-                  <p className="text-red-600">{errors.streetAddress.message}</p>
-                )}
-              </div>
-
+            {/* Delivery: Ship vs Pick up */}
+            <div className="mb-10">
+              <h2 className="text-lg font-medium text-gray-900">Delivery</h2>
               <div className="mt-4 grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    {...register("city", {
-                      required: "City is required",
-                    })}
-                    disabled={isSubmitting}
-                    placeholder="e.g., Nairobi"
-                    className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                      isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
-                    }`}
-                  />
-                  {errors.city && (
-                    <p className="text-red-600">{errors.city.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Postal Code (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    {...register("postalCode")}
-                    disabled={isSubmitting}
-                    placeholder="e.g., 00100"
-                    className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                      isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
-                    }`}
-                  />
-                  {errors.postalCode && (
-                    <p className="text-red-600">{errors.postalCode.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Delivery Instructions (Optional)
-                </label>
-                <textarea
-                  {...register("deliveryInstructions")}
-                  disabled={isSubmitting}
-                  rows={3}
-                  placeholder="e.g., Leave at gate, Call before delivery, etc."
-                  className={`mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-                    isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                <label
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 ${
+                    deliveryType === "ship" ? "border-indigo-600 bg-indigo-50/50" : "border-gray-200 bg-white"
                   }`}
-                />
-                {errors.deliveryInstructions && (
-                  <p className="text-red-600">
-                    {errors.deliveryInstructions.message}
-                  </p>
-                )}
+                >
+                  <input
+                    type="radio"
+                    name="deliveryType"
+                    checked={deliveryType === "ship"}
+                    onChange={() => setDeliveryType("ship")}
+                    className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <TruckIcon className="h-6 w-6 text-indigo-600" />
+                  <span className="font-medium">Ship</span>
+                </label>
+                <label
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 ${
+                    deliveryType === "pickup" ? "border-indigo-600 bg-indigo-50/50" : "border-gray-200 bg-white"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="deliveryType"
+                    checked={deliveryType === "pickup"}
+                    onChange={() => setDeliveryType("pickup")}
+                    className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <BuildingOfficeIcon className="h-6 w-6 text-gray-500" />
+                  <span className="font-medium">Pick up</span>
+                  <span className="text-xs text-gray-500">(Leave phone in billing below)</span>
+                </label>
               </div>
             </div>
 
+            {deliveryType === "ship" && (
+              <>
+                <div className="border-t border-gray-200 pt-10">
+                  <h2 className="text-lg font-medium text-gray-900">Shipping address</h2>
+                  <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700">Country / Region</label>
+                      <select
+                        {...register("country", { required: "Required" })}
+                        disabled={isSubmitting}
+                        className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-50 sm:text-sm"
+                      >
+                        {COUNTRIES.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">First name</label>
+                      <input {...register("firstName", { required: "Required" })} disabled={isSubmitting} className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm" />
+                      {errors.firstName && <p className="text-red-600 text-sm">{errors.firstName.message}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Last name</label>
+                      <input {...register("lastName", { required: "Required" })} disabled={isSubmitting} className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm" />
+                      {errors.lastName && <p className="text-red-600 text-sm">{errors.lastName.message}</p>}
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">Company (optional)</label>
+                      <input {...register("company")} disabled={isSubmitting} className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">Address</label>
+                      <input {...register("streetAddress", { required: "Street address is required" })} disabled={isSubmitting} placeholder="e.g. P.o box 254, Kerugoya" className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm" />
+                      {errors.streetAddress && <p className="text-red-600 text-sm">{errors.streetAddress.message}</p>}
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">Apartment, suite, etc. (optional)</label>
+                      <input {...register("apartment")} disabled={isSubmitting} placeholder="e.g. Peniel Apartments, juja" className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">City</label>
+                      <input {...register("city", { required: "City is required" })} disabled={isSubmitting} placeholder="e.g. Nairobi" className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm" />
+                      {errors.city && <p className="text-red-600 text-sm">{errors.city.message}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Postal code (optional)</label>
+                      <input {...register("postalCode")} disabled={isSubmitting} placeholder="e.g. 10300" className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">Phone</label>
+                      <div className="mt-1 flex rounded-md border border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
+                        <select
+                          value={phoneCountryCode}
+                          onChange={(e) => setPhoneCountryCode(e.target.value)}
+                          disabled={isSubmitting}
+                          className="flex items-center gap-1.5 border-0 bg-transparent py-2 pl-3 pr-2 text-gray-700 focus:ring-0 sm:text-sm"
+                        >
+                          {COUNTRY_DIAL_CODES.map((c) => (
+                            <option key={c.dial + c.label} value={c.dial}>
+                              {c.flag} +{c.dial}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="flex items-center border-l border-gray-300 py-2 pl-2 text-gray-500 sm:text-sm">+{phoneCountryCode}</span>
+                        <input
+                          {...register("phone")}
+                          type="tel"
+                          disabled={isSubmitting}
+                          placeholder="791 061 920"
+                          className="block w-full min-w-0 flex-1 border-0 py-2 pr-3 pl-1 text-gray-900 placeholder-gray-400 focus:ring-0 sm:text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div className="col-span-2 flex items-center">
+                      <input
+                        type="checkbox"
+                        id="saveAddress"
+                        checked={saveAddressForNextTime}
+                        onChange={(e) => setSaveAddressForNextTime(e.target.checked)}
+                        disabled={isSubmitting}
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <label htmlFor="saveAddress" className="ml-2 text-sm text-gray-700">Save this information for next time</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-10 border-t border-gray-200 pt-10">
+                  <h2 className="text-lg font-medium text-gray-900">Shipping method</h2>
+                  {!country?.trim() || !city?.trim() ? (
+                    <div className="mt-4 rounded-lg bg-gray-100 px-4 py-6 text-center text-gray-600">
+                      Enter your shipping address to view available shipping methods.
+                    </div>
+                  ) : (
+                    <div className="mt-4 space-y-3">
+                      {shippingMethods.length === 0 && <p className="text-gray-500">Loading…</p>}
+                      {shippingMethods.map((method) => (
+                        <label
+                          key={method._id}
+                          className={`flex cursor-pointer items-center justify-between rounded-lg border-2 p-4 ${
+                            selectedShippingMethod?._id === method._id ? "border-indigo-600 bg-indigo-50/50" : "border-gray-200 bg-white"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="shippingMethod"
+                            checked={selectedShippingMethod?._id === method._id}
+                            onChange={() => setSelectedShippingMethod(method)}
+                            className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <div className="flex-1 px-3 text-left">
+                            <span className="font-medium text-gray-900">{method.name}</span>
+                            {method.description && <p className="text-sm text-gray-500">{method.description}</p>}
+                          </div>
+                          <span className="font-medium text-gray-900">Ksh {method.costKes?.toLocaleString()}.00</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {deliveryType === "pickup" && (
+              <div className="border-t border-gray-200 pt-10">
+                <h2 className="text-lg font-medium text-gray-900">Pickup locations</h2>
+                {!country?.trim() ? (
+                  <div className="mt-4 rounded-lg bg-gray-100 px-4 py-6 text-center text-gray-600">
+                    Select country above to see pickup locations.
+                  </div>
+                ) : (
+                  <div className="mt-4 space-y-3">
+                    {pickupLocations.length === 0 && <p className="text-gray-500">Loading…</p>}
+                    {pickupLocations.map((loc) => (
+                      <label
+                        key={loc._id}
+                        className={`flex cursor-pointer items-start gap-3 rounded-lg border-2 p-4 ${
+                          selectedPickupLocation?._id === loc._id ? "border-indigo-600 bg-indigo-50/50" : "border-gray-200 bg-white"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="pickupLocation"
+                          checked={selectedPickupLocation?._id === loc._id}
+                          onChange={() => setSelectedPickupLocation(loc)}
+                          className="mt-1 h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{loc.name}</p>
+                          <p className="text-sm text-gray-500">{loc.address}</p>
+                          {loc.distanceKm != null && <p className="text-sm text-gray-500">{loc.distanceKm} km</p>}
+                        </div>
+                        <span className="font-medium text-gray-900">{loc.costKes === 0 ? "FREE" : `Ksh ${loc.costKes}`}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Contact information */}
+            <div className="mt-10 border-t border-gray-200 pt-10">
+              <h2 className="text-lg font-medium text-gray-900">Contact information</h2>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <input {...register("name", { required: "Required" })} disabled={isSubmitting} className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm" />
+                  {errors.name && <p className="text-red-600 text-sm">{errors.name.message}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <input {...register("email", { required: "Required" })} type="email" disabled={isSubmitting} className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm" />
+                  {errors.email && <p className="text-red-600 text-sm">{errors.email.message}</p>}
+                </div>
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                    Phone Number
+                    <span className="text-gray-400" title="Include country code if not Kenya">
+                      <QuestionMarkCircleIcon className="h-4 w-4" />
+                    </span>
+                  </label>
+                  <div className="mt-1 flex rounded-md border border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
+                    <select
+                      value={contactPhoneCountryCode}
+                      onChange={(e) => setContactPhoneCountryCode(e.target.value)}
+                      disabled={isSubmitting}
+                      className="flex items-center gap-1.5 border-0 bg-transparent py-2 pl-3 pr-2 text-gray-700 focus:ring-0 sm:text-sm"
+                    >
+                      {COUNTRY_DIAL_CODES.map((c) => (
+                        <option key={c.dial + c.label} value={c.dial}>
+                          {c.flag} +{c.dial}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="flex items-center border-l border-gray-300 py-2 pl-2 text-gray-500 sm:text-sm">+{contactPhoneCountryCode}</span>
+                    <input
+                      {...register("phoneNumber", { required: "Required" })}
+                      type="tel"
+                      disabled={isSubmitting}
+                      placeholder="791 061 920"
+                      className="block w-full min-w-0 flex-1 border-0 py-2 pr-3 pl-1 text-gray-900 placeholder-gray-400 focus:ring-0 sm:text-sm"
+                    />
+                  </div>
+                  {errors.phoneNumber && <p className="text-red-600 text-sm">{errors.phoneNumber.message}</p>}
+                </div>
+              </div>
+            </div>
+
+            {deliveryType === "ship" && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700">Delivery instructions (optional)</label>
+                <textarea {...register("deliveryInstructions")} disabled={isSubmitting} rows={3} placeholder="e.g. Leave at gate, Call before delivery" className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm" />
+              </div>
+            )}
+
+            {/* Payment */}
             <div className="mt-10 border-t border-gray-200 pt-10">
               <h2 className="text-lg font-medium text-gray-900">Payment</h2>
-
               <fieldset className="mt-4">
                 <legend className="sr-only">Payment type</legend>
                 <div className="space-y-4 sm:flex sm:space-x-10 sm:space-y-0">
                   {paymentMethods.map((method) => (
                     <label key={method.id} className="flex items-center">
-                      <input
-                        type="radio"
-                        value={method.id}
-                        {...register("paymentType", {
-                          required: "Select a payment method",
-                        })}
-                        disabled={isSubmitting}
-                        className="size-4 border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                      />
-                      <span className="ml-3 text-sm text-gray-700">
-                        {method.title}
-                      </span>
+                      <input type="radio" value={method.id} {...register("paymentType", { required: true })} disabled={isSubmitting} className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                      <span className="ml-3 text-sm text-gray-700">{method.title}</span>
                     </label>
                   ))}
                 </div>
               </fieldset>
 
-              {paymentType === "mpesa" && (
-                <div className="mt-6 space-y-3 bg-gray-50 p-4 rounded-md border">
-                  <p className="text-gray-700 font-medium">
-                    Pay with Safaricom M-Pesa:
-                  </p>
-                  <ol className="list-decimal list-inside text-gray-700">
-                    <li>
-                      Select <strong>Lipa na M-Pesa → Pay Bill</strong>
-                    </li>
-                    <li>
-                      Business Number: <strong>522533</strong>
-                    </li>
-                    <li>
-                      Account Number: <strong>8023258</strong>
-                    </li>
-                    <li>
-                      Amount: <strong>{OrderTotal}</strong>
-                    </li>
-                    <li>Enter your M-Pesa PIN and confirm payment</li>
+              {watch("paymentType") === "mpesa" && (
+                <div className="mt-6 space-y-3 rounded-md border border-gray-200 bg-gray-50 p-4">
+                  <p className="font-medium text-gray-700">Pay with Safaricom M-Pesa</p>
+                  <ol className="list-inside list-decimal text-sm text-gray-700">
+                    <li>Select <strong>Lipa na M-Pesa → Pay Bill</strong></li>
+                    <li>Business Number: <strong>522533</strong></li>
+                    <li>Account Number: <strong>8023258</strong></li>
+                    <li>Amount: <strong>{OrderTotal}</strong></li>
+                    <li>Enter your M-Pesa PIN and confirm</li>
                   </ol>
-
                   <input
                     type="text"
-                    placeholder="Enter phone number used for payment"
-                    {...register("mpesaNumber", {
-                      required: "Phone number is required",
-                      pattern: {
-                        value: /^0\d{9}$/,
-                        message: "Enter a valid Kenyan phone number",
-                      },
-                    })}
+                    placeholder="Phone number used for payment"
+                    {...register("mpesaNumber", { pattern: { value: /^0\d{9}$/, message: "Valid Kenyan phone" } })}
                     disabled={isSubmitting}
-                    className={`w-full rounded-md border-gray-300 px-3 py-2 shadow-sm ${
-                      isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
-                    }`}
+                    className="w-full rounded-md border-gray-300 px-3 py-2 shadow-sm"
                   />
-                  {errors.mpesaNumber && (
-                    <p className="text-red-600">{errors.mpesaNumber.message}</p>
-                  )}
-
-                  <textarea
-                    placeholder="Optional: Payment reference or description"
-                    {...register("mpesaDescription")}
-                    disabled={isSubmitting}
-                    className={`w-full rounded-md border-gray-300 px-3 py-2 shadow-sm mt-2 ${
-                      isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
-                    }`}
-                  />
-
-                  <button
-                    type="button"
-                    onClick={handleMpesaNotification}
-                    disabled={isSubmitting}
-                    className={`mt-2 w-full rounded-md px-4 py-3 text-white transition-colors ${
-                      isSubmitting
-                        ? "bg-green-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700"
-                    }`}
-                  >
-                    I’ve Made Payment
-                  </button>
-
-                  <p className="text-sm text-gray-500 mt-2">
-                    After making payment on M-Pesa, click "I’ve Made Payment" to
-                    notify us.
-                  </p>
+                  {errors.mpesaNumber && <p className="text-red-600 text-sm">{errors.mpesaNumber.message}</p>}
+                  <textarea placeholder="Optional: Payment reference" {...register("mpesaDescription")} disabled={isSubmitting} className="w-full rounded-md border-gray-300 px-3 py-2 shadow-sm" />
+                  <button type="button" onClick={handleMpesaNotification} disabled={isSubmitting} className="w-full rounded-md bg-green-600 px-4 py-3 text-white hover:bg-green-700">I've Made Payment</button>
                 </div>
               )}
             </div>
           </div>
 
+          {/* Order summary sidebar */}
           <div className="mt-10 lg:mt-0">
             <h2 className="text-lg font-medium text-gray-900">Order summary</h2>
-            <div className="mt-4 rounded-lg border bg-white shadow-sm">
-              <ul role="list" className="divide-y divide-gray-200">
+            <div className="mt-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+              <ul className="divide-y divide-gray-200">
                 {cart.map((product) => (
                   <li key={product.id} className="flex px-4 py-6 sm:px-6">
-                    <img
-                      src={product.imageSrc}
-                      alt={product.imageAlt}
-                      className="w-20 rounded-md"
-                    />
+                    <img src={product.imageSrc} alt={product.imageAlt} className="h-20 w-20 rounded-md object-contain" />
                     <div className="ml-6 flex flex-1 flex-col">
                       <div className="flex justify-between">
-                        <h4 className="text-sm font-medium text-gray-700">
-                          {product.name}
-                        </h4>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setCart((prev) =>
-                              prev.filter((i) => i.id !== product.id)
-                            )
-                          }
-                          className="text-gray-400 hover:text-gray-600"
-                        >
-                          <TrashIcon className="size-5" />
+                        <h4 className="text-sm font-medium text-gray-700">{product.name}</h4>
+                        <button type="button" onClick={() => setCart((prev) => prev.filter((i) => i.id !== product.id))} className="text-gray-400 hover:text-gray-600">
+                          <TrashIcon className="h-5 w-5" />
                         </button>
                       </div>
-                      <p className="mt-1 text-sm text-gray-500">
-                        Ksh {product.price} × {product.quantity}
-                      </p>
+                      <p className="mt-1 text-sm text-gray-500">Ksh {product.price} × {product.quantity}</p>
                     </div>
                   </li>
                 ))}
               </ul>
-
               <dl className="space-y-3 border-t border-gray-200 px-4 py-6 sm:px-6">
                 <div className="flex justify-between text-sm">
                   <dt>Subtotal</dt>
-                  <dd>Ksh {Total}</dd>
+                  <dd>Ksh {Total?.toLocaleString()}</dd>
                 </div>
                 <div className="flex justify-between text-sm">
                   <dt>Shipping</dt>
-                  <dd>Ksh {shippingCost}</dd>
+                  <dd>
+                    {deliveryType === "pickup"
+                      ? selectedPickupLocation ? "Pickup – FREE" : "—"
+                      : selectedShippingMethod ? `${selectedShippingMethod.name} – Ksh ${(selectedShippingMethod.costKes ?? 0).toLocaleString()}` : "—"}
+                  </dd>
                 </div>
-                <div className="flex justify-between border-t pt-3 text-base font-medium">
+                <div className="flex justify-between border-t border-gray-200 pt-3 text-base font-medium">
                   <dt>Total</dt>
-                  <dd>Ksh {OrderTotal}</dd>
+                  <dd>Ksh {OrderTotal?.toLocaleString()}</dd>
                 </div>
               </dl>
-
-              <div className="border-t px-4 py-6 sm:px-6">
+              <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`w-full rounded-md px-4 py-3 text-base font-medium text-white transition-colors ${
-                    isSubmitting
-                      ? "bg-indigo-400 cursor-not-allowed"
-                      : "bg-indigo-600 hover:bg-indigo-700"
+                  className={`w-full rounded-md px-4 py-3 text-base font-medium text-white ${
+                    isSubmitting ? "cursor-not-allowed bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-700"
                   }`}
                 >
-                  {isSubmitting ? (
-                    <span className="flex items-center justify-center">
-                      <svg
-                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Processing Order...
-                    </span>
-                  ) : (
-                    "Confirm Order"
-                  )}
+                  {isSubmitting ? "Processing…" : "Confirm Order"}
                 </button>
               </div>
             </div>

@@ -52,4 +52,14 @@ export const uploadPackageImage = (formData) =>
     headers: { "Content-Type": "multipart/form-data" },
   });
 
+// Shipping methods (public, by country/city)
+export const getShippingMethods = (params) => api.get("/api/v1/shipping-methods", { params });
+// Pickup locations (public, by country/city)
+export const getPickupLocations = (params) => api.get("/api/v1/pickup-locations", { params });
+// User addresses (requires auth)
+export const getAddresses = () => api.get("/api/v1/addresses");
+export const createAddress = (data) => api.post("/api/v1/addresses", data);
+export const updateAddress = (id, data) => api.patch(`/api/v1/addresses/${id}`, data);
+export const deleteAddress = (id) => api.delete(`/api/v1/addresses/${id}`);
+
 export default api;
