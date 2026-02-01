@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Product = require('../models/productModel');
 const Review = require('../models/reviewModel');
+const ProductCache = require('../models/productCacheModel');
 
 exports.createReview = async (req, res) => {
   try {
@@ -44,8 +45,12 @@ exports.createReview = async (req, res) => {
     const rounded = Math.round(avgRating * 10) / 10; // one decimal
     await Product.findByIdAndUpdate(productObjId, { $set: { rating: rounded } });
 
-    // Invalidate product list cache so admin/list sees updated rating
-    await invalidateProductListCache();
+    // Clear product list cache so admin/shop lists show updated rating (uses ProductCache here to avoid requiring productController)
+    try {
+      await ProductCache.deleteMany({ key: /^products:/ });
+    } catch (cacheErr) {
+      console.error('Product cache invalidation (after review):', cacheErr.message);
+    }
 
     res.status(201).json(populatedReview);
   } catch (error) {

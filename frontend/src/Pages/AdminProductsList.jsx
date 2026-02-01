@@ -40,6 +40,8 @@ export default function AdminProductsList() {
       const res = await getProducts({ limit: 100 });
       return res.data?.data?.products ?? [];
     },
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 
   const products = Array.isArray(data) ? data : [];
@@ -319,7 +321,7 @@ export default function AdminProductsList() {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        className={`inline-flex shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           p.inStock !== false
                             ? "bg-emerald-100 text-emerald-800"
                             : "bg-red-100 text-red-800"

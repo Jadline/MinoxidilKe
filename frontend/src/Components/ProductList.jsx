@@ -1,13 +1,9 @@
-import { StarIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
 import ProductQuickView from "./ProductQuickView";
+import StarRating from "./StarRating";
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/cartStore";
 import { useShopProducts } from "../hooks/useShopProducts";
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
 
 function ProductsSkeleton() {
   return (
@@ -74,10 +70,14 @@ export default function ProductList() {
         <div className="-mx-px grid grid-cols-2 border-l border-gray-200 sm:mx-0 md:grid-cols-3 lg:grid-cols-4">
           {products.map((product) => (
             <div
-              key={product.id}
+              key={product.id ?? product._id}
               onClick={() => {
-                if (product)
-                  navigate("/product-details", { state: { product } });
+                if (product) {
+                  const path = product.id != null
+                    ? `/product-details/${product.id}`
+                    : "/product-details";
+                  navigate(path, { state: { product } });
+                }
               }}
               className="group relative border-r border-b border-gray-200 p-4 sm:p-6 cursor-pointer hover:shadow-md transition-shadow duration-150"
             >
@@ -103,22 +103,11 @@ export default function ProductList() {
                 </h3>
 
                 <div className="mt-3 flex items-center gap-3">
-                  <div className="flex items-center">
-                    {[0, 1, 2, 3, 4].map((rating) => (
-                      <StarIcon
-                        key={rating}
-                        aria-hidden="true"
-                        className={classNames(
-                          product.rating > rating
-                            ? "text-yellow-400"
-                            : "text-gray-200",
-                          "size-5 shrink-0"
-                        )}
-                      />
-                    ))}
-                  </div>
+                  <StarRating rating={product.rating ?? 0} size="sm" />
                   <p className="text-sm text-gray-500 font-bold">
-                    {product.rating.toFixed(1)}
+                    {product.rating != null && product.rating !== ""
+                      ? Number(product.rating).toFixed(1)
+                      : "—"}
                   </p>
                 </div>
 

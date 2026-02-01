@@ -15,9 +15,26 @@ import {
 } from "@headlessui/react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCartStore } from "../stores/cartStore";
 import { useUserStore } from "../stores/userStore";
 import { getReviewsByProduct, createReview } from "../api";
+
+const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
+
+function productImageSrc(imageSrc) {
+  if (!imageSrc) return "";
+  const s = String(imageSrc).trim();
+  if (s.startsWith("http")) return s;
+  const path = s.startsWith("/") ? s : "/" + s;
+  const origin =
+    path.startsWith("/uploads/") && BASE_URL
+      ? BASE_URL
+      : typeof window !== "undefined"
+        ? window.location.origin
+        : "";
+  return origin ? origin + path : path;
+}
 
 const defaultproduct = {
   name: "Kirkland minoxidil for men",
@@ -99,20 +116,22 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function ProductOverview() {
+export default function ProductOverview({ product: productProp }) {
   const { setCart } = useCartStore();
   const currentUser = useUserStore((s) => s.currentUser);
   const navigate = useNavigate();
   const location = useLocation();
-  const product = location.state?.product || defaultproduct;
+  const product = productProp ?? location.state?.product ?? defaultproduct;
 
   const [reviews, setReviews] = useState([]);
 
+  const productIdForReviews = product._id;
+
   useEffect(() => {
-    if (!product._id) return;
+    if (!productIdForReviews) return;
     const fetchReviews = async () => {
       try {
-        const res = await getReviewsByProduct(product._id);
+        const res = await getReviewsByProduct(String(productIdForReviews));
         const data = res.data;
         if (Array.isArray(data)) {
           setReviews(data);
@@ -124,10 +143,13 @@ export default function ProductOverview() {
       }
     };
     fetchReviews();
-  }, [product._id]);
+  }, [productIdForReviews]);
 
   const images = product.images?.length
-    ? product.images
+    ? product.images.map((img) => ({
+        ...img,
+        src: img.src ?? img.url ?? product.imageSrc,
+      }))
     : [
         {
           id: 1,
@@ -139,6 +161,7 @@ export default function ProductOverview() {
 
   console.log(product);
 
+  const queryClient = useQueryClient();
   const handleAddReview = async (reviewData) => {
     if (!currentUser) {
       navigate("/login");
@@ -148,6 +171,7 @@ export default function ProductOverview() {
     const data = res.data;
     if (data && data._id) {
       setReviews((prev) => [data, ...prev]);
+      queryClient.invalidateQueries({ queryKey: ["shopProducts"] });
     }
   };
 
@@ -168,7 +192,7 @@ export default function ProductOverview() {
                     <span className="absolute inset-0 overflow-hidden rounded-md">
                       <img
                         alt=""
-                        src={image.src}
+                        src={productImageSrc(image.src)}
                         className="size-full object-cover"
                       />
                     </span>
@@ -185,8 +209,8 @@ export default function ProductOverview() {
               {images.map((image) => (
                 <TabPanel key={image.id}>
                   <img
-                    alt={image.alt}
-                    src={image.src}
+                    alt={image.alt || product.name}
+                    src={productImageSrc(image.src)}
                     className="aspect-square w-full object-contain sm:rounded-lg bg-gradient-to-t from-black/20 via-[#ffff]/10 to-black/10"
                   />
                 </TabPanel>
@@ -335,7 +359,7 @@ export default function ProductOverview() {
                 ))}
               </div>
               <Reviews
-                productId={product._id}
+                productId={productIdForReviews}
                 reviews={reviews}
                 onAddReview={handleAddReview}
                 currentUser={currentUser}

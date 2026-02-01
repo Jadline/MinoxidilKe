@@ -19,6 +19,8 @@ export function useShopProducts() {
     queryKey: ["shopProducts", qs],
     queryFn: () => fetchProducts(qs),
     keepPreviousData: true,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 
   const products = data?.products || [];

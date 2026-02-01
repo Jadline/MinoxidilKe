@@ -54,6 +54,7 @@ function App() {
             <Route path="order-confirmation" element={<Order />} />
             <Route path="products" element={<Shop />} />
             <Route path="product-details" element={<ProductDetails />} />
+            <Route path="product-details/:id" element={<ProductDetails />} />
             <Route path="orders" element={<OrderHistory />} />
             <Route path="orders/:orderId" element={<ProductDetails />} />
           </Route>
