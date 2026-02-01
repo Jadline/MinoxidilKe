@@ -6,6 +6,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
+  timeout: 60000, // 60s – helps when Render free tier is waking from sleep
 });
 
 // Attach Bearer token from localStorage when present

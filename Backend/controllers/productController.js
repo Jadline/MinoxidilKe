@@ -18,6 +18,15 @@ function buildCacheKey(filters, query) {
   return `products:${hash}`;
 }
 
+/** Clear all product list caches so list endpoints return fresh data after create/update/delete. */
+async function invalidateProductListCache() {
+  try {
+    await ProductCache.deleteMany({ key: /^products:/ });
+  } catch (err) {
+    console.error('Product cache invalidation error:', err.message);
+  }
+}
+
 async function fetchAllProducts(req, res) {
   try {
     // 1️⃣ Filters
@@ -176,7 +185,7 @@ async function createProduct(req, res) {
       description: payload.description ?? '',
       details: payload.details ?? [],
     });
-    // Invalidate product list caches; simplest is to clear by key pattern if you use one
+    await invalidateProductListCache();
     res.status(201).json({ status: 'success', data: { product } });
   } catch (err) {
     res.status(500).json({ status: 'fail', message: err.message || 'Failed to create product.' });
@@ -198,6 +207,7 @@ async function updateProduct(req, res) {
     if (!product) {
       return res.status(404).json({ status: 'fail', message: 'Product not found.' });
     }
+    await invalidateProductListCache();
     res.status(200).json({ status: 'success', data: { product } });
   } catch (err) {
     res.status(500).json({ status: 'fail', message: err.message || 'Failed to update product.' });
@@ -215,6 +225,7 @@ async function deleteProduct(req, res) {
     if (!product) {
       return res.status(404).json({ status: 'fail', message: 'Product not found.' });
     }
+    await invalidateProductListCache();
     res.status(200).json({ status: 'success', message: 'Product deleted.', data: { product } });
   } catch (err) {
     res.status(500).json({ status: 'fail', message: err.message || 'Failed to delete product.' });
