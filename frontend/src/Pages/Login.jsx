@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { loginUser } from "../Services/loginUser";
 import { GoogleLogin } from "@react-oauth/google";
 import { useUserStore } from "../stores/userStore";
@@ -13,6 +13,10 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const setTokenAndUser = useUserStore((state) => state.setTokenAndUser);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawRedirect = searchParams.get("redirect");
+  // Only allow relative paths (e.g. /checkout), not external URLs
+  const redirectTo = rawRedirect?.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/";
 
   const { mutate: mutateLogin } = useMutation({
     mutationFn: (data) => loginUser(data),
@@ -23,7 +27,11 @@ export default function Login() {
       }
       setTokenAndUser(res.token, res.user);
       toast.success("Login successful!");
-      navigate(res.user?.role === "admin" ? "/admin" : "/");
+      if (res.user?.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate(redirectTo || "/");
+      }
     },
     onError: (error) => {
       const msg = error?.response?.data?.message || error?.message || "Email or password is incorrect";

@@ -9,6 +9,14 @@ import {
   CubeIcon,
 } from "@heroicons/react/24/outline";
 
+const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
+
+function packageImageSrc(imageSrc) {
+  if (!imageSrc) return "";
+  if (String(imageSrc).startsWith("http")) return imageSrc;
+  return BASE_URL ? BASE_URL + (imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc) : imageSrc;
+}
+
 export default function AdminPackagesList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -42,24 +50,24 @@ export default function AdminPackagesList() {
   const packages = Array.isArray(data) ? data : [];
 
   return (
-    <div>
+    <div className="w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Manage Packages</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-white">Manage Packages</h1>
+          <p className="text-white/80 mt-1">
             Bundles of products that customers can buy together.
           </p>
         </div>
         <Link
           to="/admin/add-package"
-          className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+          className="inline-flex items-center gap-2 rounded-lg bg-white text-[#082567] px-4 py-2.5 text-sm font-semibold shadow-md hover:bg-white/95 hover:shadow-lg transition-all"
         >
           <PlusIcon className="h-5 w-5" />
           Add package
         </Link>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-white/15 bg-[#e8ecf4] shadow-xl overflow-hidden w-full">
         {isLoading ? (
           <div className="p-12 text-center text-gray-500">Loading packages…</div>
         ) : isError ? (
@@ -68,14 +76,14 @@ export default function AdminPackagesList() {
           </div>
         ) : packages.length === 0 ? (
           <div className="p-12 text-center">
-            <CubeIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <CubeIcon className="mx-auto h-12 w-12 text-[#005f69]/50" />
             <p className="mt-2 text-gray-600">No packages yet.</p>
             <p className="mt-1 text-sm text-gray-500">
               Create a package to sell products together at a bundle price.
             </p>
             <Link
               to="/admin/add-package"
-              className="mt-4 inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#005f69] px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-[#061d4d] transition-colors"
             >
               <PlusIcon className="h-5 w-5" />
               Add package
@@ -83,25 +91,16 @@ export default function AdminPackagesList() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-[#082567]/15">
+              <thead className="bg-[#082567]/15">
                 <tr>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider">
                     Package
                   </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider">
                     Bundle price
                   </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider">
                     Products
                   </th>
                   <th scope="col" className="relative px-4 py-3">
@@ -109,37 +108,45 @@ export default function AdminPackagesList() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-[#e8ecf4]/60 divide-y divide-[#082567]/10">
                 {packages.map((pkg) => (
-                  <tr key={pkg.id} className="hover:bg-gray-50/50">
+                  <tr key={pkg.id} className="hover:bg-[#082567]/8 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {pkg.imageSrc ? (
-                          <img
-                            src={pkg.imageSrc}
-                            alt={pkg.imageAlt || pkg.name}
-                            className="h-10 w-10 rounded object-cover bg-gray-100"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center">
-                            <CubeIcon className="h-5 w-5 text-gray-400" />
-                          </div>
-                        )}
+                        <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-[#082567]/10">
+                          {pkg.imageSrc ? (
+                            <>
+                              <img
+                                src={packageImageSrc(pkg.imageSrc)}
+                                alt={pkg.imageAlt || pkg.name}
+                                className="h-10 w-10 object-cover relative z-10"
+                                onError={(e) => { e.target.style.display = "none"; }}
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center z-0" aria-hidden>
+                                <CubeIcon className="h-5 w-5 text-[#082567]/40" />
+                              </div>
+                            </>
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <CubeIcon className="h-5 w-5 text-[#082567]/40" />
+                            </div>
+                          )}
+                        </div>
                         <span className="font-medium text-gray-900">{pkg.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-700">
                       KSh {Number(pkg.bundlePrice ?? 0).toLocaleString()}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {Array.isArray(pkg.productIds) ? pkg.productIds.length : 0} product(s)
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
                           onClick={() => navigate(`/admin/packages/${pkg.id}/edit`)}
-                          className="rounded p-1.5 text-gray-600 hover:bg-gray-100 hover:text-indigo-600"
+                          className="rounded-lg p-2 text-gray-600 hover:bg-[#082567]/15 hover:text-[#082567] transition-colors"
                           title="Edit"
                         >
                           <PencilSquareIcon className="h-5 w-5" />
@@ -148,7 +155,7 @@ export default function AdminPackagesList() {
                           type="button"
                           onClick={() => handleDelete(pkg.id, pkg.name)}
                           disabled={isDeleting}
-                          className="rounded p-1.5 text-gray-600 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                          className="rounded-lg p-2 text-gray-600 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors"
                           title="Delete"
                         >
                           <TrashIcon className="h-5 w-5" />

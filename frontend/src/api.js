@@ -52,6 +52,12 @@ export const uploadPackageImage = (formData) =>
     headers: { "Content-Type": "multipart/form-data" },
   });
 
+/** Upload product image (admin). FormData with field "image". Returns { path }. */
+export const uploadProductImage = (formData) =>
+  api.post("/api/v1/upload/product", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
 // Shipping methods (public, by country/city)
 export const getShippingMethods = (params) => api.get("/api/v1/shipping-methods", { params });
 // Pickup locations (public, by country/city)

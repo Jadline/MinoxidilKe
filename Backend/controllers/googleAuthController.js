@@ -29,15 +29,24 @@ async function googleLogin(req, res) {
         process.env.FIRST_ADMIN_EMAIL && process.env.FIRST_ADMIN_EMAIL.trim().toLowerCase() === email
           ? 'admin'
           : 'user';
-      user = await User.create({
-        firstName,
-        lastName,
-        email,
-        password: null,
-        isGoogleUser: true,
-        role,
-      });
-      isNew = true;
+      try {
+        user = await User.create({
+          firstName,
+          lastName,
+          email,
+          password: null,
+          isGoogleUser: true,
+          role,
+        });
+        isNew = true;
+      } catch (createErr) {
+        if (createErr.code === 11000 || (createErr.message && createErr.message.includes('E11000'))) {
+          return res.status(400).json({
+            message: 'Email is already in use. Please log in with your password or use a different account.',
+          });
+        }
+        throw createErr;
+      }
     }
 
     const token = jwt.sign(
@@ -59,9 +68,11 @@ async function googleLogin(req, res) {
     });
   } catch (error) {
     console.error('Google Login Error:', error);
+    const isDuplicateEmail = error.code === 11000 || (error.message && error.message.includes('E11000'));
     res.status(400).json({
-      message: 'Google sign-in failed',
-      error: error.message,
+      message: isDuplicateEmail
+        ? 'Email is already in use. Please log in with your password or use a different account.'
+        : (error.message || 'Google sign-in failed'),
     });
   }
 }

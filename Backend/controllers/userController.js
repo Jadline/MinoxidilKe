@@ -65,6 +65,10 @@ async function signupUser(req, res) {
       },
     });
   } catch (err) {
+    // MongoDB duplicate key (e.g. race: two signups with same email)
+    if (err.code === 11000 || (err.message && err.message.includes('E11000'))) {
+      return res.status(400).json({ status: 'fail', message: 'Email is already in use.' });
+    }
     res.status(500).json({
       status: 'fail',
       message: err.message || 'Server error.',

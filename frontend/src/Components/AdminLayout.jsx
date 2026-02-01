@@ -19,16 +19,16 @@ export default function AdminLayout() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-[#082567]">
+      <header className="bg-[#061d4d] border-b border-white/10 shadow-lg">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">
               <Link
                 to="/admin"
-                className="flex items-center gap-2 text-gray-900 font-semibold"
+                className="flex items-center gap-2 text-white font-semibold hover:text-[#8bb4e8] transition-colors"
               >
-                <CubeIcon className="h-6 w-6 text-indigo-600" />
+                <CubeIcon className="h-6 w-6 text-[#8bb4e8]" />
                 Admin
               </Link>
               <nav className="hidden sm:flex gap-1">
@@ -41,10 +41,10 @@ export default function AdminLayout() {
                     <Link
                       key={item.to}
                       to={item.to}
-                      className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
+                      className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                         isActive
-                          ? "bg-indigo-50 text-indigo-700"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          ? "bg-white/20 text-white"
+                          : "text-white/90 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       <item.icon className="h-4 w-4" />
@@ -56,7 +56,7 @@ export default function AdminLayout() {
             </div>
             <Link
               to="/"
-              className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white transition-colors"
             >
               <ArrowLeftIcon className="h-4 w-4" />
               Back to site
@@ -64,7 +64,7 @@ export default function AdminLayout() {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="w-full max-w-[1600px] mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <Outlet />
       </main>
     </div>
