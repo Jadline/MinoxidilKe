@@ -192,16 +192,18 @@ async function createProduct(req, res) {
   }
 }
 
-/** Update product by id (numeric) (admin only). */
+/** Update product by id (numeric) (admin only). Rating is only updated by review aggregation. */
 async function updateProduct(req, res) {
   try {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id < 1) {
       return res.status(400).json({ status: 'fail', message: 'Invalid product id.' });
     }
+    const body = { ...req.body };
+    delete body.rating; // admin cannot change rating; it is updated from reviews
     const product = await Product.findOneAndUpdate(
       { id },
-      { $set: req.body },
+      { $set: body },
       { new: true, runValidators: true }
     );
     if (!product) {
@@ -236,6 +238,7 @@ module.exports = {
   fetchAllProducts,
   getProductById,
   buildCacheKey,
+  invalidateProductListCache,
   createProduct,
   updateProduct,
   deleteProduct,

@@ -61,6 +61,7 @@ export default function AdminProductsList() {
   const [limit, setLimit] = useState(10);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
+  const [productToDelete, setProductToDelete] = useState(null);
   const total = products.length;
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const startItem = total === 0 ? 0 : (page - 1) * limit + 1;
@@ -166,9 +167,12 @@ export default function AdminProductsList() {
     },
   });
 
-  const handleDelete = async (id, name) => {
-    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
-    await doDelete(id);
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+    try {
+      await doDelete(productToDelete.id);
+      setProductToDelete(null);
+    } catch (_) {}
   };
 
   return (
@@ -190,7 +194,7 @@ export default function AdminProductsList() {
         </button>
       </div>
 
-      <div className="rounded-xl border border-white/15 bg-[#e8ecf4] shadow-xl overflow-hidden w-full">
+      <div className="rounded-xl border border-[#191970]/30 bg-white shadow-xl overflow-hidden w-full transition-all duration-200 hover:shadow-2xl hover:border-[#191970]/50">
         {isLoading ? (
           <div className="p-12 text-center text-gray-500">Loading products…</div>
         ) : isError ? (
@@ -199,14 +203,14 @@ export default function AdminProductsList() {
           </div>
         ) : products.length === 0 ? (
           <div className="p-12 text-center">
-            <CubeIcon className="mx-auto h-12 w-12 text-[#082567]/50" />
-            <p className="mt-2 text-gray-700">No products yet.</p>
-            <p className="mt-1 text-sm text-gray-600">
+            <CubeIcon className="mx-auto h-12 w-12 text-white/50" />
+            <p className="mt-2 text-white">No products yet.</p>
+            <p className="mt-1 text-sm text-white/80">
               Add your first product to get started.
             </p>
             <Link
               to="/admin/add-product"
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#082567] px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-[#061d4d] transition-colors"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#191970] px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-[#12125c] transition-colors"
             >
               <PlusIcon className="h-5 w-5" />
               Add product
@@ -214,31 +218,37 @@ export default function AdminProductsList() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-[#082567]/15">
-              <thead className="bg-[#082567]/15">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-[#191970]">
                 <tr>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     ID
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Product
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Price
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Category
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Qty label
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Lead time
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Description
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                    Features
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                    Rating
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Stock
                   </th>
                   <th scope="col" className="relative px-4 py-3">
@@ -246,11 +256,11 @@ export default function AdminProductsList() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-[#e8ecf4]/60 divide-y divide-[#082567]/10">
+              <tbody className="bg-white/15 divide-y divide-white/20">
                 {products.map((p) => {
                   const imageUrl = p.imageSrc ? productImageSrc(p.imageSrc) : "";
                   return (
-                  <tr key={p.id ?? p._id} className="hover:bg-[#082567]/8 transition-colors">
+                  <tr key={p.id ?? p._id} className="hover:bg-[#191970]/5 transition-colors duration-150 cursor-default">
                     <td className="px-4 py-3 text-sm font-mono text-gray-700">
                       {p.id ?? "—"}
                     </td>
@@ -262,16 +272,16 @@ export default function AdminProductsList() {
                               <img
                                 src={imageUrl}
                                 alt={p.imageAlt || p.name}
-                                className="h-10 w-10 object-cover relative z-10 bg-white/80"
+                                className="h-10 w-10 object-cover relative z-10 bg-white"
                                 onError={(e) => { e.target.style.display = "none"; }}
                               />
                               <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none" aria-hidden>
-                                <CubeIcon className="h-5 w-5 text-[#082567]/40" />
+                                <CubeIcon className="h-5 w-5 text-gray-400" />
                               </div>
                             </>
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <CubeIcon className="h-5 w-5 text-[#082567]/40" />
+                              <CubeIcon className="h-5 w-5 text-gray-400" />
                             </div>
                           )}
                         </div>
@@ -293,6 +303,20 @@ export default function AdminProductsList() {
                     <td className="px-4 py-3 text-sm text-gray-600 max-w-[200px]" title={p.description || ""}>
                       {truncate(p.description, 50)}
                     </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 max-w-[180px]" title={(() => {
+                      const featuresDetail = (p.details || []).find((d) => d.name === "Features");
+                      const items = featuresDetail?.items || [];
+                      return items.join("\n") || "—";
+                    })()}>
+                      {(() => {
+                        const featuresDetail = (p.details || []).find((d) => d.name === "Features");
+                        const items = featuresDetail?.items || [];
+                        return items.length ? truncate(items.join(", "), 40) : "—";
+                      })()}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {p.rating != null && p.rating !== "" ? Number(p.rating).toFixed(1) : "—"}
+                    </td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -309,14 +333,14 @@ export default function AdminProductsList() {
                         <button
                           type="button"
                           onClick={() => setEditProduct(p)}
-                          className="rounded-lg p-2 text-gray-600 hover:bg-[#082567]/15 hover:text-[#082567] transition-colors"
+                          className="rounded-lg p-2 text-gray-600 hover:bg-[#191970]/10 hover:text-[#191970] transition-colors"
                           title="Edit"
                         >
                           <PencilSquareIcon className="h-5 w-5" />
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(p.id, p.name)}
+                          onClick={() => setProductToDelete({ id: p.id, name: p.name })}
                           disabled={isDeleting}
                           className="rounded-lg p-2 text-gray-600 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors"
                           title="Delete"
@@ -334,7 +358,7 @@ export default function AdminProductsList() {
         )}
 
         {!isLoading && !isError && products.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-[#082567]/10 border-t border-[#082567]/15">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-gray-50 border-t border-gray-200">
             <div className="flex items-center gap-4">
               <p className="text-sm text-gray-700">
                 Showing <span className="font-medium">{startItem}</span>–<span className="font-medium">{endItem}</span> of{" "}
@@ -345,7 +369,7 @@ export default function AdminProductsList() {
                 <select
                   value={limit}
                   onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                  className="rounded-md border border-[#082567]/25 bg-white/80 px-2 py-1.5 text-sm text-[#082567] focus:border-[#082567] focus:outline-none focus:ring-1 focus:ring-[#082567]"
+                  className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-800 focus:border-[#191970] focus:outline-none focus:ring-1 focus:ring-[#191970]"
                 >
                   {PAGE_SIZES.map((n) => (
                     <option key={n} value={n}>{n}</option>
@@ -358,7 +382,7 @@ export default function AdminProductsList() {
                 type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="inline-flex items-center gap-1 rounded-lg border border-[#082567]/25 bg-white/80 px-3 py-2 text-sm font-medium text-[#082567] hover:bg-[#082567]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeftIcon className="h-4 w-4" />
                 Previous
@@ -370,7 +394,7 @@ export default function AdminProductsList() {
                 type="button"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="inline-flex items-center gap-1 rounded-lg border border-[#082567]/25 bg-white/80 px-3 py-2 text-sm font-medium text-[#082567] hover:bg-[#082567]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Next
                 <ChevronRightIcon className="h-4 w-4" />
@@ -750,6 +774,49 @@ export default function AdminProductsList() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {productToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          aria-modal="true"
+          role="dialog"
+          onClick={() => setProductToDelete(null)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100">
+                <TrashIcon className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-gray-900">Delete product?</h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  Are you sure you want to delete &quot;{productToDelete.name}&quot;? This cannot be undone.
+                </p>
+                <div className="mt-6 flex gap-3 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setProductToDelete(null)}
+                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmDelete}
+                    disabled={isDeleting}
+                    className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {isDeleting ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

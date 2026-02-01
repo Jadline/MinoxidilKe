@@ -19,8 +19,8 @@ export default function AdminLayout() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-[#082567]">
-      <header className="bg-[#061d4d] border-b border-white/10 shadow-lg">
+    <div className="min-h-screen bg-[#191970]">
+      <header className="bg-[#12125c] border-b border-white/10 shadow-lg">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">

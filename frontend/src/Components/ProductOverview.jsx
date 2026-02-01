@@ -1,6 +1,7 @@
 import { FaArrowRight } from "react-icons/fa";
 import { FaWhatsapp } from "react-icons/fa";
 import Reviews from "./Reviews";
+import StarRating from "./StarRating";
 import { useState, useEffect } from "react";
 import {
   Disclosure,
@@ -12,12 +13,11 @@ import {
   TabPanel,
   TabPanels,
 } from "@headlessui/react";
-import { StarIcon } from "@heroicons/react/20/solid";
-import { HeartIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-
+import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/cartStore";
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+import { useUserStore } from "../stores/userStore";
+import { getReviewsByProduct, createReview } from "../api";
 
 const defaultproduct = {
   name: "Kirkland minoxidil for men",
@@ -101,6 +101,7 @@ function classNames(...classes) {
 
 export default function ProductOverview() {
   const { setCart } = useCartStore();
+  const currentUser = useUserStore((s) => s.currentUser);
   const navigate = useNavigate();
   const location = useLocation();
   const product = location.state?.product || defaultproduct;
@@ -108,18 +109,15 @@ export default function ProductOverview() {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
+    if (!product._id) return;
     const fetchReviews = async () => {
       try {
-        const res = await fetch(
-          `${BASE_URL}/api/v1/reviews/${product._id}`
-        );
-        const data = await res.json();
+        const res = await getReviewsByProduct(product._id);
+        const data = res.data;
         if (Array.isArray(data)) {
           setReviews(data);
-        } else if (data.reviews) {
+        } else if (data?.reviews) {
           setReviews(data.reviews);
-        } else {
-          console.warn("Unexpected reviews format:", data);
         }
       } catch (err) {
         console.error("Error fetching reviews:", err);
@@ -142,32 +140,14 @@ export default function ProductOverview() {
   console.log(product);
 
   const handleAddReview = async (reviewData) => {
-    try {
-      const token = localStorage.getItem("userToken");
-      if (!token) {
-        alert("Please log in to submit a review.");
-        navigate("/login");
-        return;
-      }
-
-      const res = await fetch(`${BASE_URL}/api/v1/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(reviewData),
-      });
-
-      const data = await res.json();
-      console.log("Review response:", data);
-      if (data && data._id) {
-        setReviews((prev) => [data, ...prev]);
-      } else {
-        alert(data.message || "Error submitting review.");
-      }
-    } catch (err) {
-      console.error("Error adding review:", err);
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+    const res = await createReview(reviewData);
+    const data = res.data;
+    if (data && data._id) {
+      setReviews((prev) => [data, ...prev]);
     }
   };
 
@@ -228,22 +208,20 @@ export default function ProductOverview() {
 
             <div className="mt-3">
               <h3 className="sr-only">Reviews</h3>
-              <div className="flex items-center">
-                <div className="flex items-center">
-                  {[0, 1, 2, 3, 4].map((rating) => (
-                    <StarIcon
-                      key={rating}
-                      aria-hidden="true"
-                      className={classNames(
-                        product.rating > rating
-                          ? "text-indigo-500"
-                          : "text-gray-300",
-                        "size-5 shrink-0"
-                      )}
-                    />
-                  ))}
-                </div>
-                <p className="sr-only">{product.rating} out of 5 stars</p>
+              <div className="flex items-center gap-2">
+                <StarRating
+                  rating={
+                    reviews.length > 0
+                      ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length
+                      : product.rating ?? 0
+                  }
+                  size="md"
+                />
+                {reviews.length > 0 && (
+                  <span className="text-sm text-gray-500">
+                    ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
+                  </span>
+                )}
               </div>
             </div>
 
@@ -320,7 +298,9 @@ export default function ProductOverview() {
               </h2>
 
               <div className="divide-y divide-gray-200 border-t border-gray-200">
-                {product.details.map((detail) => (
+                {(product.details || [])
+                  .filter((d) => d.name && !["Shipping", "Returns"].includes(d.name))
+                  .map((detail) => (
                   <Disclosure key={detail.name} as="div">
                     <h3>
                       <DisclosureButton className="group relative flex w-full items-center justify-between py-6 text-left">
@@ -358,6 +338,7 @@ export default function ProductOverview() {
                 productId={product._id}
                 reviews={reviews}
                 onAddReview={handleAddReview}
+                currentUser={currentUser}
               />
             </section>
           </div>

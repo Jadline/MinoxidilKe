@@ -40,6 +40,10 @@ export const deleteProduct = (id) => api.delete(`/api/v1/products/${id}`);
 
 export const getMe = () => api.get("/api/v1/account/me");
 
+// Reviews (public read; create requires auth)
+export const getReviewsByProduct = (productId) => api.get(`/api/v1/reviews/${productId}`);
+export const createReview = (data) => api.post("/api/v1/reviews", data);
+
 // Packages (bundles of products)
 export const getPackages = (params) => api.get("/api/v1/packages", { params });
 export const getPackage = (id) => api.get(`/api/v1/packages/${id}`);
