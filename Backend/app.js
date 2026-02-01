@@ -10,6 +10,7 @@ const mpesaRouter = require('./routes/mpesaRoute');
 const emailRouter = require('./routes/emailRoute');
 const userRouter = require('./routes/userRoute');
 const reviewRoutes = require('./routes/reviewRoutes');
+const packageReviewRoutes = require('./routes/packageReviewRoutes');
 const uploadRouter = require('./routes/uploadRoute');
 const shippingMethodRouter = require('./routes/shippingMethodRoute');
 const pickupLocationRouter = require('./routes/pickupLocationRoute');
@@ -40,6 +41,7 @@ app.use('/api/v1/mpesa-notify', mpesaRouter);
 app.use('/api/v1/contact',emailRouter)
 app.use('/api/v1/account',userRouter)
 app.use('/api/v1/reviews', reviewRoutes);
+app.use('/api/v1/package-reviews', packageReviewRoutes);
 app.use('/api/v1/upload', uploadRouter);
 app.use('/api/v1/shipping-methods', shippingMethodRouter);
 app.use('/api/v1/pickup-locations', pickupLocationRouter);

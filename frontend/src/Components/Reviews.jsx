@@ -3,9 +3,20 @@ import { useForm } from "react-hook-form";
 import StarRating from "./StarRating";
 import toast from "react-hot-toast";
 
-function Reviews({ productId, reviews = [], onAddReview, currentUser }) {
+function Reviews({
+  productId,
+  subjectId,
+  reviewPayloadKey = "product",
+  reviews = [],
+  onAddReview,
+  currentUser,
+  emptyMessage = "This product does not have reviews yet.",
+  alreadyReviewedMessage = "You have already reviewed this product.",
+}) {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const subjectIdResolved = subjectId ?? productId;
 
   const averageRating =
     reviews.length > 0
@@ -29,7 +40,8 @@ function Reviews({ productId, reviews = [], onAddReview, currentUser }) {
     }
     setSubmitting(true);
     try {
-      await onAddReview({ product: productId, rating, comment: (data.comment || "").trim() });
+      const payload = { [reviewPayloadKey]: subjectIdResolved, rating, comment: (data.comment || "").trim() };
+      await onAddReview(payload);
       reset({ comment: "", rating: 0 });
       setShowReviewForm(false);
       toast.success("Review submitted.");
@@ -77,7 +89,7 @@ function Reviews({ productId, reviews = [], onAddReview, currentUser }) {
       )}
 
       {userAlreadyReviewed ? (
-        <p className="mt-4 text-sm text-gray-600 italic">You have already reviewed this product.</p>
+        <p className="mt-4 text-sm text-gray-600 italic">{alreadyReviewedMessage}</p>
       ) : currentUser ? (
         <>
           <button

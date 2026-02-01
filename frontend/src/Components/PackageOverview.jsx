@@ -1,14 +1,18 @@
 import { FaArrowRight } from "react-icons/fa";
 import { FaWhatsapp } from "react-icons/fa";
 import StarRating from "./StarRating";
+import Reviews from "./Reviews";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/cartStore";
+import { useUserStore } from "../stores/userStore";
 import { CubeIcon, PlusIcon, MinusIcon } from "@heroicons/react/24/outline";
 import {
   Disclosure,
   DisclosureButton,
   DisclosurePanel,
 } from "@headlessui/react";
+import { getReviewsByPackage, createPackageReview } from "../api";
 
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 const PACKAGE_CART_ID_PREFIX = "package-";
@@ -34,7 +38,25 @@ function packageCartId(pkgId) {
 export default function PackageOverview({ package: pkgProp }) {
   const navigate = useNavigate();
   const setCart = useCartStore((state) => state.setCart);
+  const currentUser = useUserStore((s) => s.currentUser);
   const pkg = pkgProp || null;
+
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    if (!pkg?.id) return;
+    const fetchReviews = async () => {
+      try {
+        const res = await getReviewsByPackage(pkg.id);
+        const data = res.data;
+        if (Array.isArray(data)) setReviews(data);
+        else if (data?.reviews) setReviews(data.reviews);
+      } catch (err) {
+        console.error("Error fetching package reviews:", err);
+      }
+    };
+    fetchReviews();
+  }, [pkg?.id]);
 
   if (!pkg) {
     return (
@@ -47,6 +69,12 @@ export default function PackageOverview({ package: pkgProp }) {
   const imageSrc = packageImageSrc(pkg.imageSrc);
   const products = Array.isArray(pkg.products) ? pkg.products : [];
   const details = Array.isArray(pkg.details) ? pkg.details : [];
+
+  const handleAddPackageReview = async (payload) => {
+    const res = await createPackageReview(payload);
+    const data = res.data;
+    if (data && data._id) setReviews((prev) => [data, ...prev]);
+  };
 
   const handleAddToCart = () => {
     const cartId = packageCartId(pkg.id);
@@ -172,8 +200,49 @@ export default function PackageOverview({ package: pkgProp }) {
               </h2>
 
               <div className="divide-y divide-gray-200 border-t border-gray-200">
+                {/* Features section - always shown first */}
+                <Disclosure as="div">
+                  <h3>
+                    <DisclosureButton className="group relative flex w-full items-center justify-between py-6 text-left">
+                      <span className="text-sm font-medium text-gray-900 group-data-open:text-indigo-600">
+                        Features
+                      </span>
+                      <span className="ml-6 flex items-center">
+                        <PlusIcon
+                          aria-hidden="true"
+                          className="block size-6 text-gray-400 group-hover:text-gray-500 group-data-open:hidden"
+                        />
+                        <MinusIcon
+                          aria-hidden="true"
+                          className="hidden size-6 text-indigo-400 group-hover:text-indigo-500 group-data-open:block"
+                        />
+                      </span>
+                    </DisclosureButton>
+                  </h3>
+                  <DisclosurePanel className="pb-6">
+                    {(() => {
+                      const featuresDetail = details.find((d) => d.name === "Features");
+                      const items = featuresDetail?.items ?? [];
+                      return items.length > 0 ? (
+                        <ul
+                          role="list"
+                          className="list-disc space-y-1 pl-5 text-sm/6 text-gray-700 marker:text-gray-300"
+                        >
+                          {items.map((item) => (
+                            <li key={item} className="pl-2">
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic">No features listed.</p>
+                      );
+                    })()}
+                  </DisclosurePanel>
+                </Disclosure>
+
                 {details
-                  .filter((d) => d.name && Array.isArray(d.items))
+                  .filter((d) => d.name && d.name !== "Features" && Array.isArray(d.items))
                   .map((detail) => (
                     <Disclosure key={detail.name} as="div">
                       <h3>
@@ -259,15 +328,15 @@ export default function PackageOverview({ package: pkgProp }) {
                 )}
               </div>
 
-              {/* Customer Reviews - same shape as product page */}
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Customer Reviews
-                </h3>
-                <p className="mt-2 text-gray-500 italic">
-                  This package does not have reviews yet.
-                </p>
-              </div>
+              <Reviews
+                subjectId={pkg.id}
+                reviewPayloadKey="package"
+                reviews={reviews}
+                onAddReview={handleAddPackageReview}
+                currentUser={currentUser}
+                emptyMessage="This package does not have reviews yet."
+                alreadyReviewedMessage="You have already reviewed this package."
+              />
             </section>
           </div>
         </div>
