@@ -3,13 +3,16 @@ const ShippingMethod = require('../models/shippingMethodModel');
 async function getShippingMethods(req, res) {
   try {
     const { country, city, region } = req.query;
-    if (!country) {
+    const countryVal = country && country.trim();
+    if (!countryVal) {
       return res.status(400).json({
         status: 'fail',
         message: 'country query parameter is required',
       });
     }
-    const filter = { country: country.trim(), inStock: true };
+    // Match country case-insensitively so "Uganda", "uganda", "UGANDA" all work
+    const countryRe = new RegExp('^' + countryVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+    const filter = { country: countryRe, inStock: true };
     const cityVal = (city && city.trim()) || (region && region.trim());
     if (cityVal) {
       const re = new RegExp(cityVal.replace(/\s+/g, '\\s*'), 'i');

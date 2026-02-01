@@ -5,12 +5,16 @@ import { useNavigate } from "react-router-dom";
 import { TrashIcon, TruckIcon, BuildingOfficeIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { useCartStore } from "../stores/cartStore";
 import { createOrder, getShippingMethods, getPickupLocations, createAddress } from "../api";
+import { validatePhoneByDial, validatePostalByCountry } from "../helpers/checkoutValidation";
 import toast from "react-hot-toast";
 
 const paymentMethods = [
   { id: "mpesa", title: "M-Pesa" },
   { id: "pay-on-delivery", title: "Pay on Delivery" },
 ];
+
+// Countries that have defined shipping methods in the backend. Others see "Enter your shipping address..." message.
+const SHIPPING_COUNTRIES = ["Kenya", "Uganda", "Tanzania"];
 
 // Kenya first (primary market), then alphabetical
 const COUNTRIES = [
@@ -64,6 +68,7 @@ const COUNTRY_DIAL_CODES = [
   { dial: "971", label: "UAE", flag: "🇦🇪" },
   { dial: "86", label: "China", flag: "🇨🇳" },
   { dial: "81", label: "Japan", flag: "🇯🇵" },
+  { dial: "886", label: "Taiwan", flag: "🇹🇼" },
   { dial: "49", label: "Germany", flag: "🇩🇪" },
   { dial: "33", label: "France", flag: "🇫🇷" },
   { dial: "61", label: "Australia", flag: "🇦🇺" },
@@ -125,19 +130,25 @@ export default function OrderSummary() {
   const country = watch("country");
   const city = watch("city");
 
-  // Fetch shipping methods when Ship and country/city are set
-  const { data: shippingData } = useQuery({
+  // Fetch shipping methods only for Kenya, Uganda, Tanzania. Other countries show the "Enter your shipping address..." message.
+  const hasShippingMethods = country && SHIPPING_COUNTRIES.includes(country.trim());
+  const { data: shippingData, isLoading: shippingLoading } = useQuery({
     queryKey: ["shipping-methods", country, city],
     queryFn: () => getShippingMethods({ country: country || "Kenya", city: city || "" }).then((r) => r.data?.data?.shippingMethods ?? []),
-    enabled: deliveryType === "ship" && !!country?.trim(),
+    enabled: deliveryType === "ship" && !!hasShippingMethods,
   });
   const shippingMethods = Array.isArray(shippingData) ? shippingData : [];
 
-  // Fetch pickup locations when Pick up and country set
-  const { data: pickupData } = useQuery({
-    queryKey: ["pickup-locations", country],
-    queryFn: () => getPickupLocations({ country: country || "Kenya" }).then((r) => r.data?.data?.pickupLocations ?? []),
-    enabled: deliveryType === "pickup" && !!country?.trim(),
+  // Fetch pickup locations when Pick up – business is in Kenya, so only Kenya locations
+  const {
+    data: pickupData,
+    isLoading: pickupLoading,
+    isError: pickupError,
+    error: pickupErrorDetail,
+  } = useQuery({
+    queryKey: ["pickup-locations", "Kenya"],
+    queryFn: () => getPickupLocations({ country: "Kenya" }).then((r) => r.data?.data?.pickupLocations ?? []),
+    enabled: deliveryType === "pickup",
   });
   const pickupLocations = Array.isArray(pickupData) ? pickupData : [];
 
@@ -149,7 +160,7 @@ export default function OrderSummary() {
 
   const saveOrderMutation = useMutation({
     mutationFn: (data) => createOrder(data),
-    onSuccess: async (_, variables) => {
+    onSuccess: async (response, variables) => {
       if (saveAddressForNextTime && deliveryType === "ship" && variables.streetAddress && variables.city) {
         try {
           await createAddress({
@@ -173,12 +184,15 @@ export default function OrderSummary() {
       setIsSubmitting(false);
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       setCart([]);
-      navigate("/order-confirmation");
+      const createdOrder = response?.data?.data?.order;
+      navigate("/order-confirmation", { state: createdOrder ? { order: createdOrder } : undefined });
     },
     onError: (err) => {
       isProcessingRef.current = false;
       setIsSubmitting(false);
-      toast.error(err?.response?.data?.message || "Failed to save order");
+      const data = err?.response?.data;
+      const firstError = data?.errors?.[0]?.msg ?? data?.errors?.[0]?.message;
+      toast.error(firstError || data?.message || "Failed to save order");
     },
   });
 
@@ -234,8 +248,12 @@ export default function OrderSummary() {
     isProcessingRef.current = true;
     setIsSubmitting(true);
 
-    const fullPhone = (phoneCountryCode + (data.phone || "").replace(/^0+/, "")).trim();
-    const fullContactPhone = (contactPhoneCountryCode + (data.phoneNumber || "").replace(/^0+/, "")).trim();
+    const toNational = (val, dial) => {
+      const digits = (val || "").replace(/\D/g, "");
+      return digits.startsWith(dial) ? digits.slice(dial.length) : digits.replace(/^0+/, "");
+    };
+    const fullPhone = (phoneCountryCode + toNational(data.phone, phoneCountryCode)).trim();
+    const fullContactPhone = (contactPhoneCountryCode + toNational(data.phoneNumber, contactPhoneCountryCode)).trim();
 
     const payload = {
       orderItems: cart.map((item) => ({
@@ -272,7 +290,7 @@ export default function OrderSummary() {
   }
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gradient-to-b from-indigo-50/50 to-gray-50">
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-24 sm:px-6 lg:px-8">
         <h2 className="sr-only">Checkout</h2>
 
@@ -280,11 +298,13 @@ export default function OrderSummary() {
           <div>
             {/* Delivery: Ship vs Pick up */}
             <div className="mb-10">
-              <h2 className="text-lg font-medium text-gray-900">Delivery</h2>
+              <h2 className="text-lg font-semibold text-indigo-800">Delivery</h2>
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <label
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 ${
-                    deliveryType === "ship" ? "border-indigo-600 bg-indigo-50/50" : "border-gray-200 bg-white"
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition-colors ${
+                    deliveryType === "ship"
+                      ? "border-indigo-600 bg-indigo-50/80 shadow-sm"
+                      : "border-gray-200 bg-white hover:border-indigo-200 hover:bg-indigo-50/40"
                   }`}
                 >
                   <input
@@ -294,12 +314,14 @@ export default function OrderSummary() {
                     onChange={() => setDeliveryType("ship")}
                     className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <TruckIcon className="h-6 w-6 text-indigo-600" />
-                  <span className="font-medium">Ship</span>
+                  <TruckIcon className={`h-6 w-6 ${deliveryType === "ship" ? "text-indigo-600" : "text-indigo-400"}`} />
+                  <span className={`font-medium ${deliveryType === "ship" ? "text-indigo-900" : "text-gray-700"}`}>Ship</span>
                 </label>
                 <label
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 ${
-                    deliveryType === "pickup" ? "border-indigo-600 bg-indigo-50/50" : "border-gray-200 bg-white"
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-colors ${
+                    deliveryType === "pickup"
+                      ? "border-indigo-600 bg-indigo-50 shadow-sm"
+                      : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50"
                   }`}
                 >
                   <input
@@ -309,8 +331,8 @@ export default function OrderSummary() {
                     onChange={() => setDeliveryType("pickup")}
                     className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <BuildingOfficeIcon className="h-6 w-6 text-gray-500" />
-                  <span className="font-medium">Pick up</span>
+                  <BuildingOfficeIcon className={`h-6 w-6 ${deliveryType === "pickup" ? "text-indigo-600" : "text-indigo-400"}`} />
+                  <span className={`font-medium ${deliveryType === "pickup" ? "text-indigo-900" : "text-gray-700"}`}>Pick up</span>
                   <span className="text-xs text-gray-500">(Leave phone in billing below)</span>
                 </label>
               </div>
@@ -318,8 +340,8 @@ export default function OrderSummary() {
 
             {deliveryType === "ship" && (
               <>
-                <div className="border-t border-gray-200 pt-10">
-                  <h2 className="text-lg font-medium text-gray-900">Shipping address</h2>
+                <div className="border-t border-indigo-100 pt-10">
+                  <h2 className="text-lg font-semibold text-indigo-800">Shipping address</h2>
                   <div className="mt-4 grid grid-cols-2 gap-4">
                     <div className="col-span-2 sm:col-span-1">
                       <label className="block text-sm font-medium text-gray-700">Country / Region</label>
@@ -363,11 +385,22 @@ export default function OrderSummary() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Postal code (optional)</label>
-                      <input {...register("postalCode")} disabled={isSubmitting} placeholder="e.g. 10300" className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm" />
+                      <input
+                        {...register("postalCode", {
+                          validate: (v) => {
+                            const r = validatePostalByCountry(v, country);
+                            return r.valid || r.message;
+                          },
+                        })}
+                        disabled={isSubmitting}
+                        placeholder="e.g. 10300"
+                        className={`mt-1 w-full rounded-md px-3 py-2 shadow-sm sm:text-sm ${errors.postalCode ? "border-red-500 border" : "border-gray-300 border"}`}
+                      />
+                      {errors.postalCode && <p className="text-red-600 text-sm mt-1">{errors.postalCode.message}</p>}
                     </div>
                     <div className="col-span-2">
                       <label className="block text-sm font-medium text-gray-700">Phone</label>
-                      <div className="mt-1 flex rounded-md border border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
+                      <div className={`mt-1 flex rounded-md bg-white shadow-sm focus-within:ring-1 focus-within:ring-indigo-500 ${errors.phone ? "border border-red-500 focus-within:border-red-500" : "border border-gray-300 focus-within:border-indigo-500"}`}>
                         <select
                           value={phoneCountryCode}
                           onChange={(e) => setPhoneCountryCode(e.target.value)}
@@ -380,15 +413,25 @@ export default function OrderSummary() {
                             </option>
                           ))}
                         </select>
-                        <span className="flex items-center border-l border-gray-300 py-2 pl-2 text-gray-500 sm:text-sm">+{phoneCountryCode}</span>
                         <input
-                          {...register("phone")}
+                          {...register("phone", {
+                            required: deliveryType === "ship" ? "Phone is required for shipping" : false,
+                            validate: (v) => {
+                              if (deliveryType !== "ship" && !(v || "").trim()) return true;
+                              const digits = (v || "").replace(/\D/g, "");
+                              const national = digits.startsWith(phoneCountryCode)
+                                ? digits.slice(phoneCountryCode.length) : digits;
+                              const r = validatePhoneByDial(national || digits, phoneCountryCode);
+                              return r.valid || r.message;
+                            },
+                          })}
                           type="tel"
                           disabled={isSubmitting}
                           placeholder="791 061 920"
                           className="block w-full min-w-0 flex-1 border-0 py-2 pr-3 pl-1 text-gray-900 placeholder-gray-400 focus:ring-0 sm:text-sm"
                         />
                       </div>
+                      {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone.message}</p>}
                     </div>
                     <div className="col-span-2 flex items-center">
                       <input
@@ -404,20 +447,29 @@ export default function OrderSummary() {
                   </div>
                 </div>
 
-                <div className="mt-10 border-t border-gray-200 pt-10">
-                  <h2 className="text-lg font-medium text-gray-900">Shipping method</h2>
-                  {!country?.trim() || !city?.trim() ? (
+                <div className="mt-10 border-t border-indigo-100 pt-10">
+                  <h2 className="text-lg font-semibold text-indigo-800">Shipping method</h2>
+                  {!country?.trim() ? (
+                    <div className="mt-4 rounded-lg bg-gray-100 px-4 py-6 text-center text-gray-600">
+                      Enter your shipping address to view available shipping methods.
+                    </div>
+                  ) : !hasShippingMethods ? (
                     <div className="mt-4 rounded-lg bg-gray-100 px-4 py-6 text-center text-gray-600">
                       Enter your shipping address to view available shipping methods.
                     </div>
                   ) : (
                     <div className="mt-4 space-y-3">
-                      {shippingMethods.length === 0 && <p className="text-gray-500">Loading…</p>}
-                      {shippingMethods.map((method) => (
+                      {shippingLoading && <p className="text-indigo-600">Loading…</p>}
+                      {!shippingLoading && shippingMethods.length === 0 && (
+                        <p className="text-slate-600">No shipping methods for this country/city. Try a different city or contact us.</p>
+                      )}
+                      {!shippingLoading && shippingMethods.map((method) => (
                         <label
                           key={method._id}
-                          className={`flex cursor-pointer items-center justify-between rounded-lg border-2 p-4 ${
-                            selectedShippingMethod?._id === method._id ? "border-indigo-600 bg-indigo-50/50" : "border-gray-200 bg-white"
+                          className={`flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-colors ${
+                            selectedShippingMethod?._id === method._id
+                              ? "border-indigo-600 bg-indigo-50 shadow-sm"
+                              : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50"
                           }`}
                         >
                           <input
@@ -428,10 +480,10 @@ export default function OrderSummary() {
                             className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                           />
                           <div className="flex-1 px-3 text-left">
-                            <span className="font-medium text-gray-900">{method.name}</span>
-                            {method.description && <p className="text-sm text-gray-500">{method.description}</p>}
+                            <span className={`font-semibold ${selectedShippingMethod?._id === method._id ? "text-indigo-900" : "text-gray-800"}`}>{method.name}</span>
+                            {method.description && <p className="text-sm text-slate-600">{method.description}</p>}
                           </div>
-                          <span className="font-medium text-gray-900">Ksh {method.costKes?.toLocaleString()}.00</span>
+                          <span className="font-semibold text-indigo-600 whitespace-nowrap">Ksh {method.costKes?.toLocaleString()}.00</span>
                         </label>
                       ))}
                     </div>
@@ -441,20 +493,31 @@ export default function OrderSummary() {
             )}
 
             {deliveryType === "pickup" && (
-              <div className="border-t border-gray-200 pt-10">
-                <h2 className="text-lg font-medium text-gray-900">Pickup locations</h2>
-                {!country?.trim() ? (
-                  <div className="mt-4 rounded-lg bg-gray-100 px-4 py-6 text-center text-gray-600">
-                    Select country above to see pickup locations.
+              <div className="border-t border-indigo-100 pt-10">
+                <h2 className="text-lg font-semibold text-indigo-800">Pickup locations</h2>
+                <p className="mt-1 text-sm font-medium text-blue-600">Pickups are in Kenya.</p>
+                {pickupLoading ? (
+                  <div className="mt-4 rounded-xl bg-indigo-50/70 border border-indigo-100 px-4 py-6 text-center text-indigo-700">
+                    Loading…
+                  </div>
+                ) : pickupError ? (
+                  <div className="mt-4 rounded-xl bg-red-50 px-4 py-6 text-center text-red-700 border border-red-100">
+                    Could not load pickup locations. Check that the backend is running and the API is reachable.
+                    {pickupErrorDetail?.message && <p className="mt-1 text-sm">{pickupErrorDetail.message}</p>}
+                  </div>
+                ) : pickupLocations.length === 0 ? (
+                  <div className="mt-4 rounded-xl bg-amber-50 px-4 py-6 text-center text-amber-800 border border-amber-200">
+                    No pickup locations in Kenya yet. Run the seed script on the backend: <code className="text-sm">node dev-data/seedPickupLocations.js</code>
                   </div>
                 ) : (
                   <div className="mt-4 space-y-3">
-                    {pickupLocations.length === 0 && <p className="text-gray-500">Loading…</p>}
                     {pickupLocations.map((loc) => (
                       <label
                         key={loc._id}
-                        className={`flex cursor-pointer items-start gap-3 rounded-lg border-2 p-4 ${
-                          selectedPickupLocation?._id === loc._id ? "border-indigo-600 bg-indigo-50/50" : "border-gray-200 bg-white"
+                        className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-colors ${
+                          selectedPickupLocation?._id === loc._id
+                            ? "border-indigo-600 bg-indigo-50 shadow-sm"
+                            : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50"
                         }`}
                       >
                         <input
@@ -465,11 +528,11 @@ export default function OrderSummary() {
                           className="mt-1 h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900">{loc.name}</p>
-                          <p className="text-sm text-gray-500">{loc.address}</p>
-                          {loc.distanceKm != null && <p className="text-sm text-gray-500">{loc.distanceKm} km</p>}
+                          <p className={`font-semibold ${selectedPickupLocation?._id === loc._id ? "text-indigo-900" : "text-gray-800"}`}>{loc.name}</p>
+                          <p className="text-sm text-slate-600">{loc.address}</p>
+                          {loc.distanceKm != null && <p className="text-sm text-slate-500">{loc.distanceKm} km</p>}
                         </div>
-                        <span className="font-medium text-gray-900">{loc.costKes === 0 ? "FREE" : `Ksh ${loc.costKes}`}</span>
+                        <span className={`font-semibold whitespace-nowrap ${loc.costKes === 0 ? "text-emerald-600" : "text-indigo-600"}`}>{loc.costKes === 0 ? "FREE" : `Ksh ${loc.costKes}`}</span>
                       </label>
                     ))}
                   </div>
@@ -478,8 +541,8 @@ export default function OrderSummary() {
             )}
 
             {/* Contact information */}
-            <div className="mt-10 border-t border-gray-200 pt-10">
-              <h2 className="text-lg font-medium text-gray-900">Contact information</h2>
+            <div className="mt-10 border-t border-indigo-100 pt-10">
+              <h2 className="text-lg font-semibold text-indigo-800">Contact information</h2>
               <div className="mt-4 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Name</label>
@@ -498,7 +561,7 @@ export default function OrderSummary() {
                       <QuestionMarkCircleIcon className="h-4 w-4" />
                     </span>
                   </label>
-                  <div className="mt-1 flex rounded-md border border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
+                  <div className={`mt-1 flex rounded-md bg-white shadow-sm focus-within:ring-1 focus-within:ring-indigo-500 ${errors.phoneNumber ? "border border-red-500 focus-within:border-red-500" : "border border-gray-300 focus-within:border-indigo-500"}`}>
                     <select
                       value={contactPhoneCountryCode}
                       onChange={(e) => setContactPhoneCountryCode(e.target.value)}
@@ -511,9 +574,17 @@ export default function OrderSummary() {
                         </option>
                       ))}
                     </select>
-                    <span className="flex items-center border-l border-gray-300 py-2 pl-2 text-gray-500 sm:text-sm">+{contactPhoneCountryCode}</span>
                     <input
-                      {...register("phoneNumber", { required: "Required" })}
+                      {...register("phoneNumber", {
+                        required: "Phone number is required",
+                        validate: (v) => {
+                          const digits = (v || "").replace(/\D/g, "");
+                          const national = digits.startsWith(contactPhoneCountryCode)
+                            ? digits.slice(contactPhoneCountryCode.length) : digits;
+                          const r = validatePhoneByDial(national || digits, contactPhoneCountryCode);
+                          return r.valid || r.message;
+                        },
+                      })}
                       type="tel"
                       disabled={isSubmitting}
                       placeholder="791 061 920"
@@ -533,8 +604,8 @@ export default function OrderSummary() {
             )}
 
             {/* Payment */}
-            <div className="mt-10 border-t border-gray-200 pt-10">
-              <h2 className="text-lg font-medium text-gray-900">Payment</h2>
+            <div className="mt-10 border-t border-indigo-100 pt-10">
+              <h2 className="text-lg font-semibold text-indigo-800">Payment</h2>
               <fieldset className="mt-4">
                 <legend className="sr-only">Payment type</legend>
                 <div className="space-y-4 sm:flex sm:space-x-10 sm:space-y-0">
@@ -546,6 +617,17 @@ export default function OrderSummary() {
                   ))}
                 </div>
               </fieldset>
+              <p className="mt-3 text-sm text-gray-600">
+                Want to pay by card?{" "}
+                <a
+                  href="https://wa.me/254726787330"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-green-600 hover:text-green-700 hover:underline"
+                >
+                  Contact us on WhatsApp +254 726 787330
+                </a>
+              </p>
 
               {watch("paymentType") === "mpesa" && (
                 <div className="mt-6 space-y-3 rounded-md border border-gray-200 bg-gray-50 p-4">
@@ -574,8 +656,8 @@ export default function OrderSummary() {
 
           {/* Order summary sidebar */}
           <div className="mt-10 lg:mt-0">
-            <h2 className="text-lg font-medium text-gray-900">Order summary</h2>
-            <div className="mt-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+            <h2 className="text-lg font-semibold text-indigo-800">Order summary</h2>
+            <div className="mt-4 rounded-xl border-2 border-indigo-100 bg-white shadow-md shadow-indigo-100/50">
               <ul className="divide-y divide-gray-200">
                 {cart.map((product) => (
                   <li key={product.id} className="flex px-4 py-6 sm:px-6">
@@ -592,22 +674,22 @@ export default function OrderSummary() {
                   </li>
                 ))}
               </ul>
-              <dl className="space-y-3 border-t border-gray-200 px-4 py-6 sm:px-6">
-                <div className="flex justify-between text-sm">
+              <dl className="space-y-3 border-t border-indigo-100 px-4 py-6 sm:px-6">
+                <div className="flex justify-between text-sm text-gray-700">
                   <dt>Subtotal</dt>
-                  <dd>Ksh {Total?.toLocaleString()}</dd>
+                  <dd className="text-indigo-700 font-medium">Ksh {Total?.toLocaleString()}</dd>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm text-gray-700">
                   <dt>Shipping</dt>
-                  <dd>
+                  <dd className="text-indigo-700">
                     {deliveryType === "pickup"
-                      ? selectedPickupLocation ? "Pickup – FREE" : "—"
+                      ? selectedPickupLocation ? <span className="text-emerald-600 font-medium">Pickup – FREE</span> : "—"
                       : selectedShippingMethod ? `${selectedShippingMethod.name} – Ksh ${(selectedShippingMethod.costKes ?? 0).toLocaleString()}` : "—"}
                   </dd>
                 </div>
-                <div className="flex justify-between border-t border-gray-200 pt-3 text-base font-medium">
-                  <dt>Total</dt>
-                  <dd>Ksh {OrderTotal?.toLocaleString()}</dd>
+                <div className="flex justify-between border-t-2 border-indigo-100 pt-3 text-base font-semibold">
+                  <dt className="text-indigo-900">Total</dt>
+                  <dd className="text-indigo-600">Ksh {OrderTotal?.toLocaleString()}</dd>
                 </div>
               </dl>
               <div className="border-t border-gray-200 px-4 py-6 sm:px-6">

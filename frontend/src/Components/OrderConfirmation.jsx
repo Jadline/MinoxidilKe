@@ -1,22 +1,31 @@
+import { useLocation } from "react-router-dom";
 import { useOrders } from "../hooks/useOrders";
 import Spinner from "./Spinner";
 
 export default function OrderConfirmation() {
+  const location = useLocation();
   const { orders, isLoadingOrders, ordersError } = useOrders();
 
-  if (!orders || orders.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <p className="text-gray-500 text-lg">
-          No recent order found. Please place an order first.
-        </p>
-      </div>
-    );
-  }
-  if (isLoadingOrders) return <Spinner />;
-  if (ordersError) return <p>There is an error loading orders</p>;
+  // Prefer order passed from checkout (avoids race with orders list refetch)
+  const orderFromState = location.state?.order;
+  const latestOrder = orderFromState ?? (orders?.length ? orders[orders.length - 1] : null);
 
-  const latestOrder = orders[orders.length - 1];
+  if (orderFromState) {
+    // We have the order from checkout; no need to wait for useOrders
+  } else if (!orders || orders.length === 0) {
+    if (!isLoadingOrders) {
+      return (
+        <div className="flex items-center justify-center h-screen bg-gray-50">
+          <p className="text-gray-500 text-lg">
+            No recent order found. Please place an order first.
+          </p>
+        </div>
+      );
+    }
+  }
+  if (!latestOrder && isLoadingOrders) return <Spinner />;
+  if (!latestOrder && ordersError) return <p>There is an error loading orders</p>;
+  if (!latestOrder) return <Spinner />;
   console.log("latest order", latestOrder);
   const paymentMethod = latestOrder.paymentType;
   let payinfo = null;
@@ -140,10 +149,16 @@ export default function OrderConfirmation() {
                 </dd>
               </div>
               <div>
-                <dt className="font-medium text-gray-900">Shipping method</dt>
+                <dt className="font-medium text-gray-900">Delivery</dt>
                 <dd className="mt-2 text-gray-700">
-                  <p>DHL</p>
-                  <p>Takes up to {orderLeadTime} working days</p>
+                  {latestOrder.deliveryType === "pickup" ? (
+                    <p>{latestOrder.pickupLocationName || "Pick up"}</p>
+                  ) : (
+                    <>
+                      <p>{latestOrder.shippingMethodName || "Shipping"}</p>
+                      {orderLeadTime != null && <p>Takes up to {orderLeadTime} working days</p>}
+                    </>
+                  )}
                 </dd>
               </div>
             </dl>
