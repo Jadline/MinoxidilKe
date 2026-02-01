@@ -8,8 +8,16 @@ const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 
 function packageImageSrc(imageSrc) {
   if (!imageSrc) return "";
-  if (imageSrc.startsWith("http")) return imageSrc;
-  return BASE_URL ? BASE_URL + imageSrc : imageSrc;
+  const s = String(imageSrc).trim();
+  if (s.startsWith("http")) return s;
+  const path = s.startsWith("/") ? s : "/" + s;
+  const origin =
+    path.startsWith("/uploads/") && BASE_URL
+      ? BASE_URL
+      : typeof window !== "undefined"
+        ? window.location.origin
+        : "";
+  return origin ? origin + path : path;
 }
 
 function classNames(...classes) {
@@ -31,37 +39,45 @@ export default function PackageQuickView({ open, setOpen, packageData, onAddToCa
 
   if (!pkg) return null;
 
+  const imageSrc = packageImageSrc(pkg.imageSrc);
+
   return (
     <Dialog open={open} onClose={setOpen} className="relative z-10">
       <DialogBackdrop className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
       <div className="fixed inset-0 z-10 flex items-center justify-center p-4">
-        <DialogPanel className="w-full max-w-2xl rounded-lg bg-white shadow-xl relative max-h-[90vh] overflow-y-auto">
+        <DialogPanel className="w-full max-w-4xl rounded-lg bg-white shadow-xl relative max-h-[90vh] overflow-y-auto">
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10"
+            className="absolute top-4 right-4 z-10 rounded p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+            aria-label="Close"
           >
             <XMarkIcon className="size-6" />
           </button>
 
           <div className="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2">
-            <div className="aspect-square rounded-lg bg-gray-100 overflow-hidden shrink-0">
-              {pkg.imageSrc ? (
+            {/* Left: prominent image */}
+            <div className="aspect-square w-full rounded-lg bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+              {imageSrc ? (
                 <img
-                  src={packageImageSrc(pkg.imageSrc)}
+                  src={imageSrc}
                   alt={pkg.imageAlt || pkg.name}
                   className="w-full h-full object-contain"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <CubeIcon className="w-16 h-16 text-gray-400" />
-                </div>
+                <CubeIcon className="w-24 h-24 text-gray-400" />
               )}
             </div>
 
-            <div>
+            {/* Right: title, price, rating, description, Add to Cart */}
+            <div className="flex flex-col min-w-0">
               <h2 className="text-2xl font-bold text-gray-900">{pkg.name}</h2>
-              <div className="mt-2 flex items-center gap-2">
+
+              <p className="mt-2 text-lg font-semibold text-gray-900">
+                Ksh {Number(pkg.bundlePrice ?? 0).toLocaleString()}
+              </p>
+
+              <div className="mt-3 flex items-center gap-2">
                 {[0, 1, 2, 3, 4].map((r) => (
                   <StarIcon
                     key={r}
@@ -75,48 +91,38 @@ export default function PackageQuickView({ open, setOpen, packageData, onAddToCa
                   {(pkg.rating ?? 0).toFixed(1)}
                 </span>
               </div>
-              <p className="mt-2 text-lg font-semibold text-indigo-600">
-                KSh {Number(pkg.bundlePrice ?? 0).toLocaleString()}
-              </p>
-              <p className="mt-1 text-sm text-gray-500">{pkg.quantityLabel || "1 pack"}</p>
 
-              {pkg.description ? (
-                <p className="mt-4 text-sm text-gray-700">{pkg.description}</p>
-              ) : null}
-
-              <div className="mt-4">
-                <h3 className="text-sm font-medium text-gray-900">This package includes:</h3>
-                {isLoading ? (
-                  <p className="mt-1 text-sm text-gray-500">Loading…</p>
-                ) : products.length > 0 ? (
-                  <ul className="mt-2 space-y-1 text-sm text-gray-600">
-                    {products.map((prod) => (
-                      <li key={prod.id} className="flex items-center gap-2">
-                        {prod.imageSrc ? (
-                          <img
-                            src={prod.imageSrc}
-                            alt={prod.imageAlt || prod.name}
-                            className="w-8 h-8 rounded object-cover shrink-0"
-                          />
-                        ) : null}
-                        <span>{prod.name}</span>
-                        <span className="text-gray-400">— KSh {Number(prod.price ?? 0).toLocaleString()}</span>
-                      </li>
-                    ))}
-                  </ul>
+              <div className="mt-4 flex-1 min-h-0">
+                {pkg.description ? (
+                  typeof pkg.description === "string" &&
+                  (pkg.description.startsWith("<") || pkg.description.includes("<p>")) ? (
+                    <div
+                      dangerouslySetInnerHTML={{ __html: pkg.description }}
+                      className="text-sm text-gray-700 leading-relaxed"
+                    />
+                  ) : (
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {pkg.description}
+                    </p>
+                  )
                 ) : (
-                  <p className="mt-1 text-sm text-gray-500">
-                    {Array.isArray(pkg.productIds) ? pkg.productIds.length : 0} product(s)
-                  </p>
+                  <p className="text-sm text-gray-500 italic">No description.</p>
                 )}
               </div>
+
+              {!isLoading && products.length > 0 && (
+                <p className="mt-3 text-xs text-gray-500">
+                  This package includes {products.length} product{products.length !== 1 ? "s" : ""}:{" "}
+                  {products.map((prod) => prod.name).join(", ")}
+                </p>
+              )}
 
               <button
                 type="button"
                 onClick={() => onAddToCart?.()}
-                className="mt-6 w-full rounded-md bg-indigo-600 py-2 text-white font-medium hover:bg-indigo-500"
+                className="mt-6 w-full rounded-md bg-indigo-600 py-3 text-base font-medium text-white hover:bg-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
               >
-                Add package to Cart
+                Add to Cart
               </button>
             </div>
           </div>

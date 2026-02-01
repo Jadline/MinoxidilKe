@@ -73,6 +73,7 @@ async function createPackage(req, res) {
       inStock: payload.inStock !== false,
       category: payload.category ?? '',
       leadTime: payload.leadTime ?? '',
+      details: Array.isArray(payload.details) ? payload.details : [],
     });
     res.status(201).json({ status: 'success', data: { package: packageDoc } });
   } catch (err) {
@@ -90,6 +91,9 @@ async function updatePackage(req, res) {
     const body = { ...req.body };
     if (body.productIds) {
       body.productIds = body.productIds.map((n) => Number(n)).filter((n) => Number.isInteger(n) && n > 0);
+    }
+    if (body.details !== undefined) {
+      body.details = Array.isArray(body.details) ? body.details : [];
     }
     const pkg = await Package.findOneAndUpdate({ id }, { $set: body }, { new: true, runValidators: true });
     if (!pkg) {

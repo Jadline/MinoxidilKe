@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
 
+const detailSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  items: [String],
+});
+
 const PackageSchema = new mongoose.Schema({
   id: {
     type: Number,
@@ -22,6 +27,8 @@ const PackageSchema = new mongoose.Schema({
   inStock: { type: Boolean, default: true },
   category: { type: String, default: '' },
   leadTime: { type: String, default: '' },
+  /** Expandable sections (e.g. Features) - same shape as product details */
+  details: [detailSchema],
 });
 
 PackageSchema.index({ name: 1 });

@@ -136,7 +136,10 @@ export default function AdminPackagesList() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm font-medium text-gray-700">
-                      KSh {Number(pkg.bundlePrice ?? 0).toLocaleString()}
+                      <span className="inline-block">
+                        <span className="block leading-tight">KSh</span>
+                        <span className="block leading-tight">{Number(pkg.bundlePrice ?? 0).toLocaleString()}</span>
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {Array.isArray(pkg.productIds) ? pkg.productIds.length : 0} product(s)

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { StarIcon } from "@heroicons/react/20/solid";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { getPackages } from "../api";
@@ -47,6 +48,7 @@ function PackagesSkeleton() {
 }
 
 export default function PackageList() {
+  const navigate = useNavigate();
   const setCart = useCartStore((state) => state.setCart);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
@@ -100,7 +102,7 @@ export default function PackageList() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Packages</h2>
         <p className="text-sm text-gray-500 mb-6">
-          Save when you buy products together. Click a package for Quick View.
+          Save when you buy products together. Click a package card to open its details page, or use View details for a quick preview.
         </p>
 
         {error && (
@@ -122,7 +124,10 @@ export default function PackageList() {
             <div
               key={pkg.id}
               className="group relative border-r border-b border-gray-200 p-4 sm:p-6 cursor-pointer hover:shadow-md transition-shadow duration-150"
-              onClick={() => openQuickView(pkg)}
+              onClick={() => {
+                const path = pkg.id != null ? `/package-details/${pkg.id}` : "/package-details";
+                navigate(path, { state: { package: pkg } });
+              }}
             >
               <div className="aspect-square rounded-lg bg-gray-200 overflow-hidden flex items-center justify-center">
                 {pkg.imageSrc ? (
@@ -144,7 +149,7 @@ export default function PackageList() {
                 }}
                 className="mt-3 w-3/4 rounded-md bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
               >
-                Quick View
+                View details
               </button>
 
               <div className="pt-10 pb-4 text-left">

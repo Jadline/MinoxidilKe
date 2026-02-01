@@ -291,7 +291,10 @@ export default function AdminProductsList() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm font-medium text-gray-700">
-                      KSh {Number(p.price ?? 0).toLocaleString()}
+                      <span className="inline-block">
+                        <span className="block leading-tight">KSh</span>
+                        <span className="block leading-tight">{Number(p.price ?? 0).toLocaleString()}</span>
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {p.category || "—"}
