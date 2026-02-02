@@ -3,7 +3,7 @@ const {
   getAllOrders,
   getAdminOrders,
   addOrder,
-  updateOrderPaymentStatus,
+  updateOrder,
 } = require("../controllers/ordersController");
 const {
   authMiddleware,
