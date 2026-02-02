@@ -1,7 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { getProducts, deleteProduct, createProduct, updateProduct, uploadProductImage } from "../api";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  getProducts,
+  deleteProduct,
+  createProduct,
+  updateProduct,
+  uploadProductImage,
+} from "../api";
 import toast from "react-hot-toast";
 import {
   PencilSquareIcon,
@@ -21,7 +28,12 @@ function productImageSrc(imageSrc) {
   if (!imageSrc) return "";
   if (String(imageSrc).startsWith("http")) return imageSrc;
   const path = imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc;
-  const origin = path.startsWith("/uploads/") && BASE_URL ? BASE_URL : (typeof window !== "undefined" ? window.location.origin : "");
+  const origin =
+    path.startsWith("/uploads/") && BASE_URL
+      ? BASE_URL
+      : typeof window !== "undefined"
+      ? window.location.origin
+      : "";
   return origin ? origin + path : path;
 }
 
@@ -33,6 +45,8 @@ function truncate(str, max = 40) {
 
 export default function AdminProductsList() {
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["admin-products"],
@@ -74,6 +88,13 @@ export default function AdminProductsList() {
     if (totalPages > 0 && page > totalPages) setPage(totalPages);
   }, [totalPages, page]);
 
+  useEffect(() => {
+    if (location.state?.openAddModal) {
+      setAddModalOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state?.openAddModal, location.pathname, navigate]);
+
   const { mutateAsync: doDelete, isPending: isDeleting } = useMutation({
     mutationFn: (id) => deleteProduct(id),
     onSuccess: () => {
@@ -82,7 +103,9 @@ export default function AdminProductsList() {
     },
     onError: (err) => {
       const msg =
-        err?.response?.data?.message || err?.message || "Failed to delete product.";
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to delete product.";
       toast.error(msg);
     },
   });
@@ -100,26 +123,38 @@ export default function AdminProductsList() {
       imageAlt: "",
     },
   });
-  const { register: addRegister, handleSubmit: addHandleSubmit, formState: { errors: addErrors }, reset: addReset, setValue: addSetValue, watch: addWatch } = addProductForm;
+  const {
+    register: addRegister,
+    handleSubmit: addHandleSubmit,
+    formState: { errors: addErrors },
+    reset: addReset,
+    setValue: addSetValue,
+    watch: addWatch,
+  } = addProductForm;
   const addFormImageSrc = addWatch("imageSrc");
   const addFormCategory = addWatch("category");
-  const isNewCategory = addFormCategory === "" || !existingCategories.includes(addFormCategory);
+  const isNewCategory =
+    addFormCategory === "" || !existingCategories.includes(addFormCategory);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  const { mutateAsync: submitAddProduct, isPending: isAddingProduct } = useMutation({
-    mutationFn: (data) => createProduct(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-      setAddModalOpen(false);
-      addReset();
-      setUploadingImage(false);
-      toast.success("Product created successfully.");
-    },
-    onError: (err) => {
-      const msg = err?.response?.data?.message || err?.message || "Failed to create product.";
-      toast.error(msg);
-    },
-  });
+  const { mutateAsync: submitAddProduct, isPending: isAddingProduct } =
+    useMutation({
+      mutationFn: (data) => createProduct(data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        setAddModalOpen(false);
+        addReset();
+        setUploadingImage(false);
+        toast.success("Product created successfully.");
+      },
+      onError: (err) => {
+        const msg =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Failed to create product.";
+        toast.error(msg);
+      },
+    });
 
   const editProductForm = useForm({
     defaultValues: {
@@ -134,10 +169,18 @@ export default function AdminProductsList() {
       imageAlt: "",
     },
   });
-  const { register: editRegister, handleSubmit: editHandleSubmit, formState: { errors: editErrors }, reset: editReset, setValue: editSetValue, watch: editWatch } = editProductForm;
+  const {
+    register: editRegister,
+    handleSubmit: editHandleSubmit,
+    formState: { errors: editErrors },
+    reset: editReset,
+    setValue: editSetValue,
+    watch: editWatch,
+  } = editProductForm;
   const editFormImageSrc = editWatch("imageSrc");
   const editFormCategory = editWatch("category");
-  const isEditNewCategory = editFormCategory === "" || !existingCategories.includes(editFormCategory);
+  const isEditNewCategory =
+    editFormCategory === "" || !existingCategories.includes(editFormCategory);
 
   useEffect(() => {
     if (!editProduct) return;
@@ -154,20 +197,24 @@ export default function AdminProductsList() {
     });
   }, [editProduct, editReset]);
 
-  const { mutateAsync: submitEditProduct, isPending: isUpdatingProduct } = useMutation({
-    mutationFn: ({ id, ...data }) => updateProduct(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-      setEditProduct(null);
-      editReset();
-      setUploadingImage(false);
-      toast.success("Product updated.");
-    },
-    onError: (err) => {
-      const msg = err?.response?.data?.message || err?.message || "Failed to update product.";
-      toast.error(msg);
-    },
-  });
+  const { mutateAsync: submitEditProduct, isPending: isUpdatingProduct } =
+    useMutation({
+      mutationFn: ({ id, ...data }) => updateProduct(id, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        setEditProduct(null);
+        editReset();
+        setUploadingImage(false);
+        toast.success("Product updated.");
+      },
+      onError: (err) => {
+        const msg =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Failed to update product.";
+        toast.error(msg);
+      },
+    });
 
   const handleConfirmDelete = async () => {
     if (!productToDelete) return;
@@ -198,10 +245,14 @@ export default function AdminProductsList() {
 
       <div className="rounded-xl border border-[#191970]/30 bg-white shadow-xl overflow-hidden w-full transition-all duration-200 hover:shadow-2xl hover:border-[#191970]/50">
         {isLoading ? (
-          <div className="p-12 text-center text-gray-500">Loading products…</div>
+          <div className="p-12 text-center text-gray-500">
+            Loading products…
+          </div>
         ) : isError ? (
           <div className="p-12 text-center text-red-600">
-            {error?.response?.data?.message || error?.message || "Failed to load products."}
+            {error?.response?.data?.message ||
+              error?.message ||
+              "Failed to load products."}
           </div>
         ) : products.length === 0 ? (
           <div className="p-12 text-center">
@@ -210,47 +261,78 @@ export default function AdminProductsList() {
             <p className="mt-1 text-sm text-white/80">
               Add your first product to get started.
             </p>
-            <Link
-              to="/admin/add-product"
+            <button
+              type="button"
+              onClick={() => setAddModalOpen(true)}
               className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#191970] px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-[#12125c] transition-colors"
             >
               <PlusIcon className="h-5 w-5" />
               Add product
-            </Link>
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-[#191970]">
                 <tr>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                  >
                     ID
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                  >
                     Product
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                  >
                     Price
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                  >
                     Category
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                  >
                     Qty label
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                  >
                     Lead time
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                  >
                     Description
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                  >
                     Features
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                  >
                     Rating
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+                  >
                     Stock
                   </th>
                   <th scope="col" className="relative px-4 py-3">
@@ -260,101 +342,131 @@ export default function AdminProductsList() {
               </thead>
               <tbody className="bg-white/15 divide-y divide-white/20">
                 {products.map((p) => {
-                  const imageUrl = p.imageSrc ? productImageSrc(p.imageSrc) : "";
+                  const imageUrl = p.imageSrc
+                    ? productImageSrc(p.imageSrc)
+                    : "";
                   return (
-                  <tr key={p.id ?? p._id} className="hover:bg-[#191970]/5 transition-colors duration-150 cursor-default">
-                    <td className="px-4 py-3 text-sm font-mono text-gray-700">
-                      {p.id ?? "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-[#082567]/10">
-                          {imageUrl ? (
-                            <>
-                              <img
-                                src={imageUrl}
-                                alt={p.imageAlt || p.name}
-                                className="h-10 w-10 object-cover relative z-10 bg-white"
-                                onError={(e) => { e.target.style.display = "none"; }}
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none" aria-hidden>
+                    <tr
+                      key={p.id ?? p._id}
+                      className="hover:bg-[#191970]/5 transition-colors duration-150 cursor-default"
+                    >
+                      <td className="px-4 py-3 text-sm font-mono text-gray-700">
+                        {p.id ?? "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-[#082567]/10">
+                            {imageUrl ? (
+                              <>
+                                <img
+                                  src={imageUrl}
+                                  alt={p.imageAlt || p.name}
+                                  className="h-10 w-10 object-cover relative z-10 bg-white"
+                                  onError={(e) => {
+                                    e.target.style.display = "none";
+                                  }}
+                                />
+                                <div
+                                  className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none"
+                                  aria-hidden
+                                >
+                                  <CubeIcon className="h-5 w-5 text-gray-400" />
+                                </div>
+                              </>
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center">
                                 <CubeIcon className="h-5 w-5 text-gray-400" />
                               </div>
-                            </>
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <CubeIcon className="h-5 w-5 text-gray-400" />
-                            </div>
-                          )}
+                            )}
+                          </div>
+                          <span className="font-medium text-gray-900">
+                            {p.name}
+                          </span>
                         </div>
-                        <span className="font-medium text-gray-900">{p.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-700">
-                      <span className="inline-block">
-                        <span className="block leading-tight">KSh</span>
-                        <span className="block leading-tight">{Number(p.price ?? 0).toLocaleString()}</span>
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {p.category || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {p.quantityLabel || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {p.leadTime || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 max-w-[200px]" title={p.description || ""}>
-                      {truncate(p.description, 50)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 max-w-[180px]" title={(() => {
-                      const featuresDetail = (p.details || []).find((d) => d.name === "Features");
-                      const items = featuresDetail?.items || [];
-                      return items.join("\n") || "—";
-                    })()}>
-                      {(() => {
-                        const featuresDetail = (p.details || []).find((d) => d.name === "Features");
-                        const items = featuresDetail?.items || [];
-                        return items.length ? truncate(items.join(", "), 40) : "—";
-                      })()}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {p.rating != null && p.rating !== "" ? Number(p.rating).toFixed(1) : "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          p.inStock !== false
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-700">
+                        <span className="inline-block">
+                          <span className="block leading-tight">KSh</span>
+                          <span className="block leading-tight">
+                            {Number(p.price ?? 0).toLocaleString()}
+                          </span>
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {p.category || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {p.quantityLabel || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {p.leadTime || "—"}
+                      </td>
+                      <td
+                        className="px-4 py-3 text-sm text-gray-600 max-w-[200px]"
+                        title={p.description || ""}
                       >
-                        {p.inStock !== false ? "In stock" : "Out of stock"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          type="button"
-                          onClick={() => setEditProduct(p)}
-                          className="rounded-lg p-2 text-gray-600 hover:bg-[#191970]/10 hover:text-[#191970] transition-colors"
-                          title="Edit"
+                        {truncate(p.description, 50)}
+                      </td>
+                      <td
+                        className="px-4 py-3 text-sm text-gray-600 max-w-[180px]"
+                        title={(() => {
+                          const featuresDetail = (p.details || []).find(
+                            (d) => d.name === "Features"
+                          );
+                          const items = featuresDetail?.items || [];
+                          return items.join("\n") || "—";
+                        })()}
+                      >
+                        {(() => {
+                          const featuresDetail = (p.details || []).find(
+                            (d) => d.name === "Features"
+                          );
+                          const items = featuresDetail?.items || [];
+                          return items.length
+                            ? truncate(items.join(", "), 40)
+                            : "—";
+                        })()}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {p.rating != null && p.rating !== ""
+                          ? Number(p.rating).toFixed(1)
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            p.inStock !== false
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
                         >
-                          <PencilSquareIcon className="h-5 w-5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setProductToDelete({ id: p.id, name: p.name })}
-                          disabled={isDeleting}
-                          className="rounded-lg p-2 text-gray-600 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors"
-                          title="Delete"
-                        >
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                          {p.inStock !== false ? "In stock" : "Out of stock"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setEditProduct(p)}
+                            className="rounded-lg p-2 text-gray-600 hover:bg-[#191970]/10 hover:text-[#191970] transition-colors"
+                            title="Edit"
+                          >
+                            <PencilSquareIcon className="h-5 w-5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setProductToDelete({ id: p.id, name: p.name })
+                            }
+                            disabled={isDeleting}
+                            className="rounded-lg p-2 text-gray-600 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors"
+                            title="Delete"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })}
               </tbody>
@@ -366,18 +478,24 @@ export default function AdminProductsList() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-gray-50 border-t border-gray-200">
             <div className="flex items-center gap-4">
               <p className="text-sm text-gray-700">
-                Showing <span className="font-medium">{startItem}</span>–<span className="font-medium">{endItem}</span> of{" "}
+                Showing <span className="font-medium">{startItem}</span>–
+                <span className="font-medium">{endItem}</span> of{" "}
                 <span className="font-medium">{total}</span> products
               </p>
               <label className="flex items-center gap-2 text-sm text-gray-700">
                 Per page
                 <select
                   value={limit}
-                  onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+                  onChange={(e) => {
+                    setLimit(Number(e.target.value));
+                    setPage(1);
+                  }}
                   className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-800 focus:border-[#191970] focus:outline-none focus:ring-1 focus:ring-[#191970]"
                 >
                   {PAGE_SIZES.map((n) => (
-                    <option key={n} value={n}>{n}</option>
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -393,7 +511,8 @@ export default function AdminProductsList() {
                 Previous
               </button>
               <span className="px-3 py-2 text-sm text-gray-700">
-                Page <span className="font-medium">{page}</span> of <span className="font-medium">{totalPages}</span>
+                Page <span className="font-medium">{page}</span> of{" "}
+                <span className="font-medium">{totalPages}</span>
               </span>
               <button
                 type="button"
@@ -414,7 +533,13 @@ export default function AdminProductsList() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
           aria-modal="true"
           role="dialog"
-          onClick={() => { setAddModalOpen(false); addReset(); setUploadingImage(false); setEditProduct(null); editReset(); }}
+          onClick={() => {
+            setAddModalOpen(false);
+            addReset();
+            setUploadingImage(false);
+            setEditProduct(null);
+            editReset();
+          }}
         >
           <div
             className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
@@ -424,7 +549,13 @@ export default function AdminProductsList() {
               <h2 className="text-xl font-bold text-[#082567]">Add product</h2>
               <button
                 type="button"
-                onClick={() => { setAddModalOpen(false); addReset(); setUploadingImage(false); setEditProduct(null); editReset(); }}
+                onClick={() => {
+                  setAddModalOpen(false);
+                  addReset();
+                  setUploadingImage(false);
+                  setEditProduct(null);
+                  editReset();
+                }}
                 className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
                 aria-label="Close"
               >
@@ -436,30 +567,51 @@ export default function AdminProductsList() {
               className="overflow-y-auto flex-1 px-6 py-4 space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700">Product name *</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Product name *
+                </label>
                 <input
                   type="text"
                   {...addRegister("name", { required: "Name is required" })}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
                 />
-                {addErrors.name && <p className="mt-1 text-sm text-red-600">{addErrors.name.message}</p>}
+                {addErrors.name && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {addErrors.name.message}
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Price (KSh)</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Price (KSh)
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
-                    {...addRegister("price", { required: "Price is required", min: { value: 0, message: "Must be ≥ 0" } })}
+                    {...addRegister("price", {
+                      required: "Price is required",
+                      min: { value: 0, message: "Must be ≥ 0" },
+                    })}
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
                   />
-                  {addErrors.price && <p className="mt-1 text-sm text-red-600">{addErrors.price.message}</p>}
+                  {addErrors.price && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {addErrors.price.message}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Category</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Category
+                  </label>
                   <select
-                    value={existingCategories.includes(addFormCategory) ? addFormCategory : "__new__"}
+                    value={
+                      existingCategories.includes(addFormCategory)
+                        ? addFormCategory
+                        : "__new__"
+                    }
                     onChange={(e) => {
                       const v = e.target.value;
                       if (v === "__new__") addSetValue("category", "");
@@ -468,7 +620,9 @@ export default function AdminProductsList() {
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
                   >
                     {existingCategories.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
                     ))}
                     <option value="__new__">Add new category…</option>
                   </select>
@@ -483,7 +637,9 @@ export default function AdminProductsList() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Description
+                </label>
                 <textarea
                   rows={3}
                   {...addRegister("description")}
@@ -492,7 +648,9 @@ export default function AdminProductsList() {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Lead time</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Lead time
+                  </label>
                   <input
                     type="text"
                     {...addRegister("leadTime")}
@@ -501,7 +659,9 @@ export default function AdminProductsList() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Quantity label</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Quantity label
+                  </label>
                   <input
                     type="text"
                     {...addRegister("quantityLabel")}
@@ -512,7 +672,9 @@ export default function AdminProductsList() {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Product image</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Product image
+                  </label>
                   <div className="mt-1 flex items-start gap-3">
                     <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-[#082567]/30 bg-[#082567]/5 px-3 py-2 text-sm font-medium text-[#082567] hover:bg-[#082567]/10">
                       <PlusIcon className="h-4 w-4" />
@@ -534,7 +696,11 @@ export default function AdminProductsList() {
                             if (path) addSetValue("imageSrc", path);
                             else toast.error("Upload failed.");
                           } catch (err) {
-                            toast.error(err?.response?.data?.message || err?.message || "Upload failed.");
+                            toast.error(
+                              err?.response?.data?.message ||
+                                err?.message ||
+                                "Upload failed."
+                            );
                           } finally {
                             setUploadingImage(false);
                             e.target.value = "";
@@ -548,16 +714,24 @@ export default function AdminProductsList() {
                           src={productImageSrc(addFormImageSrc)}
                           alt="Preview"
                           className="h-12 w-12 rounded-lg object-cover border border-gray-200"
-                          onError={(e) => { e.target.style.display = "none"; }}
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                          }}
                         />
-                        <span className="text-xs text-gray-500 truncate">{addFormImageSrc}</span>
+                        <span className="text-xs text-gray-500 truncate">
+                          {addFormImageSrc}
+                        </span>
                       </div>
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">JPG, PNG, WebP or GIF, max 5MB</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    JPG, PNG, WebP or GIF, max 5MB
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Image alt text</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Image alt text
+                  </label>
                   <input
                     type="text"
                     {...addRegister("imageAlt")}
@@ -573,7 +747,12 @@ export default function AdminProductsList() {
                   {...addRegister("inStock")}
                   className="h-4 w-4 rounded border-gray-300 text-[#082567] focus:ring-[#082567]"
                 />
-                <label htmlFor="addProductInStock" className="text-sm text-gray-700">In stock</label>
+                <label
+                  htmlFor="addProductInStock"
+                  className="text-sm text-gray-700"
+                >
+                  In stock
+                </label>
               </div>
               <div className="flex gap-3 pt-4 border-t border-gray-200">
                 <button
@@ -585,7 +764,13 @@ export default function AdminProductsList() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setAddModalOpen(false); addReset(); setUploadingImage(false); setEditProduct(null); editReset(); }}
+                  onClick={() => {
+                    setAddModalOpen(false);
+                    addReset();
+                    setUploadingImage(false);
+                    setEditProduct(null);
+                    editReset();
+                  }}
                   className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
@@ -601,7 +786,11 @@ export default function AdminProductsList() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
           aria-modal="true"
           role="dialog"
-          onClick={() => { setEditProduct(null); editReset(); setUploadingImage(false); }}
+          onClick={() => {
+            setEditProduct(null);
+            editReset();
+            setUploadingImage(false);
+          }}
         >
           <div
             className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
@@ -611,7 +800,11 @@ export default function AdminProductsList() {
               <h2 className="text-xl font-bold text-[#082567]">Edit product</h2>
               <button
                 type="button"
-                onClick={() => { setEditProduct(null); editReset(); setUploadingImage(false); }}
+                onClick={() => {
+                  setEditProduct(null);
+                  editReset();
+                  setUploadingImage(false);
+                }}
                 className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
                 aria-label="Close"
               >
@@ -619,34 +812,57 @@ export default function AdminProductsList() {
               </button>
             </div>
             <form
-              onSubmit={editHandleSubmit((data) => submitEditProduct({ id: editProduct.id, ...data }))}
+              onSubmit={editHandleSubmit((data) =>
+                submitEditProduct({ id: editProduct.id, ...data })
+              )}
               className="overflow-y-auto flex-1 px-6 py-4 space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700">Product name *</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Product name *
+                </label>
                 <input
                   type="text"
                   {...editRegister("name", { required: "Name is required" })}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
                 />
-                {editErrors.name && <p className="mt-1 text-sm text-red-600">{editErrors.name.message}</p>}
+                {editErrors.name && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {editErrors.name.message}
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Price (KSh)</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Price (KSh)
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
-                    {...editRegister("price", { required: "Price is required", min: { value: 0, message: "Must be ≥ 0" } })}
+                    {...editRegister("price", {
+                      required: "Price is required",
+                      min: { value: 0, message: "Must be ≥ 0" },
+                    })}
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
                   />
-                  {editErrors.price && <p className="mt-1 text-sm text-red-600">{editErrors.price.message}</p>}
+                  {editErrors.price && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {editErrors.price.message}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Category</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Category
+                  </label>
                   <select
-                    value={existingCategories.includes(editFormCategory) ? editFormCategory : "__new__"}
+                    value={
+                      existingCategories.includes(editFormCategory)
+                        ? editFormCategory
+                        : "__new__"
+                    }
                     onChange={(e) => {
                       const v = e.target.value;
                       if (v === "__new__") editSetValue("category", "");
@@ -655,7 +871,9 @@ export default function AdminProductsList() {
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
                   >
                     {existingCategories.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
                     ))}
                     <option value="__new__">Add new category…</option>
                   </select>
@@ -670,7 +888,9 @@ export default function AdminProductsList() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Description
+                </label>
                 <textarea
                   rows={3}
                   {...editRegister("description")}
@@ -679,7 +899,9 @@ export default function AdminProductsList() {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Lead time</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Lead time
+                  </label>
                   <input
                     type="text"
                     {...editRegister("leadTime")}
@@ -688,7 +910,9 @@ export default function AdminProductsList() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Quantity label</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Quantity label
+                  </label>
                   <input
                     type="text"
                     {...editRegister("quantityLabel")}
@@ -699,7 +923,9 @@ export default function AdminProductsList() {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Product image</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Product image
+                  </label>
                   <div className="mt-1 flex items-start gap-3">
                     <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-[#082567]/30 bg-[#082567]/5 px-3 py-2 text-sm font-medium text-[#082567] hover:bg-[#082567]/10">
                       <PlusIcon className="h-4 w-4" />
@@ -721,7 +947,11 @@ export default function AdminProductsList() {
                             if (path) editSetValue("imageSrc", path);
                             else toast.error("Upload failed.");
                           } catch (err) {
-                            toast.error(err?.response?.data?.message || err?.message || "Upload failed.");
+                            toast.error(
+                              err?.response?.data?.message ||
+                                err?.message ||
+                                "Upload failed."
+                            );
                           } finally {
                             setUploadingImage(false);
                             e.target.value = "";
@@ -735,16 +965,24 @@ export default function AdminProductsList() {
                           src={productImageSrc(editFormImageSrc)}
                           alt="Preview"
                           className="h-12 w-12 rounded-lg object-cover border border-gray-200"
-                          onError={(e) => { e.target.style.display = "none"; }}
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                          }}
                         />
-                        <span className="text-xs text-gray-500 truncate">{editFormImageSrc}</span>
+                        <span className="text-xs text-gray-500 truncate">
+                          {editFormImageSrc}
+                        </span>
                       </div>
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">JPG, PNG, WebP or GIF, max 5MB</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    JPG, PNG, WebP or GIF, max 5MB
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Image alt text</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Image alt text
+                  </label>
                   <input
                     type="text"
                     {...editRegister("imageAlt")}
@@ -760,7 +998,12 @@ export default function AdminProductsList() {
                   {...editRegister("inStock")}
                   className="h-4 w-4 rounded border-gray-300 text-[#082567] focus:ring-[#082567]"
                 />
-                <label htmlFor="editProductInStock" className="text-sm text-gray-700">In stock</label>
+                <label
+                  htmlFor="editProductInStock"
+                  className="text-sm text-gray-700"
+                >
+                  In stock
+                </label>
               </div>
               <div className="flex gap-3 pt-4 border-t border-gray-200">
                 <button
@@ -772,7 +1015,11 @@ export default function AdminProductsList() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setEditProduct(null); editReset(); setUploadingImage(false); }}
+                  onClick={() => {
+                    setEditProduct(null);
+                    editReset();
+                    setUploadingImage(false);
+                  }}
                   className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
@@ -799,9 +1046,12 @@ export default function AdminProductsList() {
                 <TrashIcon className="h-6 w-6 text-red-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold text-gray-900">Delete product?</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Delete product?
+                </h3>
                 <p className="mt-2 text-sm text-gray-600">
-                  Are you sure you want to delete &quot;{productToDelete.name}&quot;? This cannot be undone.
+                  Are you sure you want to delete &quot;{productToDelete.name}
+                  &quot;? This cannot be undone.
                 </p>
                 <div className="mt-6 flex gap-3 justify-end">
                   <button

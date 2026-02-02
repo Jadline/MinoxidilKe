@@ -22,6 +22,23 @@ async function getAllOrders(req, res) {
   }
 }
 
+/** Admin: list all orders (all users). */
+async function getAdminOrders(req, res) {
+  try {
+    const orders = await Order.find({}).sort({ date: -1 }).lean();
+    res.status(200).json({
+      status: 'success',
+      results: orders.length,
+      data: { orders },
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'fail',
+      message: err.message || 'Failed to fetch orders.',
+    });
+  }
+}
+
 async function addOrder(req, res) {
   try {
     const { 
@@ -213,4 +230,4 @@ async function addOrder(req, res) {
   }
 }
 
-module.exports = { getAllOrders, addOrder };
+module.exports = { getAllOrders, getAdminOrders, addOrder };

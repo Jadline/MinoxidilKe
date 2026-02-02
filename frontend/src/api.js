@@ -32,6 +32,8 @@ api.interceptors.response.use(
 export const getProducts = (params) => api.get("/api/v1/products", { params });
 export const getProduct = (id) => api.get(`/api/v1/products/${id}`);
 export const createOrder = (data) => api.post("/api/v1/orders", data);
+// Admin: list all orders
+export const getAdminOrders = () => api.get("/api/v1/orders/admin");
 
 // Admin product CRUD (requires admin role on backend)
 export const createProduct = (data) => api.post("/api/v1/products", data);

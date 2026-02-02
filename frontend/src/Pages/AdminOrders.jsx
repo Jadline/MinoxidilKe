@@ -1,0 +1,164 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getAdminOrders } from "../api";
+import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
+
+function formatDate(d) {
+  if (!d) return "—";
+  const date = new Date(d);
+  return isNaN(date.getTime())
+    ? "—"
+    : date.toLocaleDateString(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+}
+
+function formatCurrency(n) {
+  return n != null ? `KSh ${Number(n).toLocaleString()}` : "—";
+}
+
+export default function AdminOrders() {
+  const [page, setPage] = useState(1);
+  const limit = 20;
+
+  const {
+    data: ordersData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["admin-orders"],
+    queryFn: async () => {
+      const res = await getAdminOrders();
+      return res.data?.data?.orders ?? [];
+    },
+  });
+  const orders = Array.isArray(ordersData) ? ordersData : [];
+  const totalPages = Math.max(1, Math.ceil(orders.length / limit));
+  const start = (page - 1) * limit;
+  const displayed = orders.slice(start, start + limit);
+
+  return (
+    <div className="w-full">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-white">Manage Orders</h1>
+        <p className="text-white/80 mt-1">View all customer orders.</p>
+      </div>
+
+      <div className="rounded-xl border border-white/15 bg-[#e8ecf4] shadow-xl overflow-hidden">
+        {isLoading ? (
+          <div className="p-12 text-center text-gray-500">Loading orders…</div>
+        ) : isError ? (
+          <div className="p-12 text-center text-red-600">
+            {error?.response?.data?.message ||
+              error?.message ||
+              "Failed to load orders."}
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="p-12 text-center">
+            <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-[#082567]/50" />
+            <p className="mt-2 text-gray-600">No orders yet.</p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-[#082567]/15">
+                <thead className="bg-[#082567]/15">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                      Order #
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                      Customer
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                      Total
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                      Delivery
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                      Payment
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white/80 divide-y divide-gray-200">
+                  {displayed.map((order) => (
+                    <tr key={order._id} className="hover:bg-[#082567]/5">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                        {order.orderNumber || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {formatDate(order.date)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {[order.firstName, order.lastName]
+                          .filter(Boolean)
+                          .join(" ") ||
+                          order.email ||
+                          order.phoneNumber ||
+                          "—"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {formatCurrency(order.OrderTotal ?? order.Total)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {order.deliveryType === "pickup"
+                          ? "Pickup"
+                          : "Shipping"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            order.paymentStatus === "succeeded"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : order.paymentStatus === "pending"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {order.paymentStatus || "—"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between gap-4 px-4 py-3 bg-gray-50 border-t border-gray-200">
+                <p className="text-sm text-gray-700">
+                  Page <span className="font-medium">{page}</span> of{" "}
+                  <span className="font-medium">{totalPages}</span> (
+                  {orders.length} orders)
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1}
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 disabled:opacity-50 hover:bg-gray-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 disabled:opacity-50 hover:bg-gray-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

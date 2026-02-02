@@ -1,18 +1,22 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
   Squares2X2Icon,
-  PlusCircleIcon,
   ArrowLeftIcon,
   CubeIcon,
   ListBulletIcon,
   SquaresPlusIcon,
+  TruckIcon,
+  MapPinIcon,
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 
 const adminNav = [
   { name: "Dashboard", to: "/admin", icon: Squares2X2Icon },
   { name: "Manage Products", to: "/admin/products", icon: ListBulletIcon },
   { name: "Manage Packages", to: "/admin/packages", icon: SquaresPlusIcon },
-  { name: "Add Product", to: "/admin/add-product", icon: PlusCircleIcon },
+  { name: "Shipping Methods", to: "/admin/shipping-methods", icon: TruckIcon },
+  { name: "Pickup Locations", to: "/admin/pickup-locations", icon: MapPinIcon },
+  { name: "Orders", to: "/admin/orders", icon: ClipboardDocumentListIcon },
 ];
 
 export default function AdminLayout() {
