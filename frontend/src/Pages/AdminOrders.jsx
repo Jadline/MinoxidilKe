@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getAdminOrders } from "../api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getAdminOrders, updateOrder } from "../api";
+import toast from "react-hot-toast";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 
 function formatDate(d) {
@@ -8,7 +9,7 @@ function formatDate(d) {
   const date = new Date(d);
   return isNaN(date.getTime())
     ? "—"
-    : date.toLocaleDateString(undefined, {
+    : date.toLocaleString(undefined, {
         dateStyle: "medium",
         timeStyle: "short",
       });
@@ -18,7 +19,22 @@ function formatCurrency(n) {
   return n != null ? `KSh ${Number(n).toLocaleString()}` : "—";
 }
 
+const PAYMENT_STATUS_OPTIONS = [
+  { value: "pending", label: "Pending" },
+  { value: "succeeded", label: "Succeeded" },
+  { value: "failed", label: "Failed" },
+  { value: "unpaid", label: "Unpaid" },
+];
+
+const ORDER_STATUS_OPTIONS = [
+  { value: "pending", label: "Pending" },
+  { value: "shipped", label: "Shipped" },
+  { value: "delivered", label: "Delivered" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
 export default function AdminOrders() {
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const limit = 20;
 
@@ -38,6 +54,21 @@ export default function AdminOrders() {
   const totalPages = Math.max(1, Math.ceil(orders.length / limit));
   const start = (page - 1) * limit;
   const displayed = orders.slice(start, start + limit);
+
+  const { mutate: updatePaymentStatus, isPending: isUpdatingPayment } =
+    useMutation({
+      mutationFn: ({ orderId, paymentStatus }) =>
+        updateOrderPaymentStatus(orderId, { paymentStatus }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+        toast.success("Payment status updated.");
+      },
+      onError: (err) => {
+        toast.error(
+          err?.response?.data?.message || err?.message || "Failed to update."
+        );
+      },
+    });
 
   return (
     <div className="w-full">
@@ -76,10 +107,16 @@ export default function AdminOrders() {
                       Customer
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                      Phone
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
                       Total
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
                       Delivery
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                      Order status
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
                       Payment
@@ -100,8 +137,10 @@ export default function AdminOrders() {
                           .filter(Boolean)
                           .join(" ") ||
                           order.email ||
-                          order.phoneNumber ||
                           "—"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {order.phoneNumber || order.shippingPhone || "—"}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">
                         {formatCurrency(order.OrderTotal ?? order.Total)}
@@ -112,17 +151,59 @@ export default function AdminOrders() {
                           : "Shipping"}
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        <select
+                          value={order.orderStatus || "pending"}
+                          onChange={(e) =>
+                            updateOrderStatus({
+                              orderId: order._id,
+                              orderStatus: e.target.value,
+                            })
+                          }
+                          disabled={isUpdatingOrder}
+                          className={`rounded-full border-0 px-2.5 py-1 text-xs font-medium focus:ring-2 focus:ring-[#082567]/30 disabled:opacity-50 ${
+                            order.orderStatus === "delivered"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : order.orderStatus === "shipped"
+                              ? "bg-blue-100 text-blue-800"
+                              : order.orderStatus === "cancelled"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          {ORDER_STATUS_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={order.paymentStatus || "pending"}
+                          onChange={(e) =>
+                            updateOrderStatus({
+                              orderId: order._id,
+                              paymentStatus: e.target.value,
+                            })
+                          }
+                          disabled={isUpdatingOrder}
+                          className={`rounded-full border-0 px-2.5 py-1 text-xs font-medium focus:ring-2 focus:ring-[#082567]/30 disabled:opacity-50 ${
                             order.paymentStatus === "succeeded"
                               ? "bg-emerald-100 text-emerald-800"
                               : order.paymentStatus === "pending"
                               ? "bg-amber-100 text-amber-800"
-                              : "bg-red-100 text-red-800"
+                              : order.paymentStatus === "failed" ||
+                                order.paymentStatus === "unpaid"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-gray-100 text-gray-800"
                           }`}
                         >
-                          {order.paymentStatus || "—"}
-                        </span>
+                          {PAYMENT_STATUS_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
                       </td>
                     </tr>
                   ))}

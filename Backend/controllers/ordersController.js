@@ -1,7 +1,7 @@
-const Order = require('../models/orderModel');
-const Product = require('../models/productModel');
-const { v4: uuidv4 } = require('uuid');
-const { sendOrderConfirmationEmail } = require('./emailController');
+const Order = require("../models/orderModel");
+const Product = require("../models/productModel");
+const { v4: uuidv4 } = require("uuid");
+const { sendOrderConfirmationEmail } = require("./emailController");
 
 async function getAllOrders(req, res) {
   try {
@@ -10,13 +10,13 @@ async function getAllOrders(req, res) {
     const orders = await Order.find({ userId });
 
     res.status(200).json({
-      status: 'success',
+      status: "success",
       results: orders.length,
       data: { orders },
     });
   } catch (err) {
     res.status(404).json({
-      status: 'fail',
+      status: "fail",
       message: err.message,
     });
   }
@@ -27,31 +27,86 @@ async function getAdminOrders(req, res) {
   try {
     const orders = await Order.find({}).sort({ date: -1 }).lean();
     res.status(200).json({
-      status: 'success',
+      status: "success",
       results: orders.length,
       data: { orders },
     });
   } catch (err) {
     res.status(500).json({
-      status: 'fail',
-      message: err.message || 'Failed to fetch orders.',
+      status: "fail",
+      message: err.message || "Failed to fetch orders.",
+    });
+  }
+}
+
+/** Admin: update order (payment status and/or order/fulfillment status). */
+async function updateOrder(req, res) {
+  try {
+    const { id } = req.params;
+    const { paymentStatus, orderStatus } = req.body;
+    const update = {};
+    const paymentAllowed = ["pending", "succeeded", "failed", "unpaid"];
+    const orderStatusAllowed = ["pending", "shipped", "delivered", "cancelled"];
+    if (paymentStatus != null) {
+      if (!paymentAllowed.includes(paymentStatus)) {
+        return res.status(400).json({
+          status: "fail",
+          message: "paymentStatus must be one of: " + paymentAllowed.join(", "),
+        });
+      }
+      update.paymentStatus = paymentStatus;
+    }
+    if (orderStatus != null) {
+      if (!orderStatusAllowed.includes(orderStatus)) {
+        return res.status(400).json({
+          status: "fail",
+          message: "orderStatus must be one of: " + orderStatusAllowed.join(", "),
+        });
+      }
+      update.orderStatus = orderStatus;
+    }
+    if (Object.keys(update).length === 0) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Provide paymentStatus and/or orderStatus.",
+      });
+    }
+    const order = await Order.findByIdAndUpdate(
+      id,
+      { $set: update },
+      { new: true, runValidators: true }
+    );
+    if (!order) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Order not found.",
+      });
+    }
+    res.status(200).json({
+      status: "success",
+      data: { order },
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "fail",
+      message: err.message || "Failed to update order.",
     });
   }
 }
 
 async function addOrder(req, res) {
   try {
-    const { 
-      orderItems, 
-      paymentType, 
-      phoneNumber, 
+    const {
+      orderItems,
+      paymentType,
+      phoneNumber,
       phone: shippingPhone,
       country,
       firstName,
       lastName,
       company,
       apartment,
-      city, 
+      city,
       streetAddress,
       postalCode,
       deliveryInstructions,
@@ -66,8 +121,8 @@ async function addOrder(req, res) {
     // Validate order items exist
     if (!orderItems || orderItems.length === 0) {
       return res.status(400).json({
-        status: 'fail',
-        message: 'Order must contain at least one item',
+        status: "fail",
+        message: "Order must contain at least one item",
       });
     }
 
@@ -79,13 +134,20 @@ async function addOrder(req, res) {
 
     if (recentOrder) {
       // Check if order items are identical
-      const recentItemIds = recentOrder.orderItems.map(item => `${item.id}-${item.quantity}`).sort().join(',');
-      const currentItemIds = orderItems.map(item => `${item.id}-${item.quantity}`).sort().join(',');
-      
+      const recentItemIds = recentOrder.orderItems
+        .map((item) => `${item.id}-${item.quantity}`)
+        .sort()
+        .join(",");
+      const currentItemIds = orderItems
+        .map((item) => `${item.id}-${item.quantity}`)
+        .sort()
+        .join(",");
+
       if (recentItemIds === currentItemIds) {
         return res.status(409).json({
-          status: 'fail',
-          message: 'Duplicate order detected. Please wait a moment before submitting again.',
+          status: "fail",
+          message:
+            "Duplicate order detected. Please wait a moment before submitting again.",
           orderId: recentOrder._id,
         });
       }
@@ -93,9 +155,12 @@ async function addOrder(req, res) {
 
     // Product items have numeric id; package items have string id like "package-1"
     const productIds = orderItems
-      .filter((item) => typeof item.id === 'number')
+      .filter((item) => typeof item.id === "number")
       .map((item) => item.id);
-    const products = productIds.length > 0 ? await Product.find({ id: { $in: productIds } }) : [];
+    const products =
+      productIds.length > 0
+        ? await Product.find({ id: { $in: productIds } })
+        : [];
 
     const productMap = {};
     products.forEach((product) => {
@@ -106,39 +171,41 @@ async function addOrder(req, res) {
     const validatedOrderItems = [];
 
     for (const item of orderItems) {
-      const isPackage = typeof item.id === 'string' && item.id.startsWith('package-');
+      const isPackage =
+        typeof item.id === "string" && item.id.startsWith("package-");
       if (isPackage) {
         // Package line item: accept as-is (name, price, quantity from client)
         const price = Number(item.price) >= 0 ? Number(item.price) : 0;
         const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
         validatedOrderItems.push({
           id: item.id,
-          name: item.name || 'Package',
-          description: item.description || '',
-          leadTime: item.leadTime || '',
+          name: item.name || "Package",
+          description: item.description || "",
+          leadTime: item.leadTime || "",
           price,
           quantity: qty,
-          imageSrc: item.imageSrc || '',
-          imageAlt: item.imageAlt || '',
+          imageSrc: item.imageSrc || "",
+          imageAlt: item.imageAlt || "",
           inStock: true,
         });
         recalculatedTotal += price * qty;
         continue;
       }
 
-      const productId = typeof item.id === 'number' ? item.id : parseInt(item.id, 10);
+      const productId =
+        typeof item.id === "number" ? item.id : parseInt(item.id, 10);
       const product = productMap[productId];
 
       if (!product) {
         return res.status(400).json({
-          status: 'fail',
+          status: "fail",
           message: `Product with ID ${item.id} not found`,
         });
       }
 
       if (!product.inStock) {
         return res.status(400).json({
-          status: 'fail',
+          status: "fail",
           message: `Product "${product.name}" is out of stock`,
         });
       }
@@ -153,27 +220,28 @@ async function addOrder(req, res) {
       validatedOrderItems.push({
         id: product.id,
         name: product.name,
-        description: product.description || '',
-        leadTime: product.leadTime || '',
+        description: product.description || "",
+        leadTime: product.leadTime || "",
         price: itemPrice, // Server-validated price
         quantity: quantity,
-        imageSrc: product.imageSrc || '',
-        imageAlt: product.imageAlt || '',
+        imageSrc: product.imageSrc || "",
+        imageAlt: product.imageAlt || "",
         inStock: product.inStock,
       });
     }
 
     // Recalculate totals on server
     const recalculatedSubtotal = recalculatedTotal;
-    const isPickup = deliveryType === 'pickup';
-    const recalculatedShippingCost = isPickup ? 0 : (Number(shippingCost) || 0);
-    const recalculatedOrderTotal = recalculatedSubtotal + recalculatedShippingCost;
+    const isPickup = deliveryType === "pickup";
+    const recalculatedShippingCost = isPickup ? 0 : Number(shippingCost) || 0;
+    const recalculatedOrderTotal =
+      recalculatedSubtotal + recalculatedShippingCost;
 
     // Generate order number on server (secure, unique)
     const timestamp = Date.now();
-    const uniqueId = uuidv4().split('-')[0].toUpperCase();
+    const uniqueId = uuidv4().split("-")[0].toUpperCase();
     const orderNumber = `ORD-${timestamp}-${uniqueId}`;
-    
+
     // Generate tracking number
     const trackingNumber = `TRK-${timestamp}-${uniqueId}`;
 
@@ -182,27 +250,27 @@ async function addOrder(req, res) {
       orderNumber,
       trackingNumber,
       orderItems: validatedOrderItems,
-      deliveryType: deliveryType || 'ship',
+      deliveryType: deliveryType || "ship",
       shippingMethodName: shippingMethodName || null,
       shippingCost: recalculatedShippingCost,
       pickupLocationName: pickupLocationName || null,
       pickupLocationId: pickupLocationId || null,
-      country: country || '',
-      firstName: firstName || '',
-      lastName: lastName || '',
-      company: company || '',
-      streetAddress: streetAddress || '',
-      apartment: apartment || '',
-      city: city || '',
+      country: country || "",
+      firstName: firstName || "",
+      lastName: lastName || "",
+      company: company || "",
+      streetAddress: streetAddress || "",
+      apartment: apartment || "",
+      city: city || "",
       postalCode: postalCode || null,
-      shippingPhone: shippingPhone || '',
+      shippingPhone: shippingPhone || "",
       deliveryInstructions: deliveryInstructions || null,
-      phoneNumber: phoneNumber || '',
+      phoneNumber: phoneNumber || "",
       Total: recalculatedSubtotal,
       OrderTotal: recalculatedOrderTotal,
-      paymentType: paymentType || 'pay-on-delivery',
+      paymentType: paymentType || "pay-on-delivery",
       mpesaDetails: req.body.mpesaNumber || null,
-      paymentStatus: paymentType === 'mpesa' ? 'pending' : 'unpaid',
+      paymentStatus: paymentType === "mpesa" ? "pending" : "unpaid",
       userId: req.user._id,
       email: req.user.email,
       date: new Date(),
@@ -212,22 +280,27 @@ async function addOrder(req, res) {
 
     // Send order confirmation email (non-blocking - don't fail order if email fails)
     sendOrderConfirmationEmail(order).catch((emailError) => {
-      console.error('Failed to send order confirmation email:', emailError);
+      console.error("Failed to send order confirmation email:", emailError);
       // Email failure doesn't affect order creation
     });
 
     res.status(201).json({
-      status: 'success',
-      message: 'Order added successfully',
+      status: "success",
+      message: "Order added successfully",
       data: { order },
     });
   } catch (err) {
-    console.error('Order creation error:', err);
+    console.error("Order creation error:", err);
     res.status(400).json({
-      status: 'fail',
-      message: err.message || 'Failed to create order',
+      status: "fail",
+      message: err.message || "Failed to create order",
     });
   }
 }
 
-module.exports = { getAllOrders, getAdminOrders, addOrder };
+module.exports = {
+  getAllOrders,
+  getAdminOrders,
+  addOrder,
+  updateOrder,
+};

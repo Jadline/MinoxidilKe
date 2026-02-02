@@ -26,6 +26,9 @@ const AdminProductsList = lazy(() => import("./Pages/AdminProductsList"));
 const AdminEditProduct = lazy(() => import("./Pages/AdminEditProduct"));
 const AdminPackagesList = lazy(() => import("./Pages/AdminPackagesList"));
 const AdminEditPackage = lazy(() => import("./Pages/AdminEditPackage"));
+const AdminShippingMethods = lazy(() => import("./Pages/AdminShippingMethods"));
+const AdminPickupLocations = lazy(() => import("./Pages/AdminPickupLocations"));
+const AdminOrders = lazy(() => import("./Pages/AdminOrders"));
 
 function App() {
   return (

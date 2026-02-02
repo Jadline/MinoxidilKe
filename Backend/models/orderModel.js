@@ -40,6 +40,8 @@ const orderSchema = new mongoose.Schema({
   paymentType: String,
   mpesaDetails: String,
   paymentStatus: { type: String, enum: ['pending', 'succeeded', 'failed', 'unpaid'], default: 'pending' },
+  /** Fulfillment: pending → shipped → delivered, or cancelled */
+  orderStatus: { type: String, enum: ['pending', 'shipped', 'delivered', 'cancelled'], default: 'pending' },
 });
 
 
