@@ -26,8 +26,8 @@ function packageImageSrc(imageSrc) {
     path.startsWith("/uploads/") && BASE_URL
       ? BASE_URL
       : typeof window !== "undefined"
-        ? window.location.origin
-        : "";
+      ? window.location.origin
+      : "";
   return origin ? origin + path : path;
 }
 
@@ -159,7 +159,9 @@ export default function PackageOverview({ package: pkgProp }) {
                   className="mt-2 flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded-md"
                 >
                   <a
-                    href={`https://wa.me/254796866058?text=Hi! I'd like to know more about this package: ${encodeURIComponent(pkg.name)}`}
+                    href={`https://wa.me/254796866058?text=Hi! I'd like to know more about this package: ${encodeURIComponent(
+                      pkg.name
+                    )}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3"
@@ -194,7 +196,10 @@ export default function PackageOverview({ package: pkgProp }) {
               </div>
             </form>
 
-            <section aria-labelledby="package-details-heading" className="mt-12">
+            <section
+              aria-labelledby="package-details-heading"
+              className="mt-12"
+            >
               <h2 id="package-details-heading" className="sr-only">
                 Additional details
               </h2>
@@ -221,28 +226,35 @@ export default function PackageOverview({ package: pkgProp }) {
                   </h3>
                   <DisclosurePanel className="pb-6">
                     {(() => {
-                      const featuresDetail = details.find((d) => d.name === "Features");
+                      const featuresDetail = details.find(
+                        (d) => d.name === "Features"
+                      );
                       const items = featuresDetail?.items ?? [];
-                      return items.length > 0 ? (
-                        <ul
-                          role="list"
-                          className="list-disc space-y-1 pl-5 text-sm/6 text-gray-700 marker:text-gray-300"
-                        >
-                          {items.map((item) => (
-                            <li key={item} className="pl-2">
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
+                      const text =
+                        items.length > 0
+                          ? items
+                              .map((i) => (i ?? "").trim())
+                              .filter(Boolean)
+                              .join("\n")
+                          : "";
+                      return text ? (
+                        <p className="text-sm/6 text-gray-700 whitespace-pre-line">
+                          {text}
+                        </p>
                       ) : (
-                        <p className="text-sm text-gray-500 italic">No features listed.</p>
+                        <p className="text-sm text-gray-500 italic">
+                          No features or usage information listed.
+                        </p>
                       );
                     })()}
                   </DisclosurePanel>
                 </Disclosure>
 
                 {details
-                  .filter((d) => d.name && d.name !== "Features" && Array.isArray(d.items))
+                  .filter(
+                    (d) =>
+                      d.name && d.name !== "Features" && Array.isArray(d.items)
+                  )
                   .map((detail) => (
                     <Disclosure key={detail.name} as="div">
                       <h3>

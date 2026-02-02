@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getPackage, getProducts, updatePackage, uploadPackageImage } from "../api";
+import { getPackage, getProducts, getPackageCategories, updatePackage, uploadPackageImage } from "../api";
 import toast from "react-hot-toast";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || "";
@@ -12,6 +12,8 @@ export default function AdminEditPackage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedProductIds, setSelectedProductIds] = useState([]);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const imageInputRef = useRef(null);
 
   const { data: pkgData, isLoading, isError, error } = useQuery({
     queryKey: ["admin-package", id],
@@ -42,7 +44,7 @@ export default function AdminEditPackage() {
     );
   };
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
       name: "",
       description: "",
@@ -50,15 +52,22 @@ export default function AdminEditPackage() {
       imageAlt: "",
       bundlePrice: 0,
       quantityLabel: "1 pack",
-      rating: 0,
       leadTime: "",
       category: "",
+      categoryCustom: "",
       inStock: true,
+      featuresText: "",
     },
   });
 
   useEffect(() => {
     if (!pkg) return;
+    const featuresDetail = (pkg.details || []).find((d) => d.name === "Features");
+    const featureItems = featuresDetail?.items ?? [];
+    const featuresText = featureItems.length > 0 ? (featureItems[0] ?? "") : "";
+    const cat = (pkg.category ?? "").trim();
+    const categoryValue = categories.includes(cat) ? cat : (cat ? "__other__" : "");
+    const categoryCustom = categories.includes(cat) ? "" : cat;
     reset({
       name: pkg.name ?? "",
       description: pkg.description ?? "",
@@ -66,13 +75,14 @@ export default function AdminEditPackage() {
       imageAlt: pkg.imageAlt ?? "",
       bundlePrice: pkg.bundlePrice ?? 0,
       quantityLabel: pkg.quantityLabel ?? "1 pack",
-      rating: pkg.rating ?? 0,
       leadTime: pkg.leadTime ?? "",
-      category: pkg.category ?? "",
+      category: categoryValue,
+      categoryCustom,
       inStock: pkg.inStock !== false,
+      featuresText,
     });
     setSelectedProductIds(Array.isArray(pkg.productIds) ? [...pkg.productIds] : []);
-  }, [pkg, reset]);
+  }, [pkg, categories, reset]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -105,9 +115,17 @@ export default function AdminEditPackage() {
   const { mutateAsync: submitUpdate, isPending } = useMutation({
     mutationFn: (data) => {
       const productIds = selectedProductIds.map(Number).filter((n) => n > 0);
+      const featuresText = (data.featuresText ?? "").trim();
+      const details = featuresText
+        ? [{ name: "Features", items: [featuresText] }]
+        : [];
+      const category = data.category === "__other__" ? (data.categoryCustom ?? "").trim() : (data.category ?? "");
+      const { featuresText: _ft, category: _cat, categoryCustom: _cc, ...rest } = data;
       return updatePackage(Number(id), {
-        ...data,
+        ...rest,
         productIds,
+        details,
+        category,
       });
     },
     onSuccess: () => {
@@ -266,17 +284,23 @@ export default function AdminEditPackage() {
           </div>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Features / usage information</label>
+          <p className="text-sm text-gray-500 mt-0.5 mb-1">Describe how to use the products or key information. Shown on the package details page.</p>
+          <textarea
+            rows={4}
+            {...register("featuresText")}
+            placeholder="e.g. Apply minoxidil once daily. Use the shampoo 2–3 times per week."
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+        </div>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Rating (0–5)</label>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              max="5"
-              {...register("rating", { min: 0, max: 5 })}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
+            <label className="block text-sm font-medium text-gray-700">Rating (read-only)</label>
+            <p className="mt-1 text-sm text-gray-600">
+              {pkg?.rating != null && pkg?.rating !== "" ? Number(pkg.rating).toFixed(1) : "—"} — Updated by customer reviews
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Quantity label</label>
@@ -298,11 +322,24 @@ export default function AdminEditPackage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Category</label>
-          <input
-            type="text"
+          <select
             {...register("category")}
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
+          >
+            <option value="">Select category</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+            <option value="__other__">Add custom category</option>
+          </select>
+          {watch("category") === "__other__" && (
+            <input
+              type="text"
+              {...register("categoryCustom")}
+              placeholder="Type custom category"
+              className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          )}
         </div>
 
         <div className="flex items-center gap-2">

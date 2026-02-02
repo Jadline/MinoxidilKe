@@ -50,6 +50,7 @@ export const createPackageReview = (data) => api.post("/api/v1/package-reviews",
 
 // Packages (bundles of products)
 export const getPackages = (params) => api.get("/api/v1/packages", { params });
+export const getPackageCategories = () => api.get("/api/v1/packages/categories");
 export const getPackage = (id) => api.get(`/api/v1/packages/${id}`);
 export const createPackage = (data) => api.post("/api/v1/packages", data);
 export const updatePackage = (id, data) => api.patch(`/api/v1/packages/${id}`, data);
@@ -69,8 +70,19 @@ export const uploadProductImage = (formData) =>
 
 // Shipping methods (public, by country/city)
 export const getShippingMethods = (params) => api.get("/api/v1/shipping-methods", { params });
+// Admin shipping methods (all, CRUD)
+export const getAllShippingMethods = () => api.get("/api/v1/shipping-methods/admin");
+export const createShippingMethod = (data) => api.post("/api/v1/shipping-methods", data);
+export const updateShippingMethod = (id, data) => api.patch(`/api/v1/shipping-methods/${id}`, data);
+export const deleteShippingMethod = (id) => api.delete(`/api/v1/shipping-methods/${id}`);
+
 // Pickup locations (public, by country/city)
 export const getPickupLocations = (params) => api.get("/api/v1/pickup-locations", { params });
+// Admin pickup locations (all, CRUD)
+export const getAllPickupLocations = () => api.get("/api/v1/pickup-locations/admin");
+export const createPickupLocation = (data) => api.post("/api/v1/pickup-locations", data);
+export const updatePickupLocation = (id, data) => api.patch(`/api/v1/pickup-locations/${id}`, data);
+export const deletePickupLocation = (id) => api.delete(`/api/v1/pickup-locations/${id}`);
 // User addresses (requires auth)
 export const getAddresses = () => api.get("/api/v1/addresses");
 export const createAddress = (data) => api.post("/api/v1/addresses", data);

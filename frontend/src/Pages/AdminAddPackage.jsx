@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { createPackage, getProducts, uploadPackageImage } from "../api";
+import { createPackage, getProducts, getPackageCategories, uploadPackageImage } from "../api";
 import toast from "react-hot-toast";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || "";
@@ -24,13 +24,22 @@ export default function AdminAddPackage() {
 
   const products = Array.isArray(productsData) ? productsData : [];
 
+  const { data: categoriesData } = useQuery({
+    queryKey: ["package-categories"],
+    queryFn: async () => {
+      const res = await getPackageCategories();
+      return res.data?.data?.categories ?? [];
+    },
+  });
+  const categories = Array.isArray(categoriesData) ? categoriesData : [];
+
   const toggleProductId = (id) => {
     setSelectedProductIds((prev) =>
       prev.includes(id) ? prev.filter((n) => n !== id) : [...prev, id]
     );
   };
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
       name: "",
       description: "",
@@ -38,16 +47,21 @@ export default function AdminAddPackage() {
       imageAlt: "",
       bundlePrice: 0,
       quantityLabel: "1 pack",
-      rating: 4.5,
       leadTime: "",
       category: "",
+      categoryCustom: "",
       inStock: true,
+      featuresText: "",
     },
   });
 
   const { mutateAsync: submitPackage, isPending } = useMutation({
     mutationFn: (data) => {
       const productIds = selectedProductIds.map(Number).filter((n) => n > 0);
+      const featuresText = (data.featuresText ?? "").trim();
+      const details = featuresText
+        ? [{ name: "Features", items: [featuresText] }]
+        : [];
       return createPackage({
         name: data.name,
         description: data.description ?? "",
@@ -55,11 +69,11 @@ export default function AdminAddPackage() {
         imageAlt: data.imageAlt ?? "",
         bundlePrice: Number(data.bundlePrice) ?? 0,
         quantityLabel: data.quantityLabel ?? "1 pack",
-        rating: Number(data.rating) ?? 0,
         leadTime: data.leadTime ?? "",
         category: data.category ?? "",
         inStock: data.inStock !== false,
         productIds,
+        details,
       });
     },
     onSuccess: () => {
@@ -214,18 +228,18 @@ export default function AdminAddPackage() {
           </div>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Features / usage information</label>
+          <p className="text-sm text-gray-500 mt-0.5 mb-1">Describe how to use the products or key information. Shown on the package details page.</p>
+          <textarea
+            rows={4}
+            {...register("featuresText")}
+            placeholder="e.g. Apply minoxidil once daily. Use the shampoo 2–3 times per week. Store in a cool, dry place."
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+        </div>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Rating (0–5)</label>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              max="5"
-              {...register("rating", { min: 0, max: 5 })}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Quantity label</label>
             <input
@@ -250,12 +264,24 @@ export default function AdminAddPackage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Category</label>
-          <input
-            type="text"
+          <select
             {...register("category")}
-            placeholder="e.g. Starter packs"
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
+          >
+            <option value="">Select category</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+            <option value="__other__">Add custom category</option>
+          </select>
+          {watch("category") === "__other__" && (
+            <input
+              type="text"
+              {...register("categoryCustom")}
+              placeholder="Type custom category"
+              className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          )}
         </div>
 
         <div className="flex items-center gap-2">

@@ -8,6 +8,18 @@ async function getNextPackageId() {
   return maxId + 1;
 }
 
+/** Get distinct package categories (public, for dropdowns). */
+async function getPackageCategories(req, res) {
+  try {
+    const categories = await Package.distinct('category').then((arr) =>
+      (arr || []).filter((c) => c != null && String(c).trim() !== '').sort()
+    );
+    res.status(200).json({ status: 'success', data: { categories } });
+  } catch (err) {
+    res.status(500).json({ status: 'fail', message: err.message || 'Failed to fetch categories.' });
+  }
+}
+
 /** List all packages (public). */
 async function fetchAllPackages(req, res) {
   try {
@@ -69,7 +81,7 @@ async function createPackage(req, res) {
       productIds,
       bundlePrice: Number(payload.bundlePrice),
       quantityLabel: payload.quantityLabel ?? '1 pack',
-      rating: payload.rating != null ? Number(payload.rating) : 0,
+      rating: 0,
       inStock: payload.inStock !== false,
       category: payload.category ?? '',
       leadTime: payload.leadTime ?? '',
@@ -95,6 +107,7 @@ async function updatePackage(req, res) {
     if (body.details !== undefined) {
       body.details = Array.isArray(body.details) ? body.details : [];
     }
+    delete body.rating;
     const pkg = await Package.findOneAndUpdate({ id }, { $set: body }, { new: true, runValidators: true });
     if (!pkg) {
       return res.status(404).json({ status: 'fail', message: 'Package not found.' });
@@ -123,6 +136,7 @@ async function deletePackage(req, res) {
 }
 
 module.exports = {
+  getPackageCategories,
   fetchAllPackages,
   getPackageById,
   createPackage,
