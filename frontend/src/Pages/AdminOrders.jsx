@@ -55,20 +55,24 @@ export default function AdminOrders() {
   const start = (page - 1) * limit;
   const displayed = orders.slice(start, start + limit);
 
-  const { mutate: updatePaymentStatus, isPending: isUpdatingPayment } =
-    useMutation({
-      mutationFn: ({ orderId, paymentStatus }) =>
-        updateOrderPaymentStatus(orderId, { paymentStatus }),
-      onSuccess: () => {
+  const { mutate: updateOrderStatus, isPending: isUpdatingOrder } = useMutation(
+    {
+      mutationFn: ({ orderId, paymentStatus, orderStatus }) =>
+        updateOrder(orderId, { paymentStatus, orderStatus }),
+      onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-        toast.success("Payment status updated.");
+        if (variables.orderStatus != null)
+          toast.success("Order status updated.");
+        if (variables.paymentStatus != null)
+          toast.success("Payment status updated.");
       },
       onError: (err) => {
         toast.error(
           err?.response?.data?.message || err?.message || "Failed to update."
         );
       },
-    });
+    }
+  );
 
   return (
     <div className="w-full">
