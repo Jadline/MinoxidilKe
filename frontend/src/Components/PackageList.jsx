@@ -111,8 +111,10 @@ export default function PackageList() {
 
         {error && (
           <p className="text-sm text-amber-600 mb-4">
-            Could not load packages. Make sure the backend is running and
-            VITE_BASE_URL is set.
+            Could not load packages. If you deployed to Vercel, set{" "}
+            <strong>VITE_BASE_URL</strong> to your Render backend URL in Vercel
+            → Settings → Environment Variables, then redeploy with “Clear
+            cache”.
           </p>
         )}
 
