@@ -12,11 +12,7 @@ function packageImageSrc(imageSrc) {
   if (s.startsWith("http")) return s;
   const path = s.startsWith("/") ? s : "/" + s;
   const origin =
-    path.startsWith("/uploads/") && BASE_URL
-      ? BASE_URL
-      : typeof window !== "undefined"
-        ? window.location.origin
-        : "";
+    BASE_URL || (typeof window !== "undefined" ? window.location.origin : "");
   return origin ? origin + path : path;
 }
 
@@ -24,7 +20,12 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function PackageQuickView({ open, setOpen, packageData, onAddToCart }) {
+export default function PackageQuickView({
+  open,
+  setOpen,
+  packageData,
+  onAddToCart,
+}) {
   const { data, isLoading } = useQuery({
     queryKey: ["package", packageData?.id],
     queryFn: async () => {
@@ -82,7 +83,9 @@ export default function PackageQuickView({ open, setOpen, packageData, onAddToCa
                   <StarIcon
                     key={r}
                     className={classNames(
-                      (pkg.rating ?? 0) > r ? "text-yellow-400" : "text-gray-200",
+                      (pkg.rating ?? 0) > r
+                        ? "text-yellow-400"
+                        : "text-gray-200",
                       "size-5 shrink-0"
                     )}
                   />
@@ -95,7 +98,8 @@ export default function PackageQuickView({ open, setOpen, packageData, onAddToCa
               <div className="mt-4 flex-1 min-h-0">
                 {pkg.description ? (
                   typeof pkg.description === "string" &&
-                  (pkg.description.startsWith("<") || pkg.description.includes("<p>")) ? (
+                  (pkg.description.startsWith("<") ||
+                    pkg.description.includes("<p>")) ? (
                     <div
                       dangerouslySetInnerHTML={{ __html: pkg.description }}
                       className="text-sm text-gray-700 leading-relaxed"
@@ -106,13 +110,16 @@ export default function PackageQuickView({ open, setOpen, packageData, onAddToCa
                     </p>
                   )
                 ) : (
-                  <p className="text-sm text-gray-500 italic">No description.</p>
+                  <p className="text-sm text-gray-500 italic">
+                    No description.
+                  </p>
                 )}
               </div>
 
               {!isLoading && products.length > 0 && (
                 <p className="mt-3 text-xs text-gray-500">
-                  This package includes {products.length} product{products.length !== 1 ? "s" : ""}:{" "}
+                  This package includes {products.length} product
+                  {products.length !== 1 ? "s" : ""}:{" "}
                   {products.map((prod) => prod.name).join(", ")}
                 </p>
               )}

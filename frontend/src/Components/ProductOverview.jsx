@@ -28,11 +28,7 @@ function productImageSrc(imageSrc) {
   if (s.startsWith("http")) return s;
   const path = s.startsWith("/") ? s : "/" + s;
   const origin =
-    path.startsWith("/uploads/") && BASE_URL
-      ? BASE_URL
-      : typeof window !== "undefined"
-      ? window.location.origin
-      : "";
+    BASE_URL || (typeof window !== "undefined" ? window.location.origin : "");
   return origin ? origin + path : path;
 }
 
@@ -170,7 +166,8 @@ export default function ProductOverview({ product: productProp }) {
         : "";
     const qty = product.quantityLabel ? product.quantityLabel : "";
     const productId = product._id ?? product.id;
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const origin =
+      BASE_URL || (typeof window !== "undefined" ? window.location.origin : "");
     const productUrl =
       origin && productId != null
         ? `${origin}/product-details/${productId}`

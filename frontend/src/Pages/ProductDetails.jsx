@@ -11,11 +11,7 @@ function productImageUrl(imageSrc) {
   if (s.startsWith("http")) return s;
   const path = s.startsWith("/") ? s : "/" + s;
   const origin =
-    path.startsWith("/uploads/") && BASE_URL
-      ? BASE_URL
-      : typeof window !== "undefined"
-      ? window.location.origin
-      : "";
+    BASE_URL || (typeof window !== "undefined" ? window.location.origin : "");
   return origin ? origin + path : path;
 }
 
@@ -77,8 +73,9 @@ function ProductDetails() {
             .trim()
             .slice(0, 160)
         : "";
-    const url =
-      window.location.origin + `/product-details/${product._id ?? product.id}`;
+    const origin =
+      BASE_URL || (typeof window !== "undefined" ? window.location.origin : "");
+    const url = `${origin}/product-details/${product._id ?? product.id}`;
 
     setMeta("og:title", title, true);
     setMeta("og:description", desc, true);

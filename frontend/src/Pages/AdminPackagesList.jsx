@@ -25,9 +25,10 @@ const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 function packageImageSrc(imageSrc) {
   if (!imageSrc) return "";
   if (String(imageSrc).startsWith("http")) return imageSrc;
-  return BASE_URL
-    ? BASE_URL + (imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc)
-    : imageSrc;
+  const path = imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc;
+  const origin =
+    BASE_URL || (typeof window !== "undefined" ? window.location.origin : "");
+  return origin ? origin + path : path;
 }
 
 function truncate(str, maxLen = 40) {
