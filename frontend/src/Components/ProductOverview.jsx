@@ -2,7 +2,7 @@ import { FaArrowRight } from "react-icons/fa";
 import { FaWhatsapp } from "react-icons/fa";
 import Reviews from "./Reviews";
 import StarRating from "./StarRating";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Disclosure,
   DisclosureButton,
@@ -31,8 +31,8 @@ function productImageSrc(imageSrc) {
     path.startsWith("/uploads/") && BASE_URL
       ? BASE_URL
       : typeof window !== "undefined"
-        ? window.location.origin
-        : "";
+      ? window.location.origin
+      : "";
   return origin ? origin + path : path;
 }
 
@@ -159,9 +159,32 @@ export default function ProductOverview({ product: productProp }) {
         },
       ];
 
-  console.log(product);
-
   const queryClient = useQueryClient();
+
+  const whatsAppHref = useMemo(() => {
+    if (!product) return "#";
+    const name = product.name || "Product";
+    const price =
+      product.price != null
+        ? `KSh ${Number(product.price).toLocaleString()}`
+        : "";
+    const qty = product.quantityLabel ? product.quantityLabel : "";
+    const productId = product._id ?? product.id;
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const productUrl =
+      origin && productId != null
+        ? `${origin}/product-details/${productId}`
+        : "";
+
+    const details = [price, qty].filter(Boolean).join(" · ");
+    const body = details ? `${name} (${details})` : name;
+    const message = productUrl
+      ? `Hi! I'm interested in ${body}. Could you tell me more?\n\n${productUrl}`
+      : `Hi! I'm interested in ${body}. Could you tell me more?`;
+
+    return `https://wa.me/254726787330?text=${encodeURIComponent(message)}`;
+  }, [product]);
+
   const handleAddReview = async (reviewData) => {
     if (!currentUser) {
       navigate("/login");
@@ -236,14 +259,16 @@ export default function ProductOverview({ product: productProp }) {
                 <StarRating
                   rating={
                     reviews.length > 0
-                      ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length
+                      ? reviews.reduce((s, r) => s + (r.rating || 0), 0) /
+                        reviews.length
                       : product.rating ?? 0
                   }
                   size="md"
                 />
                 {reviews.length > 0 && (
                   <span className="text-sm text-gray-500">
-                    ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
+                    ({reviews.length}{" "}
+                    {reviews.length === 1 ? "review" : "reviews"})
                   </span>
                 )}
               </div>
@@ -265,7 +290,7 @@ export default function ProductOverview({ product: productProp }) {
                   className="mt-2 flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded-md"
                 >
                   <a
-                    href={`https://wa.me/254796866058?text=Hi! I’d like to know more about this product.`}
+                    href={whatsAppHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3"
@@ -323,40 +348,42 @@ export default function ProductOverview({ product: productProp }) {
 
               <div className="divide-y divide-gray-200 border-t border-gray-200">
                 {(product.details || [])
-                  .filter((d) => d.name && !["Shipping", "Returns"].includes(d.name))
+                  .filter(
+                    (d) => d.name && !["Shipping", "Returns"].includes(d.name)
+                  )
                   .map((detail) => (
-                  <Disclosure key={detail.name} as="div">
-                    <h3>
-                      <DisclosureButton className="group relative flex w-full items-center justify-between py-6 text-left">
-                        <span className="text-sm font-medium text-gray-900 group-data-open:text-indigo-600">
-                          {detail.name}
-                        </span>
-                        <span className="ml-6 flex items-center">
-                          <PlusIcon
-                            aria-hidden="true"
-                            className="block size-6 text-gray-400 group-hover:text-gray-500 group-data-open:hidden"
-                          />
-                          <MinusIcon
-                            aria-hidden="true"
-                            className="hidden size-6 text-indigo-400 group-hover:text-indigo-500 group-data-open:block"
-                          />
-                        </span>
-                      </DisclosureButton>
-                    </h3>
-                    <DisclosurePanel className="pb-6">
-                      <ul
-                        role="list"
-                        className="list-disc space-y-1 pl-5 text-sm/6 text-gray-700 marker:text-gray-300"
-                      >
-                        {detail.items.map((item) => (
-                          <li key={item} className="pl-2">
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </DisclosurePanel>
-                  </Disclosure>
-                ))}
+                    <Disclosure key={detail.name} as="div">
+                      <h3>
+                        <DisclosureButton className="group relative flex w-full items-center justify-between py-6 text-left">
+                          <span className="text-sm font-medium text-gray-900 group-data-open:text-indigo-600">
+                            {detail.name}
+                          </span>
+                          <span className="ml-6 flex items-center">
+                            <PlusIcon
+                              aria-hidden="true"
+                              className="block size-6 text-gray-400 group-hover:text-gray-500 group-data-open:hidden"
+                            />
+                            <MinusIcon
+                              aria-hidden="true"
+                              className="hidden size-6 text-indigo-400 group-hover:text-indigo-500 group-data-open:block"
+                            />
+                          </span>
+                        </DisclosureButton>
+                      </h3>
+                      <DisclosurePanel className="pb-6">
+                        <ul
+                          role="list"
+                          className="list-disc space-y-1 pl-5 text-sm/6 text-gray-700 marker:text-gray-300"
+                        >
+                          {detail.items.map((item) => (
+                            <li key={item} className="pl-2">
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </DisclosurePanel>
+                    </Disclosure>
+                  ))}
               </div>
               <Reviews
                 productId={productIdForReviews}

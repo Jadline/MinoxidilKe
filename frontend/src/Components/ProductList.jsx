@@ -53,9 +53,7 @@ export default function ProductList() {
   if (!products || products.length === 0)
     return (
       <div className="bg-white py-24 text-center">
-        <p className="text-lg font-medium text-gray-900">
-          No products found.
-        </p>
+        <p className="text-lg font-medium text-gray-900">No products found.</p>
         <p className="mt-2 text-sm text-gray-500">
           Try clearing some filters or adjusting your search.
         </p>
@@ -73,19 +71,31 @@ export default function ProductList() {
               key={product.id ?? product._id}
               onClick={() => {
                 if (product) {
-                  const path = product.id != null
-                    ? `/product-details/${product.id}`
-                    : "/product-details";
+                  const path =
+                    product.id != null
+                      ? `/product-details/${product.id}`
+                      : "/product-details";
                   navigate(path, { state: { product } });
                 }
               }}
               className="group relative border-r border-b border-gray-200 p-4 sm:p-6 cursor-pointer hover:shadow-md transition-shadow duration-150"
             >
-              <img
-                alt={product.imageAlt}
-                src={product.imageSrc}
-                className="aspect-square rounded-lg bg-gray-200 object-contain group-hover:opacity-75 transition duration-150"
-              />
+              <div className="relative">
+                <img
+                  alt={product.imageAlt}
+                  src={product.imageSrc}
+                  className={`aspect-square rounded-lg bg-gray-200 object-contain transition duration-150 ${
+                    product.inStock === false
+                      ? "opacity-75"
+                      : "group-hover:opacity-75"
+                  }`}
+                />
+                {product.inStock === false && (
+                  <span className="absolute top-2 right-2 rounded-md bg-gray-800 px-2 py-1 text-xs font-medium text-white shadow-sm">
+                    Out of stock
+                  </span>
+                )}
+              </div>
 
               <button
                 onClick={(e) => {

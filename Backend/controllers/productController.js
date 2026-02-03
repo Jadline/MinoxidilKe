@@ -1,6 +1,6 @@
-const crypto = require('crypto');
-const Product = require('../models/productModel');
-const ProductCache = require('../models/productCacheModel');
+const crypto = require("crypto");
+const Product = require("../models/productModel");
+const ProductCache = require("../models/productCacheModel");
 
 function buildCacheKey(filters, query) {
   const payload = {
@@ -11,9 +11,9 @@ function buildCacheKey(filters, query) {
   };
 
   const hash = crypto
-    .createHash('sha256')
+    .createHash("sha256")
     .update(JSON.stringify(payload))
-    .digest('hex');
+    .digest("hex");
 
   return `products:${hash}`;
 }
@@ -23,7 +23,7 @@ async function invalidateProductListCache() {
   try {
     await ProductCache.deleteMany({ key: /^products:/ });
   } catch (err) {
-    console.error('Product cache invalidation error:', err.message);
+    console.error("Product cache invalidation error:", err.message);
   }
 }
 
@@ -31,7 +31,7 @@ async function fetchAllProducts(req, res) {
   try {
     // 1️⃣ Filters
     const queryObj = { ...(req.parsedFilters || {}) };
-    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+    const excludedFields = ["page", "sort", "limit", "fields"];
     excludedFields.forEach((el) => delete queryObj[el]);
 
     const page = Number(req.query.page) || 1;
@@ -47,16 +47,16 @@ async function fetchAllProducts(req, res) {
       let sortCriteria = {};
 
       switch (sortOption) {
-        case 'price-asc':
+        case "price-asc":
           sortCriteria = { price: 1 };
           break;
-        case 'price-desc':
+        case "price-desc":
           sortCriteria = { price: -1 };
           break;
-        case 'name-asc':
+        case "name-asc":
           sortCriteria = { name: 1 };
           break;
-        case 'name-desc':
+        case "name-desc":
           sortCriteria = { name: -1 };
           break;
         default:
@@ -78,7 +78,7 @@ async function fetchAllProducts(req, res) {
         return res.status(200).json(cacheEntry.value);
       }
     } catch (cacheErr) {
-      console.error('Product cache read error:', cacheErr.message);
+      console.error("Product cache read error:", cacheErr.message);
     }
 
     // 4️⃣ Query DB in parallel
@@ -90,7 +90,7 @@ async function fetchAllProducts(req, res) {
     // 5️⃣ Empty state
     if (!products || products.length === 0) {
       const response = {
-        status: 'success',
+        status: "success",
         results: 0,
         total: 0,
         data: { products: [] },
@@ -104,7 +104,7 @@ async function fetchAllProducts(req, res) {
           { upsert: true }
         );
       } catch (cacheErr) {
-        console.error('Product cache write error:', cacheErr.message);
+        console.error("Product cache write error:", cacheErr.message);
       }
 
       return res.status(200).json(response);
@@ -112,7 +112,7 @@ async function fetchAllProducts(req, res) {
 
     // 6️⃣ Success response
     const response = {
-      status: 'success',
+      status: "success",
       results: products.length,
       total,
       data: { products },
@@ -126,13 +126,13 @@ async function fetchAllProducts(req, res) {
         { upsert: true }
       );
     } catch (cacheErr) {
-      console.error('Product cache write error:', cacheErr.message);
+      console.error("Product cache write error:", cacheErr.message);
     }
 
     res.status(200).json(response);
   } catch (err) {
     res.status(500).json({
-      status: 'fail',
+      status: "fail",
       message: err.message,
     });
   }
@@ -143,21 +143,44 @@ async function getProductById(req, res) {
   try {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ status: 'fail', message: 'Invalid product id.' });
+      return res
+        .status(400)
+        .json({ status: "fail", message: "Invalid product id." });
     }
     const product = await Product.findOne({ id }).lean();
     if (!product) {
-      return res.status(404).json({ status: 'fail', message: 'Product not found.' });
+      return res
+        .status(404)
+        .json({ status: "fail", message: "Product not found." });
     }
-    res.status(200).json({ status: 'success', data: { product } });
+    res.status(200).json({ status: "success", data: { product } });
   } catch (err) {
-    res.status(500).json({ status: 'fail', message: err.message || 'Failed to fetch product.' });
+    res
+      .status(500)
+      .json({
+        status: "fail",
+        message: err.message || "Failed to fetch product.",
+      });
   }
+}
+
+/** Get product by numeric id or MongoDB _id (for server-side OG / share previews). Returns product or null. */
+async function getProductByIdOrMongoId(idParam) {
+  if (!idParam || typeof idParam !== "string") return null;
+  const trimmed = String(idParam).trim();
+  if (/^[a-fA-F0-9]{24}$/.test(trimmed)) {
+    return Product.findById(trimmed).lean().exec();
+  }
+  const numId = Number(trimmed);
+  if (!Number.isInteger(numId) || numId < 1) return null;
+  return Product.findOne({ id: numId }).lean().exec();
 }
 
 /** Get next product id (max id + 1). Used by createProduct. */
 async function getNextProductId() {
-  const agg = await Product.aggregate([{ $group: { _id: null, maxId: { $max: '$id' } } }]);
+  const agg = await Product.aggregate([
+    { $group: { _id: null, maxId: { $max: "$id" } } },
+  ]);
   const maxId = agg[0]?.maxId ?? 0;
   return maxId + 1;
 }
@@ -167,28 +190,36 @@ async function createProduct(req, res) {
   try {
     const payload = req.body;
     if (!payload.name) {
-      return res.status(400).json({ status: 'fail', message: 'Product name is required.' });
+      return res
+        .status(400)
+        .json({ status: "fail", message: "Product name is required." });
     }
-    const id = payload.id != null ? Number(payload.id) : await getNextProductId();
+    const id =
+      payload.id != null ? Number(payload.id) : await getNextProductId();
     const product = await Product.create({
       id,
       name: payload.name,
       price: payload.price ?? 0,
-      quantityLabel: payload.quantityLabel ?? '',
-      imageSrc: payload.imageSrc ?? '',
+      quantityLabel: payload.quantityLabel ?? "",
+      imageSrc: payload.imageSrc ?? "",
       imageAlt: payload.imageAlt ?? payload.name,
       rating: payload.rating ?? 0,
       inStock: payload.inStock !== false,
-      category: payload.category ?? '',
-      leadTime: payload.leadTime ?? '',
+      category: payload.category ?? "",
+      leadTime: payload.leadTime ?? "",
       images: payload.images ?? [],
-      description: payload.description ?? '',
+      description: payload.description ?? "",
       details: payload.details ?? [],
     });
     await invalidateProductListCache();
-    res.status(201).json({ status: 'success', data: { product } });
+    res.status(201).json({ status: "success", data: { product } });
   } catch (err) {
-    res.status(500).json({ status: 'fail', message: err.message || 'Failed to create product.' });
+    res
+      .status(500)
+      .json({
+        status: "fail",
+        message: err.message || "Failed to create product.",
+      });
   }
 }
 
@@ -197,7 +228,9 @@ async function updateProduct(req, res) {
   try {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ status: 'fail', message: 'Invalid product id.' });
+      return res
+        .status(400)
+        .json({ status: "fail", message: "Invalid product id." });
     }
     const body = { ...req.body };
     delete body.rating; // admin cannot change rating; it is updated from reviews
@@ -207,12 +240,19 @@ async function updateProduct(req, res) {
       { new: true, runValidators: true }
     );
     if (!product) {
-      return res.status(404).json({ status: 'fail', message: 'Product not found.' });
+      return res
+        .status(404)
+        .json({ status: "fail", message: "Product not found." });
     }
     await invalidateProductListCache();
-    res.status(200).json({ status: 'success', data: { product } });
+    res.status(200).json({ status: "success", data: { product } });
   } catch (err) {
-    res.status(500).json({ status: 'fail', message: err.message || 'Failed to update product.' });
+    res
+      .status(500)
+      .json({
+        status: "fail",
+        message: err.message || "Failed to update product.",
+      });
   }
 }
 
@@ -221,22 +261,38 @@ async function deleteProduct(req, res) {
   try {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ status: 'fail', message: 'Invalid product id.' });
+      return res
+        .status(400)
+        .json({ status: "fail", message: "Invalid product id." });
     }
     const product = await Product.findOneAndDelete({ id });
     if (!product) {
-      return res.status(404).json({ status: 'fail', message: 'Product not found.' });
+      return res
+        .status(404)
+        .json({ status: "fail", message: "Product not found." });
     }
     await invalidateProductListCache();
-    res.status(200).json({ status: 'success', message: 'Product deleted.', data: { product } });
+    res
+      .status(200)
+      .json({
+        status: "success",
+        message: "Product deleted.",
+        data: { product },
+      });
   } catch (err) {
-    res.status(500).json({ status: 'fail', message: err.message || 'Failed to delete product.' });
+    res
+      .status(500)
+      .json({
+        status: "fail",
+        message: err.message || "Failed to delete product.",
+      });
   }
 }
 
 module.exports = {
   fetchAllProducts,
   getProductById,
+  getProductByIdOrMongoId,
   buildCacheKey,
   invalidateProductListCache,
   createProduct,

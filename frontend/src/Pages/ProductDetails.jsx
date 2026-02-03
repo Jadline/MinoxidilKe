@@ -3,6 +3,33 @@ import { useParams, useLocation } from "react-router-dom";
 import ProductOverview from "../Components/ProductOverview";
 import { getProduct } from "../api";
 
+const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
+
+function productImageUrl(imageSrc) {
+  if (!imageSrc) return "";
+  const s = String(imageSrc).trim();
+  if (s.startsWith("http")) return s;
+  const path = s.startsWith("/") ? s : "/" + s;
+  const origin =
+    path.startsWith("/uploads/") && BASE_URL
+      ? BASE_URL
+      : typeof window !== "undefined"
+      ? window.location.origin
+      : "";
+  return origin ? origin + path : path;
+}
+
+function setMeta(name, content, property = false) {
+  const attr = property ? "property" : "name";
+  let el = document.querySelector(`meta[${attr}="${name}"]`);
+  if (!el) {
+    el = document.createElement("meta");
+    el.setAttribute(attr, name);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("content", content || "");
+}
+
 function ProductDetails() {
   const { id } = useParams();
   const location = useLocation();
@@ -26,10 +53,39 @@ function ProductDetails() {
         else setError("Product not found.");
       })
       .catch((err) => {
-        setError(err?.response?.data?.message || err?.message || "Failed to load product.");
+        setError(
+          err?.response?.data?.message ||
+            err?.message ||
+            "Failed to load product."
+        );
       })
       .finally(() => setLoading(false));
   }, [id, productFromState]);
+
+  const product = productFromUrl ?? productFromState;
+
+  useEffect(() => {
+    if (!product || typeof document === "undefined") return;
+    const img =
+      product.images?.[0]?.src ?? product.images?.[0]?.url ?? product.imageSrc;
+    const imageUrl = productImageUrl(img);
+    const title = product.name || "Product";
+    const desc =
+      typeof product.description === "string"
+        ? product.description
+            .replace(/<[^>]+>/g, "")
+            .trim()
+            .slice(0, 160)
+        : "";
+    const url =
+      window.location.origin + `/product-details/${product._id ?? product.id}`;
+
+    setMeta("og:title", title, true);
+    setMeta("og:description", desc, true);
+    setMeta("og:url", url, true);
+    setMeta("og:image", imageUrl, true);
+    setMeta("og:type", "website", true);
+  }, [product]);
 
   if (id && !productFromState && loading) {
     return (
@@ -46,7 +102,7 @@ function ProductDetails() {
     );
   }
 
-  return <ProductOverview product={productFromUrl ?? productFromState} />;
+  return <ProductOverview product={product} />;
 }
 
 export default ProductDetails;

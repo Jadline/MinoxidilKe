@@ -392,7 +392,7 @@ export default function AdminPackagesList() {
         </button>
       </div>
 
-      <div className="rounded-xl border border-white/15 bg-[#e8ecf4] shadow-xl overflow-hidden w-full">
+      <div className="rounded-xl border border-[#191970]/30 bg-white shadow-xl overflow-hidden w-full transition-all duration-200 hover:shadow-2xl hover:border-[#191970]/50">
         {isLoading ? (
           <div className="p-12 text-center text-gray-500">
             Loading packages…
@@ -405,15 +405,15 @@ export default function AdminPackagesList() {
           </div>
         ) : packages.length === 0 ? (
           <div className="p-12 text-center">
-            <CubeIcon className="mx-auto h-12 w-12 text-[#005f69]/50" />
-            <p className="mt-2 text-gray-600">No packages yet.</p>
-            <p className="mt-1 text-sm text-gray-500">
+            <CubeIcon className="mx-auto h-12 w-12 text-white/50" />
+            <p className="mt-2 text-white">No packages yet.</p>
+            <p className="mt-1 text-sm text-white/80">
               Create a package to sell products together at a bundle price.
             </p>
             <button
               type="button"
               onClick={() => setAddModalOpen(true)}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#005f69] px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-[#061d4d] transition-colors"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#191970] px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-[#12125c] transition-colors"
             >
               <PlusIcon className="h-5 w-5" />
               Add package
@@ -421,60 +421,60 @@ export default function AdminPackagesList() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-[#082567]/15">
-              <thead className="bg-[#082567]/15">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-[#191970]">
                 <tr>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
                   >
                     Package
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
                   >
                     Bundle price
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
                   >
                     Description
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
                   >
                     Features
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
                   >
                     Rating
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
                   >
                     Stock
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
                   >
                     Lead time
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
                   >
                     Category
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
                   >
                     Products
                   </th>
@@ -483,11 +483,11 @@ export default function AdminPackagesList() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-[#e8ecf4]/60 divide-y divide-[#082567]/10">
+              <tbody className="bg-white/15 divide-y divide-white/20">
                 {packages.map((pkg) => (
                   <tr
                     key={pkg.id}
-                    className="hover:bg-[#082567]/8 transition-colors"
+                    className="hover:bg-[#191970]/5 transition-colors duration-150"
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">

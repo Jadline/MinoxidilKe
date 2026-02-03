@@ -172,35 +172,35 @@ export default function AdminShippingMethods() {
         </button>
       </div>
 
-      <div className="rounded-xl border border-white/15 bg-[#e8ecf4] shadow-xl overflow-hidden">
+      <div className="rounded-xl border border-[#191970]/30 bg-white shadow-xl overflow-hidden transition-all duration-200 hover:shadow-2xl hover:border-[#191970]/50">
         {isLoading ? (
           <div className="p-12 text-center text-gray-500">Loading…</div>
         ) : isError ? (
           <div className="p-12 text-center text-red-600">{error?.message || "Failed to load."}</div>
         ) : methods.length === 0 ? (
           <div className="p-12 text-center">
-            <TruckIcon className="mx-auto h-12 w-12 text-[#082567]/50" />
-            <p className="mt-2 text-gray-600">No shipping methods yet.</p>
-            <button type="button" onClick={() => setAddModalOpen(true)} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#082567] px-4 py-2.5 text-sm font-semibold text-white">
+            <TruckIcon className="mx-auto h-12 w-12 text-white/50" />
+            <p className="mt-2 text-white">No shipping methods yet.</p>
+            <button type="button" onClick={() => setAddModalOpen(true)} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#191970] px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-[#12125c] transition-colors">
               <PlusIcon className="h-5 w-5" /> Add shipping method
             </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-[#082567]/15">
-              <thead className="bg-[#082567]/15">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-[#191970]">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">Country</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">Region / City</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">Cost (KSh)</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Country</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Region / City</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Cost (KSh)</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Status</th>
                   <th className="relative px-4 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody className="bg-white/80 divide-y divide-gray-200">
+              <tbody className="bg-white/15 divide-y divide-white/20">
                 {methods.map((m) => (
-                  <tr key={m._id} className="hover:bg-[#082567]/5">
+                  <tr key={m._id} className="hover:bg-[#191970]/5 transition-colors duration-150">
                     <td className="px-4 py-3 text-sm text-gray-900">{m.country || "—"}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{(m.region || m.city) ? [m.region, m.city].filter(Boolean).join(" / ") : "—"}</td>
                     <td className="px-4 py-3 text-sm text-gray-900">{m.name || "—"}</td>

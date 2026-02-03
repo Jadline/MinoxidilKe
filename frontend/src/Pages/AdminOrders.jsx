@@ -81,7 +81,7 @@ export default function AdminOrders() {
         <p className="text-white/80 mt-1">View all customer orders.</p>
       </div>
 
-      <div className="rounded-xl border border-white/15 bg-[#e8ecf4] shadow-xl overflow-hidden">
+      <div className="rounded-xl border border-[#191970]/30 bg-white shadow-xl overflow-hidden transition-all duration-200 hover:shadow-2xl hover:border-[#191970]/50">
         {isLoading ? (
           <div className="p-12 text-center text-gray-500">Loading orders…</div>
         ) : isError ? (
@@ -92,44 +92,44 @@ export default function AdminOrders() {
           </div>
         ) : orders.length === 0 ? (
           <div className="p-12 text-center">
-            <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-[#082567]/50" />
-            <p className="mt-2 text-gray-600">No orders yet.</p>
+            <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-white/50" />
+            <p className="mt-2 text-white">No orders yet.</p>
           </div>
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-[#082567]/15">
-                <thead className="bg-[#082567]/15">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-[#191970]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                       Order #
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                       Date
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                       Customer
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                       Phone
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                       Total
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                       Delivery
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                       Order status
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#082567] uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                       Payment
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white/80 divide-y divide-gray-200">
+                <tbody className="bg-white/15 divide-y divide-white/20">
                   {displayed.map((order) => (
-                    <tr key={order._id} className="hover:bg-[#082567]/5">
+                    <tr key={order._id} className="hover:bg-[#191970]/5 transition-colors duration-150">
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">
                         {order.orderNumber || "—"}
                       </td>
