@@ -784,6 +784,11 @@ export default function AdminPackagesList() {
                     {isUploadingImage && (
                       <p className="mt-1 text-sm text-gray-500">Uploading…</p>
                     )}
+                    {addWatch("imageSrc") && !isUploadingImage && (
+                      <p className="mt-1 text-sm text-green-600">
+                        ✓ Image URL set above — add package to keep it.
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -1036,6 +1041,11 @@ export default function AdminPackagesList() {
                       />
                       {isUploadingImage && (
                         <p className="mt-1 text-sm text-gray-500">Uploading…</p>
+                      )}
+                      {editWatch("imageSrc") && !isUploadingImage && (
+                        <p className="mt-1 text-sm text-green-600">
+                          ✓ Image URL set above — save package to keep it.
+                        </p>
                       )}
                     </div>
                   </div>
