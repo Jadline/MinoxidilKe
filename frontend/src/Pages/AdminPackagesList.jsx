@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import {
@@ -45,10 +45,6 @@ export default function AdminPackagesList() {
   const [addSelectedProductIds, setAddSelectedProductIds] = useState([]);
   const [editSelectedProductIds, setEditSelectedProductIds] = useState([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [addImageFileName, setAddImageFileName] = useState(null);
-  const [editImageFileName, setEditImageFileName] = useState(null);
-  const addImageInputRef = useRef(null);
-  const editImageInputRef = useRef(null);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["admin-packages"],
@@ -93,8 +89,6 @@ export default function AdminPackagesList() {
     addReset();
     setAddSelectedProductIds([]);
     setIsUploadingImage(false);
-    setAddImageFileName(null);
-    if (addImageInputRef.current) addImageInputRef.current.value = "";
   };
 
   const closeEditModal = () => {
@@ -102,8 +96,6 @@ export default function AdminPackagesList() {
     editReset();
     setEditSelectedProductIds([]);
     setIsUploadingImage(false);
-    setEditImageFileName(null);
-    if (editImageInputRef.current) editImageInputRef.current.value = "";
   };
 
   const addForm = useForm({
@@ -206,7 +198,6 @@ export default function AdminPackagesList() {
       toast.error("Please select an image file (jpg, png, webp, gif).");
       return;
     }
-    setAddImageFileName(file.name);
     setIsUploadingImage(true);
     try {
       const formData = new FormData();
@@ -219,15 +210,16 @@ export default function AdminPackagesList() {
           : path;
         addSetValue("imageSrc", fullUrl);
         toast.success("Image uploaded.");
+      } else {
+        toast.error("Upload failed.");
       }
     } catch (err) {
-      const msg =
-        err?.response?.data?.message || err?.message || "Upload failed.";
-      toast.error(msg);
+      toast.error(
+        err?.response?.data?.message || err?.message || "Upload failed."
+      );
     } finally {
       setIsUploadingImage(false);
-      setAddImageFileName(null);
-      if (addImageInputRef.current) addImageInputRef.current.value = "";
+      e.target.value = "";
     }
   };
 
@@ -238,7 +230,6 @@ export default function AdminPackagesList() {
       toast.error("Please select an image file (jpg, png, webp, gif).");
       return;
     }
-    setEditImageFileName(file.name);
     setIsUploadingImage(true);
     try {
       const formData = new FormData();
@@ -251,15 +242,16 @@ export default function AdminPackagesList() {
           : path;
         editSetValue("imageSrc", fullUrl);
         toast.success("Image uploaded.");
+      } else {
+        toast.error("Upload failed.");
       }
     } catch (err) {
-      const msg =
-        err?.response?.data?.message || err?.message || "Upload failed.";
-      toast.error(msg);
+      toast.error(
+        err?.response?.data?.message || err?.message || "Upload failed."
+      );
     } finally {
       setIsUploadingImage(false);
-      setEditImageFileName(null);
-      if (editImageInputRef.current) editImageInputRef.current.value = "";
+      e.target.value = "";
     }
   };
 
@@ -769,47 +761,39 @@ export default function AdminPackagesList() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Image URL
+                    Package image
                   </label>
-                  <input
-                    type="url"
-                    {...addRegister("imageSrc")}
-                    placeholder="https://... or upload below"
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
-                  />
-                  <div className="mt-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Or upload image
+                  <div className="mt-1 flex items-start gap-3">
+                    <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-[#082567]/30 bg-[#082567]/5 px-3 py-2 text-sm font-medium text-[#082567] hover:bg-[#082567]/10">
+                      <PlusIcon className="h-4 w-4" />
+                      {isUploadingImage ? "Uploading…" : "Choose image"}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="sr-only"
+                        disabled={isUploadingImage}
+                        onChange={handleAddImageUpload}
+                      />
                     </label>
-                    <input
-                      ref={addImageInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      onChange={handleAddImageUpload}
-                      disabled={isUploadingImage}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-[#082567]/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#082567]"
-                    />
-                    <p className="mt-1 text-sm text-gray-600">
-                      {isUploadingImage && "Uploading…"}
-                      {!isUploadingImage && addImageFileName && (
-                        <span className="text-[#082567]">
-                          Selected: {addImageFileName}
+                    {addWatch("imageSrc") && (
+                      <div className="flex items-center gap-2 min-w-0">
+                        <img
+                          src={packageImageSrc(addWatch("imageSrc"))}
+                          alt="Preview"
+                          className="h-12 w-12 rounded-lg object-cover border border-gray-200"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                          }}
+                        />
+                        <span className="text-xs text-gray-500 truncate">
+                          {addWatch("imageSrc")}
                         </span>
-                      )}
-                      {!isUploadingImage &&
-                        !addImageFileName &&
-                        addWatch("imageSrc") && (
-                          <span className="text-green-600">
-                            ✓ Image URL set above — add package to keep it.
-                          </span>
-                        )}
-                      {!isUploadingImage &&
-                        !addImageFileName &&
-                        !addWatch("imageSrc") && (
-                          <span className="text-gray-500">No file chosen</span>
-                        )}
-                    </p>
+                      </div>
+                    )}
                   </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    JPG, PNG, WebP or GIF, max 5MB
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -818,7 +802,7 @@ export default function AdminPackagesList() {
                   <input
                     type="text"
                     {...addRegister("imageAlt")}
-                    placeholder="Describe the image"
+                    placeholder="Describe the image for accessibility"
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
                   />
                 </div>
@@ -1039,49 +1023,39 @@ export default function AdminPackagesList() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Image URL
+                      Package image
                     </label>
-                    <input
-                      type="url"
-                      {...editRegister("imageSrc")}
-                      placeholder="https://... or upload below"
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
-                    />
-                    <div className="mt-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Or upload image
+                    <div className="mt-1 flex items-start gap-3">
+                      <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-[#082567]/30 bg-[#082567]/5 px-3 py-2 text-sm font-medium text-[#082567] hover:bg-[#082567]/10">
+                        <PlusIcon className="h-4 w-4" />
+                        {isUploadingImage ? "Uploading…" : "Change image"}
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          className="sr-only"
+                          disabled={isUploadingImage}
+                          onChange={handleEditImageUpload}
+                        />
                       </label>
-                      <input
-                        ref={editImageInputRef}
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif"
-                        onChange={handleEditImageUpload}
-                        disabled={isUploadingImage}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-[#082567]/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#082567]"
-                      />
-                      <p className="mt-1 text-sm text-gray-600">
-                        {isUploadingImage && "Uploading…"}
-                        {!isUploadingImage && editImageFileName && (
-                          <span className="text-[#082567]">
-                            Selected: {editImageFileName}
+                      {editWatch("imageSrc") && (
+                        <div className="flex items-center gap-2 min-w-0">
+                          <img
+                            src={packageImageSrc(editWatch("imageSrc"))}
+                            alt="Preview"
+                            className="h-12 w-12 rounded-lg object-cover border border-gray-200"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                          />
+                          <span className="text-xs text-gray-500 truncate">
+                            {editWatch("imageSrc")}
                           </span>
-                        )}
-                        {!isUploadingImage &&
-                          !editImageFileName &&
-                          editWatch("imageSrc") && (
-                            <span className="text-green-600">
-                              ✓ Image URL set above — save package to keep it.
-                            </span>
-                          )}
-                        {!isUploadingImage &&
-                          !editImageFileName &&
-                          !editWatch("imageSrc") && (
-                            <span className="text-gray-500">
-                              No file chosen
-                            </span>
-                          )}
-                      </p>
+                        </div>
+                      )}
                     </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      JPG, PNG, WebP or GIF, max 5MB
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
@@ -1090,7 +1064,7 @@ export default function AdminPackagesList() {
                     <input
                       type="text"
                       {...editRegister("imageAlt")}
-                      placeholder="Describe the image"
+                      placeholder="Describe the image for accessibility"
                       className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
                     />
                   </div>
