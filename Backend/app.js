@@ -59,7 +59,8 @@ app.get("/product-details/:id", ogProductPage);
 
 // Serve frontend build (so shared product links get OG from this server)
 app.use(express.static(FRONTEND_DIST));
-app.get("*", async (req, res, next) => {
+// SPA fallback: serve index.html for any GET not matched above (Express 5 requires named wildcard, not '*')
+app.get("/{*splat}", async (req, res, next) => {
   if (req.method !== "GET") return next();
   try {
     const html = await fs.readFile(
