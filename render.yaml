@@ -1,0 +1,9 @@
+# Render: one service = backend serves API + frontend (all changes from this repo)
+# https://render.com/docs/blueprint-spec
+# In Dashboard, set Environment: DATABASE, VITE_BASE_URL (your service URL for API/frontend)
+
+services:
+  - type: web
+    name: minoxidilke
+    buildCommand: npm run build
+    startCommand: npm start

@@ -45,6 +45,8 @@ export default function AdminPackagesList() {
   const [addSelectedProductIds, setAddSelectedProductIds] = useState([]);
   const [editSelectedProductIds, setEditSelectedProductIds] = useState([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [addImageFileName, setAddImageFileName] = useState(null);
+  const [editImageFileName, setEditImageFileName] = useState(null);
   const addImageInputRef = useRef(null);
   const editImageInputRef = useRef(null);
 
@@ -91,6 +93,7 @@ export default function AdminPackagesList() {
     addReset();
     setAddSelectedProductIds([]);
     setIsUploadingImage(false);
+    setAddImageFileName(null);
     if (addImageInputRef.current) addImageInputRef.current.value = "";
   };
 
@@ -99,6 +102,7 @@ export default function AdminPackagesList() {
     editReset();
     setEditSelectedProductIds([]);
     setIsUploadingImage(false);
+    setEditImageFileName(null);
     if (editImageInputRef.current) editImageInputRef.current.value = "";
   };
 
@@ -202,6 +206,7 @@ export default function AdminPackagesList() {
       toast.error("Please select an image file (jpg, png, webp, gif).");
       return;
     }
+    setAddImageFileName(file.name);
     setIsUploadingImage(true);
     try {
       const formData = new FormData();
@@ -221,6 +226,7 @@ export default function AdminPackagesList() {
       toast.error(msg);
     } finally {
       setIsUploadingImage(false);
+      setAddImageFileName(null);
       if (addImageInputRef.current) addImageInputRef.current.value = "";
     }
   };
@@ -232,6 +238,7 @@ export default function AdminPackagesList() {
       toast.error("Please select an image file (jpg, png, webp, gif).");
       return;
     }
+    setEditImageFileName(file.name);
     setIsUploadingImage(true);
     try {
       const formData = new FormData();
@@ -251,6 +258,7 @@ export default function AdminPackagesList() {
       toast.error(msg);
     } finally {
       setIsUploadingImage(false);
+      setEditImageFileName(null);
       if (editImageInputRef.current) editImageInputRef.current.value = "";
     }
   };
@@ -781,14 +789,26 @@ export default function AdminPackagesList() {
                       disabled={isUploadingImage}
                       className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-[#082567]/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#082567]"
                     />
-                    {isUploadingImage && (
-                      <p className="mt-1 text-sm text-gray-500">Uploading…</p>
-                    )}
-                    {addWatch("imageSrc") && !isUploadingImage && (
-                      <p className="mt-1 text-sm text-green-600">
-                        ✓ Image URL set above — add package to keep it.
-                      </p>
-                    )}
+                    <p className="mt-1 text-sm text-gray-600">
+                      {isUploadingImage && "Uploading…"}
+                      {!isUploadingImage && addImageFileName && (
+                        <span className="text-[#082567]">
+                          Selected: {addImageFileName}
+                        </span>
+                      )}
+                      {!isUploadingImage &&
+                        !addImageFileName &&
+                        addWatch("imageSrc") && (
+                          <span className="text-green-600">
+                            ✓ Image URL set above — add package to keep it.
+                          </span>
+                        )}
+                      {!isUploadingImage &&
+                        !addImageFileName &&
+                        !addWatch("imageSrc") && (
+                          <span className="text-gray-500">No file chosen</span>
+                        )}
+                    </p>
                   </div>
                 </div>
                 <div>
@@ -1039,14 +1059,28 @@ export default function AdminPackagesList() {
                         disabled={isUploadingImage}
                         className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-[#082567]/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#082567]"
                       />
-                      {isUploadingImage && (
-                        <p className="mt-1 text-sm text-gray-500">Uploading…</p>
-                      )}
-                      {editWatch("imageSrc") && !isUploadingImage && (
-                        <p className="mt-1 text-sm text-green-600">
-                          ✓ Image URL set above — save package to keep it.
-                        </p>
-                      )}
+                      <p className="mt-1 text-sm text-gray-600">
+                        {isUploadingImage && "Uploading…"}
+                        {!isUploadingImage && editImageFileName && (
+                          <span className="text-[#082567]">
+                            Selected: {editImageFileName}
+                          </span>
+                        )}
+                        {!isUploadingImage &&
+                          !editImageFileName &&
+                          editWatch("imageSrc") && (
+                            <span className="text-green-600">
+                              ✓ Image URL set above — save package to keep it.
+                            </span>
+                          )}
+                        {!isUploadingImage &&
+                          !editImageFileName &&
+                          !editWatch("imageSrc") && (
+                            <span className="text-gray-500">
+                              No file chosen
+                            </span>
+                          )}
+                      </p>
                     </div>
                   </div>
                   <div>
