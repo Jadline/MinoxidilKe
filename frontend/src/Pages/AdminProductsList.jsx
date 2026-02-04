@@ -141,8 +141,9 @@ export default function AdminProductsList() {
   const { mutateAsync: submitAddProduct, isPending: isAddingProduct } =
     useMutation({
       mutationFn: (data) => createProduct(data),
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        await queryClient.refetchQueries({ queryKey: ["admin-products"] });
         setAddModalOpen(false);
         addReset();
         setUploadingImage(false);
@@ -201,8 +202,9 @@ export default function AdminProductsList() {
   const { mutateAsync: submitEditProduct, isPending: isUpdatingProduct } =
     useMutation({
       mutationFn: ({ id, ...data }) => updateProduct(id, data),
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        await queryClient.refetchQueries({ queryKey: ["admin-products"] });
         setEditProduct(null);
         editReset();
         setUploadingImage(false);
@@ -360,7 +362,14 @@ export default function AdminProductsList() {
                             {imageUrl ? (
                               <>
                                 <img
-                                  src={imageUrl}
+                                  key={`${p.id}-${rawImage || ""}`}
+                                  src={
+                                    rawImage?.startsWith("/uploads/")
+                                      ? `${imageUrl}?t=${encodeURIComponent(
+                                          rawImage
+                                        )}`
+                                      : imageUrl
+                                  }
                                   alt={p.imageAlt || p.name}
                                   className="h-10 w-10 object-cover relative z-10 bg-white"
                                   onError={(e) => {
@@ -567,6 +576,7 @@ export default function AdminProductsList() {
               onSubmit={addHandleSubmit((data) => submitAddProduct(data))}
               className="overflow-y-auto flex-1 px-6 py-4 space-y-4"
             >
+              <input type="hidden" {...addRegister("imageSrc")} />
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Product name *
@@ -818,6 +828,7 @@ export default function AdminProductsList() {
               )}
               className="overflow-y-auto flex-1 px-6 py-4 space-y-4"
             >
+              <input type="hidden" {...editRegister("imageSrc")} />
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Product name *
