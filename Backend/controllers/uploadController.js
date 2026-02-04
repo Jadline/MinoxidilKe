@@ -1,14 +1,15 @@
 const path = require("path");
 const fs = require("fs");
 
-const PACKAGE_UPLOAD_DIR = path.join(
+// Single source of truth: absolute paths so files are always written under Backend/public/uploads
+const PACKAGE_UPLOAD_DIR = path.resolve(
   __dirname,
   "..",
   "public",
   "uploads",
   "packages"
 );
-const PRODUCT_UPLOAD_DIR = path.join(
+const PRODUCT_UPLOAD_DIR = path.resolve(
   __dirname,
   "..",
   "public",
@@ -86,4 +87,10 @@ async function uploadProductImage(req, res) {
   }
 }
 
-module.exports = { uploadPackageImage, uploadProductImage, ensureUploadDir };
+module.exports = {
+  uploadPackageImage,
+  uploadProductImage,
+  ensureUploadDir,
+  PACKAGE_UPLOAD_DIR,
+  PRODUCT_UPLOAD_DIR,
+};
