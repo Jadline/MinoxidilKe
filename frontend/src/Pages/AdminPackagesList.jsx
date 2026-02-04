@@ -27,7 +27,11 @@ function packageImageSrc(imageSrc) {
   if (String(imageSrc).startsWith("http")) return imageSrc;
   const path = imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc;
   const origin =
-    BASE_URL || (typeof window !== "undefined" ? window.location.origin : "");
+    path.startsWith("/uploads/") && BASE_URL
+      ? BASE_URL
+      : typeof window !== "undefined"
+      ? window.location.origin
+      : BASE_URL || "";
   return origin ? origin + path : path;
 }
 

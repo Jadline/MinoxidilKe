@@ -28,8 +28,13 @@ function productImageSrc(imageSrc) {
   if (!imageSrc) return "";
   if (String(imageSrc).startsWith("http")) return imageSrc;
   const path = imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc;
+  // /uploads/... are on the backend; plain filenames (e.g. minoxidilformen.png) are in frontend public/
   const origin =
-    BASE_URL || (typeof window !== "undefined" ? window.location.origin : "");
+    path.startsWith("/uploads/") && BASE_URL
+      ? BASE_URL
+      : typeof window !== "undefined"
+      ? window.location.origin
+      : BASE_URL || "";
   return origin ? origin + path : path;
 }
 
@@ -338,9 +343,9 @@ export default function AdminProductsList() {
               </thead>
               <tbody className="bg-white/15 divide-y divide-white/20">
                 {products.map((p) => {
-                  const imageUrl = p.imageSrc
-                    ? productImageSrc(p.imageSrc)
-                    : "";
+                  const rawImage =
+                    p.imageSrc ?? p.images?.[0]?.src ?? p.images?.[0]?.url;
+                  const imageUrl = rawImage ? productImageSrc(rawImage) : "";
                   return (
                     <tr
                       key={p.id ?? p._id}
