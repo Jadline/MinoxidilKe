@@ -4,6 +4,21 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/cartStore";
 import toast from "react-hot-toast";
 
+const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
+
+function productImageSrc(imageSrc) {
+  if (!imageSrc) return "";
+  if (String(imageSrc).startsWith("http")) return imageSrc;
+  const path = imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc;
+  const origin =
+    path.startsWith("/uploads/") && BASE_URL
+      ? BASE_URL
+      : typeof window !== "undefined"
+      ? window.location.origin
+      : BASE_URL || "";
+  return origin ? origin + path : path;
+}
+
 export default function CartContents() {
   const { cart, setCart, subtotal } = useCartStore();
   const Total = subtotal();
@@ -34,7 +49,7 @@ export default function CartContents() {
                     <div className="shrink-0 bg-gray-100">
                       <img
                         alt={product.imageAlt}
-                        src={product.imageSrc}
+                        src={productImageSrc(product.imageSrc)}
                         className="size-24 rounded-lg object-cover sm:size-32 object-contain"
                       />
                     </div>

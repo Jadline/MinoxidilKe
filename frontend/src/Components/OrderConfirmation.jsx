@@ -2,13 +2,29 @@ import { useLocation } from "react-router-dom";
 import { useOrders } from "../hooks/useOrders";
 import Spinner from "./Spinner";
 
+const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
+
+function productImageSrc(imageSrc) {
+  if (!imageSrc) return "";
+  if (String(imageSrc).startsWith("http")) return imageSrc;
+  const path = imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc;
+  const origin =
+    path.startsWith("/uploads/") && BASE_URL
+      ? BASE_URL
+      : typeof window !== "undefined"
+      ? window.location.origin
+      : BASE_URL || "";
+  return origin ? origin + path : path;
+}
+
 export default function OrderConfirmation() {
   const location = useLocation();
   const { orders, isLoadingOrders, ordersError } = useOrders();
 
   // Prefer order passed from checkout (avoids race with orders list refetch)
   const orderFromState = location.state?.order;
-  const latestOrder = orderFromState ?? (orders?.length ? orders[orders.length - 1] : null);
+  const latestOrder =
+    orderFromState ?? (orders?.length ? orders[orders.length - 1] : null);
 
   if (orderFromState) {
     // We have the order from checkout; no need to wait for useOrders
@@ -24,7 +40,8 @@ export default function OrderConfirmation() {
     }
   }
   if (!latestOrder && isLoadingOrders) return <Spinner />;
-  if (!latestOrder && ordersError) return <p>There is an error loading orders</p>;
+  if (!latestOrder && ordersError)
+    return <p>There is an error loading orders</p>;
   if (!latestOrder) return <Spinner />;
   console.log("latest order", latestOrder);
   const paymentMethod = latestOrder.paymentType;
@@ -95,7 +112,7 @@ export default function OrderConfirmation() {
             >
               <img
                 alt={product.imageAlt}
-                src={product.imageSrc}
+                src={productImageSrc(product.imageSrc)}
                 className="size-20 flex-none rounded-lg bg-gray-100 object-cover sm:size-40"
               />
               <div className="flex flex-auto flex-col">
@@ -156,7 +173,9 @@ export default function OrderConfirmation() {
                   ) : (
                     <>
                       <p>{latestOrder.shippingMethodName || "Shipping"}</p>
-                      {orderLeadTime != null && <p>Takes up to {orderLeadTime} working days</p>}
+                      {orderLeadTime != null && (
+                        <p>Takes up to {orderLeadTime} working days</p>
+                      )}
                     </>
                   )}
                 </dd>

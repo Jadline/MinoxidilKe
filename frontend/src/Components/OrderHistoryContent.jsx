@@ -1,12 +1,25 @@
 import { Link } from "react-router-dom";
 import { useOrders } from "../hooks/useOrders";
 
+const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
+
+function productImageSrc(imageSrc) {
+  if (!imageSrc) return "";
+  if (String(imageSrc).startsWith("http")) return imageSrc;
+  const path = imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc;
+  const origin =
+    path.startsWith("/uploads/") && BASE_URL
+      ? BASE_URL
+      : typeof window !== "undefined"
+      ? window.location.origin
+      : BASE_URL || "";
+  return origin ? origin + path : path;
+}
+
 export default function OrderHistoryContent() {
   const { orders } = useOrders();
 
-  if(!orders) return (
-    <p>You have not placed any orders yet</p>
-  )
+  if (!orders) return <p>You have not placed any orders yet</p>;
 
   return (
     <div className="bg-white">
@@ -79,7 +92,7 @@ export default function OrderHistoryContent() {
                       <tr key={product.id}>
                         <td className="py-4 px-4 flex items-center space-x-4">
                           <img
-                            src={product.imageSrc}
+                            src={productImageSrc(product.imageSrc)}
                             alt={product.imageAlt}
                             className="w-16 h-16 rounded-sm object-cover"
                           />

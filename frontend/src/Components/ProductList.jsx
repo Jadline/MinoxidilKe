@@ -5,6 +5,21 @@ import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/cartStore";
 import { useShopProducts } from "../hooks/useShopProducts";
 
+const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
+
+function productImageSrc(imageSrc) {
+  if (!imageSrc) return "";
+  if (String(imageSrc).startsWith("http")) return imageSrc;
+  const path = imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc;
+  const origin =
+    path.startsWith("/uploads/") && BASE_URL
+      ? BASE_URL
+      : typeof window !== "undefined"
+      ? window.location.origin
+      : BASE_URL || "";
+  return origin ? origin + path : path;
+}
+
 function ProductsSkeleton() {
   return (
     <div className="bg-white">
@@ -83,7 +98,11 @@ export default function ProductList() {
               <div className="relative">
                 <img
                   alt={product.imageAlt}
-                  src={product.imageSrc}
+                  src={productImageSrc(
+                    product.imageSrc ??
+                      product.images?.[0]?.src ??
+                      product.images?.[0]?.url
+                  )}
                   className={`aspect-square rounded-lg bg-gray-200 object-contain transition duration-150 ${
                     product.inStock === false
                       ? "opacity-75"

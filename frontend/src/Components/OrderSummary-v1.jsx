@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +8,21 @@ import { useProducts } from "../Contexts/productContext";
 import { createOrder } from "../Services/createOrder";
 import { createPayment } from "../Services/createPayment";
 import { createMpesaPayment } from "../Services/creatempesaPayment";
+
+const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
+
+function productImageSrc(imageSrc) {
+  if (!imageSrc) return "";
+  if (String(imageSrc).startsWith("http")) return imageSrc;
+  const path = imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc;
+  const origin =
+    path.startsWith("/uploads/") && BASE_URL
+      ? BASE_URL
+      : typeof window !== "undefined"
+      ? window.location.origin
+      : BASE_URL || "";
+  return origin ? origin + path : path;
+}
 
 const paymentMethods = [
   { id: "credit-card", title: "Credit card" },
@@ -24,35 +38,32 @@ export default function OrderSummary() {
     shippingCost,
     setCart,
     selectedCity,
-   
+
     setSelectedCity,
   } = useProducts();
 
-  
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
 
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const { register, handleSubmit, watch, formState } = useForm();
   const { errors } = formState;
   const paymentType = watch("paymentType");
 
-  
   const { mutateAsync: createPaymentIntent } = useMutation({
     mutationFn: (data) => createPayment(data),
   });
-  const{mutateAsync : mutateMpesaPayment} = useMutation({
-    mutationFn : (data) => createMpesaPayment(data)
-  })
+  const { mutateAsync: mutateMpesaPayment } = useMutation({
+    mutationFn: (data) => createMpesaPayment(data),
+  });
 
-  
   const { mutate: saveOrder } = useMutation({
     mutationFn: (data) => createOrder(data),
     onSuccess: () => {
       alert("✅ Order created successfully!");
-      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       setCart([]);
       setSelectedCity("");
       navigate("/order-confirmation");
@@ -68,7 +79,6 @@ export default function OrderSummary() {
       alert("Your cart is empty!");
       return;
     }
-    
 
     const newOrder = {
       orderNumber: "ORD-" + Math.floor(100000 + Math.random() * 900000),
@@ -76,8 +86,8 @@ export default function OrderSummary() {
       orderItems: cart.map((item) => ({
         id: item.id,
         name: item.name,
-        description : item.description,
-        leadTime : item.leadTime,
+        description: item.description,
+        leadTime: item.leadTime,
         price: item.price,
         quantity: item.quantity,
         imageSrc: item.imageSrc,
@@ -93,7 +103,6 @@ export default function OrderSummary() {
       mpesaDetails: data.mpesaNumber || null,
     };
 
-   
     if (data.paymentType === "credit-card") {
       if (!stripe || !elements) {
         alert("Stripe is not loaded yet.");
@@ -102,7 +111,7 @@ export default function OrderSummary() {
 
       try {
         const amountInCents = Math.round(OrderTotal * 100);
-       
+
         const payment = { amount: amountInCents, currency: "kes" };
 
         const response = await createPaymentIntent(payment);
@@ -113,33 +122,27 @@ export default function OrderSummary() {
           return;
         }
 
-      
-
         const cardElement = elements.getElement(CardElement);
-        const { paymentIntent, error } = await stripe.confirmCardPayment(clientSecret, {
-          payment_method: { card: cardElement },
-        
-
-          
-        });
-        
+        const { paymentIntent, error } = await stripe.confirmCardPayment(
+          clientSecret,
+          {
+            payment_method: { card: cardElement },
+          }
+        );
 
         if (error) {
           alert(error.message);
           return;
         }
-        
-
 
         if (paymentIntent.status === "succeeded") {
           alert("💳 Payment successful!");
-         
+
           saveOrder({
             ...newOrder,
             paymentProvider: "stripe",
             paymentStatus: paymentIntent.status,
             paymentTransactionId: paymentIntent.id,
-            
           });
         }
       } catch (err) {
@@ -149,37 +152,35 @@ export default function OrderSummary() {
       return;
     }
     if (data.paymentType === "mpesa") {
-  try {
-    const mpesaPayment = {
-      amount: Math.round(OrderTotal), 
-      phone: data.mpesaNumber.replace(/^0/, "254"), 
-    };
+      try {
+        const mpesaPayment = {
+          amount: Math.round(OrderTotal),
+          phone: data.mpesaNumber.replace(/^0/, "254"),
+        };
 
-   
-    const response = await mutateMpesaPayment(mpesaPayment)
+        const response = await mutateMpesaPayment(mpesaPayment);
 
-   
+        if (response.ResponseCode === "0") {
+          alert("📲 Check your phone to complete the payment.");
 
-    if (response.ResponseCode === "0") {
-      alert("📲 Check your phone to complete the payment.");
-      
-      saveOrder({
-        ...newOrder,
-        paymentProvider: "mpesa",
-        paymentStatus: "pending",
-        transactionId: response.CheckoutRequestID,
-      });
-    } else {
-      alert("M-Pesa payment failed: " + (response.errorMessage || "Try again."));
+          saveOrder({
+            ...newOrder,
+            paymentProvider: "mpesa",
+            paymentStatus: "pending",
+            transactionId: response.CheckoutRequestID,
+          });
+        } else {
+          alert(
+            "M-Pesa payment failed: " + (response.errorMessage || "Try again.")
+          );
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error initiating M-Pesa payment");
+      }
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    alert("Error initiating M-Pesa payment");
-  }
-  return;
-}
 
-   
     saveOrder(newOrder);
   }
 
@@ -192,12 +193,12 @@ export default function OrderSummary() {
           onSubmit={handleSubmit(onhandleSubmit)}
           className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16"
         >
-         
           <div>
-           
             <div>
-              <h2 className="text-lg font-medium text-gray-900">Contact information</h2>
-               <div className="mt-4">
+              <h2 className="text-lg font-medium text-gray-900">
+                Contact information
+              </h2>
+              <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700">
                   Name
                 </label>
@@ -206,7 +207,9 @@ export default function OrderSummary() {
                   {...register("name", { required: "This field is required" })}
                   className="mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
-                {errors.name && <p className="text-red-600">{errors.name.message}</p>}
+                {errors.name && (
+                  <p className="text-red-600">{errors.name.message}</p>
+                )}
               </div>
 
               <div className="mt-4">
@@ -218,7 +221,9 @@ export default function OrderSummary() {
                   {...register("email", { required: "This field is required" })}
                   className="mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
-                {errors.email && <p className="text-red-600">{errors.email.message}</p>}
+                {errors.email && (
+                  <p className="text-red-600">{errors.email.message}</p>
+                )}
               </div>
 
               <div className="mt-4">
@@ -227,7 +232,9 @@ export default function OrderSummary() {
                 </label>
                 <input
                   type="tel"
-                  {...register("phoneNumber", { required: "This field is required" })}
+                  {...register("phoneNumber", {
+                    required: "This field is required",
+                  })}
                   className="mt-1 w-full rounded-md border-gray-300 shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
                 {errors.phoneNumber && (
@@ -236,7 +243,6 @@ export default function OrderSummary() {
               </div>
             </div>
 
-          
             <div className="mt-10 border-t border-gray-200 pt-10">
               <h2 className="text-lg font-medium text-gray-900">Payment</h2>
 
@@ -248,10 +254,14 @@ export default function OrderSummary() {
                       <input
                         type="radio"
                         value={method.id}
-                        {...register("paymentType", { required: "Select a payment method" })}
+                        {...register("paymentType", {
+                          required: "Select a payment method",
+                        })}
                         className="size-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />
-                      <span className="ml-3 text-sm text-gray-700">{method.title}</span>
+                      <span className="ml-3 text-sm text-gray-700">
+                        {method.title}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -302,7 +312,6 @@ export default function OrderSummary() {
             </div>
           </div>
 
-         
           <div className="mt-10 lg:mt-0">
             <h2 className="text-lg font-medium text-gray-900">Order summary</h2>
             <div className="mt-4 rounded-lg border bg-white shadow-sm">
@@ -310,7 +319,7 @@ export default function OrderSummary() {
                 {cart.map((product) => (
                   <li key={product.id} className="flex px-4 py-6 sm:px-6">
                     <img
-                      src={product.imageSrc}
+                      src={productImageSrc(product.imageSrc)}
                       alt={product.imageAlt}
                       className="w-20 rounded-md"
                     />
@@ -322,7 +331,9 @@ export default function OrderSummary() {
                         <button
                           type="button"
                           onClick={() =>
-                            setCart((prev) => prev.filter((i) => i.id !== product.id))
+                            setCart((prev) =>
+                              prev.filter((i) => i.id !== product.id)
+                            )
                           }
                           className="text-gray-400 hover:text-gray-600"
                         >
