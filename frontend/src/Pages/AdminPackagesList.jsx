@@ -209,10 +209,7 @@ export default function AdminPackagesList() {
       const res = await uploadPackageImage(formData);
       const path = res.data?.data?.path;
       if (path) {
-        const fullUrl = BASE_URL
-          ? BASE_URL + (path.startsWith("/") ? path : "/" + path)
-          : path;
-        addSetValue("imageSrc", fullUrl);
+        addSetValue("imageSrc", path.startsWith("/") ? path : "/" + path);
         toast.success("Image uploaded.");
       } else {
         toast.error("Upload failed.");
@@ -241,10 +238,7 @@ export default function AdminPackagesList() {
       const res = await uploadPackageImage(formData);
       const path = res.data?.data?.path;
       if (path) {
-        const fullUrl = BASE_URL
-          ? BASE_URL + (path.startsWith("/") ? path : "/" + path)
-          : path;
-        editSetValue("imageSrc", fullUrl);
+        editSetValue("imageSrc", path.startsWith("/") ? path : "/" + path);
         toast.success("Image uploaded.");
       } else {
         toast.error("Upload failed.");
@@ -273,6 +267,28 @@ export default function AdminPackagesList() {
           data.category === "__other__"
             ? (data.categoryCustom ?? "").trim()
             : data.category ?? "";
+        // #region agent log
+        fetch(
+          "http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              location: "AdminPackagesList.jsx:submitAddPackage",
+              message: "Frontend submit add package",
+              data: {
+                imageSrc: data?.imageSrc,
+                isFullUrl:
+                  typeof data?.imageSrc === "string" &&
+                  data?.imageSrc?.startsWith("http"),
+              },
+              timestamp: Date.now(),
+              sessionId: "debug-session",
+              hypothesisId: "H2",
+            }),
+          }
+        ).catch(() => {});
+        // #endregion
         return createPackage({
           name: data.name,
           description: data.description ?? "",
@@ -321,6 +337,28 @@ export default function AdminPackagesList() {
           categoryCustom: _cc,
           ...rest
         } = data;
+        // #region agent log
+        fetch(
+          "http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              location: "AdminPackagesList.jsx:submitEditPackage",
+              message: "Frontend submit edit package",
+              data: {
+                imageSrc: rest?.imageSrc,
+                isFullUrl:
+                  typeof rest?.imageSrc === "string" &&
+                  rest?.imageSrc?.startsWith("http"),
+              },
+              timestamp: Date.now(),
+              sessionId: "debug-session",
+              hypothesisId: "H2",
+            }),
+          }
+        ).catch(() => {});
+        // #endregion
         return updatePackage(Number(editPackage.id), {
           ...rest,
           productIds,

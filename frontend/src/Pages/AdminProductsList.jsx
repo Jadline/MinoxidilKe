@@ -146,7 +146,26 @@ export default function AdminProductsList() {
 
   const { mutateAsync: submitAddProduct, isPending: isAddingProduct } =
     useMutation({
-      mutationFn: (data) => createProduct(data),
+      mutationFn: (data) => {
+        // #region agent log
+        fetch(
+          "http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              location: "AdminProductsList.jsx:submitAddProduct",
+              message: "Frontend submit add product",
+              data: { imageSrc: data?.imageSrc },
+              timestamp: Date.now(),
+              sessionId: "debug-session",
+              hypothesisId: "H4",
+            }),
+          }
+        ).catch(() => {});
+        // #endregion
+        return createProduct(data);
+      },
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         await queryClient.refetchQueries({ queryKey: ["admin-products"] });
@@ -207,7 +226,26 @@ export default function AdminProductsList() {
 
   const { mutateAsync: submitEditProduct, isPending: isUpdatingProduct } =
     useMutation({
-      mutationFn: ({ id, ...data }) => updateProduct(id, data),
+      mutationFn: ({ id, ...data }) => {
+        // #region agent log
+        fetch(
+          "http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              location: "AdminProductsList.jsx:submitEditProduct",
+              message: "Frontend submit edit product",
+              data: { imageSrc: data?.imageSrc },
+              timestamp: Date.now(),
+              sessionId: "debug-session",
+              hypothesisId: "H4",
+            }),
+          }
+        ).catch(() => {});
+        // #endregion
+        return updateProduct(id, data);
+      },
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         await queryClient.refetchQueries({ queryKey: ["admin-products"] });

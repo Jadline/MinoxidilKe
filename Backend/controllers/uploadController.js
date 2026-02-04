@@ -50,6 +50,31 @@ async function uploadPackageImage(req, res) {
         .json({ status: "fail", message: "No image file provided." });
     }
     const publicPath = publicPathFromFile(req.file, "packages");
+    // #region agent log
+    const _debugPayload = {
+      location: "uploadController.js:uploadPackageImage",
+      message: "Package image uploaded",
+      data: {
+        path: publicPath,
+        filePath: req.file?.path,
+        exists: req.file?.path ? fs.existsSync(req.file.path) : false,
+      },
+      timestamp: Date.now(),
+      sessionId: "debug-session",
+      hypothesisId: "H3",
+    };
+    try {
+      fs.appendFileSync(
+        path.join(__dirname, "..", "..", ".cursor", "debug.log"),
+        JSON.stringify(_debugPayload) + "\n"
+      );
+    } catch (_) {}
+    fetch("http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(_debugPayload),
+    }).catch(() => {});
+    // #endregion
     res.status(200).json({ status: "success", data: { path: publicPath } });
   } catch (err) {
     res
@@ -79,6 +104,31 @@ async function uploadProductImage(req, res) {
       });
     }
     const publicPath = publicPathFromFile(req.file, "products");
+    // #region agent log
+    const _debugPayload = {
+      location: "uploadController.js:uploadProductImage",
+      message: "Product image uploaded",
+      data: {
+        path: publicPath,
+        filePath: req.file?.path,
+        exists: !!(filePath && fs.existsSync(filePath)),
+      },
+      timestamp: Date.now(),
+      sessionId: "debug-session",
+      hypothesisId: "H3",
+    };
+    try {
+      fs.appendFileSync(
+        path.join(__dirname, "..", "..", ".cursor", "debug.log"),
+        JSON.stringify(_debugPayload) + "\n"
+      );
+    } catch (_) {}
+    fetch("http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(_debugPayload),
+    }).catch(() => {});
+    // #endregion
     res.status(200).json({ status: "success", data: { path: publicPath } });
   } catch (err) {
     res

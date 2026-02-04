@@ -2,6 +2,21 @@ const crypto = require("crypto");
 const Product = require("../models/productModel");
 const ProductCache = require("../models/productCacheModel");
 
+/** Persist path-only imageSrc so images survive port/env changes. Strip origin from full URLs. */
+function normalizeImageSrc(imageSrc) {
+  if (imageSrc == null || typeof imageSrc !== "string") return "";
+  const s = imageSrc.trim();
+  if (!s) return "";
+  if (!s.startsWith("http")) return s.startsWith("/") ? s : "/" + s;
+  try {
+    const u = new URL(s);
+    const p = u.pathname;
+    return p && p.startsWith("/uploads/") ? p : s;
+  } catch (_) {
+    return s.startsWith("/") ? s : "/" + s;
+  }
+}
+
 function buildCacheKey(filters, query) {
   const payload = {
     filters,
@@ -111,6 +126,29 @@ async function fetchAllProducts(req, res) {
     }
 
     // 6️⃣ Success response
+    // #region agent log
+    const firstImageSrc =
+      products[0]?.imageSrc ?? products[0]?.images?.[0]?.src;
+    const _p = {
+      location: "productController.js:fetchAllProducts",
+      message: "Products from DB",
+      data: { firstProductId: products[0]?.id, firstImageSrc },
+      timestamp: Date.now(),
+      sessionId: "debug-session",
+      hypothesisId: "H1",
+    };
+    try {
+      require("fs").appendFileSync(
+        require("path").join(__dirname, "..", "..", ".cursor", "debug.log"),
+        JSON.stringify(_p) + "\n"
+      );
+    } catch (_) {}
+    fetch("http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(_p),
+    }).catch(() => {});
+    // #endregion
     const response = {
       status: "success",
       results: products.length,
@@ -155,12 +193,10 @@ async function getProductById(req, res) {
     }
     res.status(200).json({ status: "success", data: { product } });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        status: "fail",
-        message: err.message || "Failed to fetch product.",
-      });
+    res.status(500).json({
+      status: "fail",
+      message: err.message || "Failed to fetch product.",
+    });
   }
 }
 
@@ -189,6 +225,30 @@ async function getNextProductId() {
 async function createProduct(req, res) {
   try {
     const payload = req.body;
+    // #region agent log
+    const _p = {
+      location: "productController.js:createProduct",
+      message: "Create product payload",
+      data: {
+        imageSrc: payload.imageSrc,
+        hasImages: Array.isArray(payload.images) && payload.images.length > 0,
+      },
+      timestamp: Date.now(),
+      sessionId: "debug-session",
+      hypothesisId: "H4",
+    };
+    try {
+      require("fs").appendFileSync(
+        require("path").join(__dirname, "..", "..", ".cursor", "debug.log"),
+        JSON.stringify(_p) + "\n"
+      );
+    } catch (_) {}
+    fetch("http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(_p),
+    }).catch(() => {});
+    // #endregion
     if (!payload.name) {
       return res
         .status(400)
@@ -196,30 +256,39 @@ async function createProduct(req, res) {
     }
     const id =
       payload.id != null ? Number(payload.id) : await getNextProductId();
+    const images = Array.isArray(payload.images)
+      ? payload.images.map((img) =>
+          typeof img === "object" && img != null
+            ? {
+                ...img,
+                src:
+                  normalizeImageSrc(img.src ?? img.url) || img.src || img.url,
+              }
+            : img
+        )
+      : [];
     const product = await Product.create({
       id,
       name: payload.name,
       price: payload.price ?? 0,
       quantityLabel: payload.quantityLabel ?? "",
-      imageSrc: payload.imageSrc ?? "",
+      imageSrc: normalizeImageSrc(payload.imageSrc) ?? "",
       imageAlt: payload.imageAlt ?? payload.name,
       rating: payload.rating ?? 0,
       inStock: payload.inStock !== false,
       category: payload.category ?? "",
       leadTime: payload.leadTime ?? "",
-      images: payload.images ?? [],
+      images,
       description: payload.description ?? "",
       details: payload.details ?? [],
     });
     await invalidateProductListCache();
     res.status(201).json({ status: "success", data: { product } });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        status: "fail",
-        message: err.message || "Failed to create product.",
-      });
+    res.status(500).json({
+      status: "fail",
+      message: err.message || "Failed to create product.",
+    });
   }
 }
 
@@ -234,6 +303,41 @@ async function updateProduct(req, res) {
     }
     const body = { ...req.body };
     delete body.rating; // admin cannot change rating; it is updated from reviews
+    if (body.imageSrc !== undefined)
+      body.imageSrc = normalizeImageSrc(body.imageSrc);
+    if (Array.isArray(body.images))
+      body.images = body.images.map((img) =>
+        typeof img === "object" && img != null
+          ? {
+              ...img,
+              src: normalizeImageSrc(img.src ?? img.url) || img.src || img.url,
+            }
+          : img
+      );
+    // #region agent log
+    const _p = {
+      location: "productController.js:updateProduct",
+      message: "Update product body",
+      data: {
+        imageSrc: body.imageSrc,
+        hasImages: Array.isArray(body.images) && body.images.length > 0,
+      },
+      timestamp: Date.now(),
+      sessionId: "debug-session",
+      hypothesisId: "H4",
+    };
+    try {
+      require("fs").appendFileSync(
+        require("path").join(__dirname, "..", "..", ".cursor", "debug.log"),
+        JSON.stringify(_p) + "\n"
+      );
+    } catch (_) {}
+    fetch("http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(_p),
+    }).catch(() => {});
+    // #endregion
     const product = await Product.findOneAndUpdate(
       { id },
       { $set: body },
@@ -247,12 +351,10 @@ async function updateProduct(req, res) {
     await invalidateProductListCache();
     res.status(200).json({ status: "success", data: { product } });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        status: "fail",
-        message: err.message || "Failed to update product.",
-      });
+    res.status(500).json({
+      status: "fail",
+      message: err.message || "Failed to update product.",
+    });
   }
 }
 
@@ -272,20 +374,16 @@ async function deleteProduct(req, res) {
         .json({ status: "fail", message: "Product not found." });
     }
     await invalidateProductListCache();
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Product deleted.",
-        data: { product },
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Product deleted.",
+      data: { product },
+    });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        status: "fail",
-        message: err.message || "Failed to delete product.",
-      });
+    res.status(500).json({
+      status: "fail",
+      message: err.message || "Failed to delete product.",
+    });
   }
 }
 
