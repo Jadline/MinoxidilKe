@@ -25,7 +25,9 @@ function Reviews({
 
   const userAlreadyReviewed =
     currentUser &&
-    reviews.some((r) => r.user && String(r.user._id) === String(currentUser.id));
+    reviews.some(
+      (r) => r.user && String(r.user._id) === String(currentUser.id)
+    );
 
   const { register, handleSubmit, reset, setValue, watch } = useForm({
     defaultValues: { comment: "", rating: 0 },
@@ -40,14 +42,20 @@ function Reviews({
     }
     setSubmitting(true);
     try {
-      const payload = { [reviewPayloadKey]: subjectIdResolved, rating, comment: (data.comment || "").trim() };
+      const payload = {
+        [reviewPayloadKey]: subjectIdResolved,
+        rating,
+        comment: (data.comment || "").trim(),
+      };
       await onAddReview(payload);
       reset({ comment: "", rating: 0 });
       setShowReviewForm(false);
       toast.success("Review submitted.");
     } catch (err) {
       const msg =
-        err?.response?.data?.message || err?.message || "Failed to submit review.";
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to submit review.";
       toast.error(msg);
     } finally {
       setSubmitting(false);
@@ -62,13 +70,16 @@ function Reviews({
         <div className="mt-2 flex items-center gap-2">
           <StarRating rating={averageRating} size="md" />
           <span className="text-sm text-gray-600">
-            {averageRating.toFixed(1)} ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
+            {averageRating.toFixed(1)} ({reviews.length}{" "}
+            {reviews.length === 1 ? "review" : "reviews"})
           </span>
         </div>
       )}
 
       {reviews.length === 0 ? (
-        <p className="mt-2 text-gray-500 italic">This product does not have reviews yet.</p>
+        <p className="mt-2 text-gray-500 italic">
+          This product does not have reviews yet.
+        </p>
       ) : (
         <div className="mt-3 space-y-4">
           {reviews.map((review) => (
@@ -79,7 +90,9 @@ function Reviews({
                 </p>
                 <StarRating rating={review.rating} size="sm" />
               </div>
-              <p className="mt-1 text-sm text-gray-600">{review.comment}</p>
+              {review.comment && (
+                <p className="mt-1 text-sm text-gray-600">{review.comment}</p>
+              )}
               <p className="mt-1 text-xs text-gray-400">
                 {new Date(review.createdAt).toLocaleDateString()}
               </p>
@@ -89,7 +102,9 @@ function Reviews({
       )}
 
       {userAlreadyReviewed ? (
-        <p className="mt-4 text-sm text-gray-600 italic">{alreadyReviewedMessage}</p>
+        <p className="mt-4 text-sm text-gray-600 italic">
+          {alreadyReviewedMessage}
+        </p>
       ) : currentUser ? (
         <>
           <button
@@ -103,7 +118,9 @@ function Reviews({
           {showReviewForm && (
             <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Your rating</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Your rating
+                </label>
                 <div className="mt-1">
                   <StarRating
                     rating={selectedRating}
@@ -113,10 +130,10 @@ function Reviews({
                 </div>
               </div>
               <textarea
-                placeholder="Write your review..."
+                placeholder="Write your review (optional)..."
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 rows={4}
-                {...register("comment", { required: "Comment is required." })}
+                {...register("comment")}
               />
               <button
                 type="submit"

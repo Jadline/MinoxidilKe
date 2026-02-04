@@ -1,19 +1,19 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     product: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
+      ref: "Product",
       required: true,
     },
     rating: { type: Number, required: true, min: 1, max: 5 },
-    comment: { type: String, required: true },
+    comment: { type: String, default: "" },
   },
   { timestamps: true }
 );
@@ -21,4 +21,4 @@ const reviewSchema = new mongoose.Schema(
 // One review per user per product
 reviewSchema.index({ user: 1, product: 1 }, { unique: true });
 
-module.exports = mongoose.model('Review', reviewSchema);
+module.exports = mongoose.model("Review", reviewSchema);
