@@ -20,7 +20,9 @@ function createStorage(destDir) {
       cb(null, destDir);
     },
     filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname) || '.jpg';
+      // Use basename so Windows paths (C:\fakepath\image.png) still yield correct extension
+      const baseName = path.basename(file.originalname || '');
+      const ext = path.extname(baseName) || '.jpg';
       const safeName = Date.now() + '-' + Math.round(Math.random() * 1e9) + ext;
       cb(null, safeName);
     },
@@ -28,7 +30,8 @@ function createStorage(destDir) {
 }
 
 const imageFilter = (req, file, cb) => {
-  const allowed = /\.(jpe?g|png|webp|gif)$/i.test(file.originalname) || file.mimetype?.startsWith('image/');
+  const name = path.basename(file.originalname || '');
+  const allowed = /\.(jpe?g|png|webp|gif)$/i.test(name) || file.mimetype?.startsWith('image/');
   if (allowed) cb(null, true);
   else cb(new Error('Only image files (jpg, png, webp, gif) are allowed.'), false);
 };

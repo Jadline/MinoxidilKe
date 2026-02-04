@@ -73,17 +73,13 @@ export const updatePackage = (id, data) =>
   api.patch(`/api/v1/packages/${id}`, data);
 export const deletePackage = (id) => api.delete(`/api/v1/packages/${id}`);
 
-/** Upload package image (admin). FormData with field "image". Returns { path }. */
+/** Upload package image (admin). FormData with field "image". Returns { path }. Clear Content-Type so browser sends multipart/form-data with boundary. */
 export const uploadPackageImage = (formData) =>
-  api.post("/api/v1/upload/package", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  api.post("/api/v1/upload/package", formData, { headers: { "Content-Type": false } });
 
-/** Upload product image (admin). FormData with field "image". Returns { path }. */
+/** Upload product image (admin). FormData with field "image". Returns { path }. Clear Content-Type so browser sends multipart/form-data with boundary. */
 export const uploadProductImage = (formData) =>
-  api.post("/api/v1/upload/product", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  api.post("/api/v1/upload/product", formData, { headers: { "Content-Type": false } });
 
 // Shipping methods (public, by country/city)
 export const getShippingMethods = (params) =>

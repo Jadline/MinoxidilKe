@@ -698,6 +698,16 @@ export default function AdminProductsList() {
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
+                          if (!file.type.startsWith("image/")) {
+                            toast.error("Please select an image file (JPG, PNG, WebP or GIF).");
+                            e.target.value = "";
+                            return;
+                          }
+                          if (file.size > 5 * 1024 * 1024) {
+                            toast.error("Image must be 5MB or smaller.");
+                            e.target.value = "";
+                            return;
+                          }
                           setUploadingImage(true);
                           try {
                             const formData = new FormData();
@@ -768,10 +778,10 @@ export default function AdminProductsList() {
               <div className="flex gap-3 pt-4 border-t border-gray-200">
                 <button
                   type="submit"
-                  disabled={isAddingProduct}
+                  disabled={isAddingProduct || uploadingImage}
                   className="rounded-lg bg-[#082567] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#061d4d] disabled:opacity-50"
                 >
-                  {isAddingProduct ? "Creating…" : "Create product"}
+                  {isAddingProduct ? "Creating…" : uploadingImage ? "Uploading image…" : "Create product"}
                 </button>
                 <button
                   type="button"
@@ -950,6 +960,16 @@ export default function AdminProductsList() {
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
+                          if (!file.type.startsWith("image/")) {
+                            toast.error("Please select an image file (JPG, PNG, WebP or GIF).");
+                            e.target.value = "";
+                            return;
+                          }
+                          if (file.size > 5 * 1024 * 1024) {
+                            toast.error("Image must be 5MB or smaller.");
+                            e.target.value = "";
+                            return;
+                          }
                           setUploadingImage(true);
                           try {
                             const formData = new FormData();
@@ -1020,10 +1040,10 @@ export default function AdminProductsList() {
               <div className="flex gap-3 pt-4 border-t border-gray-200">
                 <button
                   type="submit"
-                  disabled={isUpdatingProduct}
+                  disabled={isUpdatingProduct || uploadingImage}
                   className="rounded-lg bg-[#082567] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#061d4d] disabled:opacity-50"
                 >
-                  {isUpdatingProduct ? "Saving…" : "Save changes"}
+                  {isUpdatingProduct ? "Saving…" : uploadingImage ? "Uploading image…" : "Save changes"}
                 </button>
                 <button
                   type="button"
