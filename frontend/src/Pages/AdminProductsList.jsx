@@ -25,17 +25,23 @@ const PAGE_SIZES = [10, 25, 50, 100];
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 
 function productImageSrc(imageSrc) {
-  if (!imageSrc) return "";
-  if (String(imageSrc).startsWith("http")) return imageSrc;
-  const path = imageSrc.startsWith("/") ? imageSrc : "/" + imageSrc;
-  // /uploads/... are on the backend; plain filenames (e.g. minoxidilformen.png) are in frontend public/
-  const origin =
-    path.startsWith("/uploads/") && BASE_URL
-      ? BASE_URL
-      : typeof window !== "undefined"
-      ? window.location.origin
-      : BASE_URL || "";
-  return origin ? origin + path : path;
+  try {
+    if (imageSrc == null) return "";
+    const s = typeof imageSrc === "string" ? imageSrc : String(imageSrc);
+    if (!s || s === "[object Object]") return "";
+    if (s.startsWith("http")) return s;
+    const path = s.startsWith("/") ? s : "/" + s;
+    // /uploads/... are on the backend; plain filenames (e.g. minoxidilformen.png) are in frontend public/
+    const origin =
+      path.startsWith("/uploads/") && BASE_URL
+        ? BASE_URL
+        : typeof window !== "undefined"
+        ? window.location.origin
+        : BASE_URL || "";
+    return origin ? origin + path : path;
+  } catch {
+    return "";
+  }
 }
 
 function truncate(str, max = 40) {
@@ -344,13 +350,28 @@ export default function AdminProductsList() {
                 </tr>
               </thead>
               <tbody className="bg-white/15 divide-y divide-white/20">
-                {products.map((p) => {
+                {products.map((p, index) => {
                   const rawImage =
                     p.imageSrc ?? p.images?.[0]?.src ?? p.images?.[0]?.url;
-                  const imageUrl = rawImage ? productImageSrc(rawImage) : "";
+                  const rawStr =
+                    typeof rawImage === "string"
+                      ? rawImage
+                      : rawImage != null
+                      ? String(rawImage)
+                      : "";
+                  const imageUrl =
+                    rawStr && rawStr !== "[object Object]"
+                      ? productImageSrc(rawStr)
+                      : "";
+                  const imgSrc =
+                    imageUrl && rawStr.startsWith("/uploads/")
+                      ? `${imageUrl}?t=${encodeURIComponent(
+                          rawStr.slice(0, 200)
+                        )}`
+                      : imageUrl;
                   return (
                     <tr
-                      key={p.id ?? p._id}
+                      key={p.id ?? p._id ?? index}
                       className="hover:bg-[#191970]/5 transition-colors duration-150 cursor-default"
                     >
                       <td className="px-4 py-3 text-sm font-mono text-gray-700">
@@ -359,18 +380,15 @@ export default function AdminProductsList() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-[#082567]/10">
-                            {imageUrl ? (
+                            {imgSrc ? (
                               <>
                                 <img
-                                  key={`${p.id}-${rawImage || ""}`}
-                                  src={
-                                    rawImage?.startsWith("/uploads/")
-                                      ? `${imageUrl}?t=${encodeURIComponent(
-                                          rawImage
-                                        )}`
-                                      : imageUrl
-                                  }
-                                  alt={p.imageAlt || p.name}
+                                  key={`${p.id ?? index}-${rawStr.slice(
+                                    0,
+                                    50
+                                  )}`}
+                                  src={imgSrc}
+                                  alt={p.imageAlt || p.name || "Product"}
                                   className="h-10 w-10 object-cover relative z-10 bg-white"
                                   onError={(e) => {
                                     e.target.style.display = "none";
@@ -699,7 +717,9 @@ export default function AdminProductsList() {
                           const file = e.target.files?.[0];
                           if (!file) return;
                           if (!file.type.startsWith("image/")) {
-                            toast.error("Please select an image file (JPG, PNG, WebP or GIF).");
+                            toast.error(
+                              "Please select an image file (JPG, PNG, WebP or GIF)."
+                            );
                             e.target.value = "";
                             return;
                           }
@@ -781,7 +801,11 @@ export default function AdminProductsList() {
                   disabled={isAddingProduct || uploadingImage}
                   className="rounded-lg bg-[#082567] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#061d4d] disabled:opacity-50"
                 >
-                  {isAddingProduct ? "Creating…" : uploadingImage ? "Uploading image…" : "Create product"}
+                  {isAddingProduct
+                    ? "Creating…"
+                    : uploadingImage
+                    ? "Uploading image…"
+                    : "Create product"}
                 </button>
                 <button
                   type="button"
@@ -961,7 +985,9 @@ export default function AdminProductsList() {
                           const file = e.target.files?.[0];
                           if (!file) return;
                           if (!file.type.startsWith("image/")) {
-                            toast.error("Please select an image file (JPG, PNG, WebP or GIF).");
+                            toast.error(
+                              "Please select an image file (JPG, PNG, WebP or GIF)."
+                            );
                             e.target.value = "";
                             return;
                           }
@@ -1043,7 +1069,11 @@ export default function AdminProductsList() {
                   disabled={isUpdatingProduct || uploadingImage}
                   className="rounded-lg bg-[#082567] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#061d4d] disabled:opacity-50"
                 >
-                  {isUpdatingProduct ? "Saving…" : uploadingImage ? "Uploading image…" : "Save changes"}
+                  {isUpdatingProduct
+                    ? "Saving…"
+                    : uploadingImage
+                    ? "Uploading image…"
+                    : "Save changes"}
                 </button>
                 <button
                   type="button"
