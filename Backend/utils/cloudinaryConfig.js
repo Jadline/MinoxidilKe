@@ -6,7 +6,6 @@
  * When CLOUDINARY_URL is not set, uploads fall back to local disk storage.
  */
 const cloudinary = require("cloudinary").v2;
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 // Cloudinary auto-configures from CLOUDINARY_URL env var
 const isCloudinaryConfigured = !!process.env.CLOUDINARY_URL;
@@ -17,12 +16,22 @@ if (isCloudinaryConfigured) {
   console.log("[Cloudinary] Not configured - images will be stored on local disk (ephemeral on Render)");
 }
 
+// Only require multer-storage-cloudinary if cloudinary is configured
+let CloudinaryStorage = null;
+if (isCloudinaryConfigured) {
+  try {
+    CloudinaryStorage = require("multer-storage-cloudinary").CloudinaryStorage;
+  } catch (err) {
+    console.error("[Cloudinary] Failed to load multer-storage-cloudinary:", err.message);
+  }
+}
+
 /**
  * Create Cloudinary storage for multer.
  * @param {string} folder - Cloudinary folder name (e.g., "products", "packages")
  */
 function createCloudinaryStorage(folder) {
-  if (!isCloudinaryConfigured) return null;
+  if (!isCloudinaryConfigured || !CloudinaryStorage) return null;
   
   return new CloudinaryStorage({
     cloudinary,
