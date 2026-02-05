@@ -127,22 +127,30 @@ async function fetchAllProducts(req, res) {
 
     // 6️⃣ Success response
     // #region agent log
-    const firstImageSrc =
-      products[0]?.imageSrc ?? products[0]?.images?.[0]?.src;
+    const _fs = require("fs");
+    const _path = require("path");
+    const sampleProducts = products.slice(0, 5).map((p) => {
+      const imgSrc = p.imageSrc ?? p.images?.[0]?.src ?? "";
+      const diskPath = imgSrc && imgSrc.startsWith("/uploads/")
+        ? _path.join(__dirname, "..", "public", imgSrc)
+        : null;
+      return { id: p.id, name: (p.name || "").slice(0, 20), imageSrc: imgSrc, fileExists: diskPath ? _fs.existsSync(diskPath) : "N/A" };
+    });
     const _p = {
       location: "productController.js:fetchAllProducts",
-      message: "Products from DB",
-      data: { firstProductId: products[0]?.id, firstImageSrc },
+      message: "Products from DB with disk check",
+      data: { sampleProducts },
       timestamp: Date.now(),
       sessionId: "debug-session",
-      hypothesisId: "H1",
+      hypothesisId: "H6",
     };
+    console.log("[DEBUG] fetchAllProducts sample:", JSON.stringify(sampleProducts, null, 2));
     try {
-      require("fs").appendFileSync(
-        require("path").join(__dirname, "..", "..", ".cursor", "debug.log"),
+      _fs.appendFileSync(
+        _path.join(__dirname, "..", "..", ".cursor", "debug.log"),
         JSON.stringify(_p) + "\n"
       );
-    } catch (_) {}
+    } catch (e) { console.log("[DEBUG] Log write error:", e.message); }
     fetch("http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

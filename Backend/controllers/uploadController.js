@@ -23,7 +23,17 @@ function ensureUploadDir(dir = PACKAGE_UPLOAD_DIR) {
   }
 }
 
-function publicPathFromFile(file, folder) {
+/**
+ * Get public URL/path from uploaded file.
+ * - Cloudinary: req.file.path is already the full URL (https://res.cloudinary.com/...)
+ * - Disk: req.file.path is local path, convert to /uploads/folder/filename
+ */
+function getPublicPath(file, folder) {
+  // Cloudinary storage sets file.path to the full URL
+  if (file.path && file.path.startsWith("http")) {
+    return file.path;
+  }
+  // Disk storage: convert local path to public path
   const pathSegments = file.path.split(path.sep);
   const uploadsIndex = pathSegments.indexOf("uploads");
   return (
@@ -43,13 +53,12 @@ function publicPathFromFile(file, folder) {
  */
 async function uploadPackageImage(req, res) {
   try {
-    ensureUploadDir(PACKAGE_UPLOAD_DIR);
     if (!req.file) {
       return res
         .status(400)
         .json({ status: "fail", message: "No image file provided." });
     }
-    const publicPath = publicPathFromFile(req.file, "packages");
+    const publicPath = getPublicPath(req.file, "packages");
     // #region agent log
     const _debugPayload = {
       location: "uploadController.js:uploadPackageImage",
@@ -89,22 +98,23 @@ async function uploadPackageImage(req, res) {
  */
 async function uploadProductImage(req, res) {
   try {
-    ensureUploadDir(PRODUCT_UPLOAD_DIR);
     if (!req.file) {
       return res
         .status(400)
         .json({ status: "fail", message: "No image file provided." });
     }
-    // Ensure file was actually written to disk (multer.diskStorage writes before this runs)
+    // For disk storage, verify file was written; for Cloudinary, file.path is URL
     const filePath = req.file.path;
-    if (!filePath || !fs.existsSync(filePath)) {
+    const isCloudinaryUpload = filePath && filePath.startsWith("http");
+    if (!isCloudinaryUpload && (!filePath || !fs.existsSync(filePath))) {
       return res.status(500).json({
         status: "fail",
         message: "Image could not be saved to the server. Please try again.",
       });
     }
-    const publicPath = publicPathFromFile(req.file, "products");
+    const publicPath = getPublicPath(req.file, "products");
     // #region agent log
+    const uploadDirFiles = fs.existsSync(PRODUCT_UPLOAD_DIR) ? fs.readdirSync(PRODUCT_UPLOAD_DIR) : [];
     const _debugPayload = {
       location: "uploadController.js:uploadProductImage",
       message: "Product image uploaded",
@@ -112,10 +122,11 @@ async function uploadProductImage(req, res) {
         path: publicPath,
         filePath: req.file?.path,
         exists: !!(filePath && fs.existsSync(filePath)),
+        uploadDirFiles,
       },
       timestamp: Date.now(),
       sessionId: "debug-session",
-      hypothesisId: "H3",
+      hypothesisId: "H6",
     };
     try {
       fs.appendFileSync(

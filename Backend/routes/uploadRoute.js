@@ -13,6 +13,10 @@ const {
   authMiddleware,
   requireRole,
 } = require("../middlewares/authMiddleware");
+const {
+  isCloudinaryConfigured,
+  createCloudinaryStorage,
+} = require("../utils/cloudinaryConfig");
 
 const router = express.Router();
 
@@ -21,7 +25,7 @@ const router = express.Router();
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
-function createStorage(destDir) {
+function createDiskStorage(destDir) {
   return multer.diskStorage({
     destination: (req, file, cb) => {
       ensureUploadDir(destDir);
@@ -47,14 +51,19 @@ const imageFilter = (req, file, cb) => {
     cb(new Error("Only image files (jpg, png, webp, gif) are allowed."), false);
 };
 
+// Use Cloudinary storage if configured, otherwise fall back to disk
 const uploadPackage = multer({
-  storage: createStorage(PACKAGE_UPLOAD_DIR),
+  storage: isCloudinaryConfigured
+    ? createCloudinaryStorage("packages")
+    : createDiskStorage(PACKAGE_UPLOAD_DIR),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: imageFilter,
 });
 
 const uploadProduct = multer({
-  storage: createStorage(PRODUCT_UPLOAD_DIR),
+  storage: isCloudinaryConfigured
+    ? createCloudinaryStorage("products")
+    : createDiskStorage(PRODUCT_UPLOAD_DIR),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: imageFilter,
 });
