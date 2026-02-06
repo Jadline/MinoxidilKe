@@ -9,11 +9,13 @@ import {
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useCartStore } from "../stores/cartStore";
+import { useUserStore } from "../stores/userStore";
 import {
   createOrder,
   getShippingMethods,
   getPickupLocations,
   createAddress,
+  getAddresses,
 } from "../api";
 import {
   validatePhoneByDial,
@@ -296,11 +298,11 @@ export default function OrderSummary() {
   const [selectedShippingMethod, setSelectedShippingMethod] = useState(null);
   const [selectedPickupLocation, setSelectedPickupLocation] = useState(null);
   const [saveAddressForNextTime, setSaveAddressForNextTime] = useState(false);
-  const [phoneCountryCode, setPhoneCountryCode] = useState("254"); // shipping phone
-  const [contactPhoneCountryCode, setContactPhoneCountryCode] = useState("254"); // contact phone
+  const [phoneCountryCode, setPhoneCountryCode] = useState("254");
   const isProcessingRef = useRef(false);
 
   const { cart, setCart, subtotal } = useCartStore();
+  const { currentUser } = useUserStore();
   const Total = subtotal();
   const shippingCost =
     deliveryType === "pickup" ? 0 : selectedShippingMethod?.costKes ?? 0;
@@ -313,6 +315,8 @@ export default function OrderSummary() {
     register,
     handleSubmit,
     watch,
+    reset,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -326,15 +330,48 @@ export default function OrderSummary() {
       city: "",
       postalCode: "",
       phone: "",
-      name: "",
       email: "",
-      phoneNumber: "",
       deliveryInstructions: "",
     },
   });
 
   const country = watch("country");
   const city = watch("city");
+
+  // Fetch saved addresses for logged-in users
+  const { data: savedAddresses } = useQuery({
+    queryKey: ["user-addresses"],
+    queryFn: () => getAddresses().then((r) => r.data?.data?.addresses ?? []),
+    enabled: !!currentUser,
+  });
+
+  // Auto-fill form with saved address when user is logged in
+  useEffect(() => {
+    if (currentUser && savedAddresses?.length > 0) {
+      const addr = savedAddresses[0]; // Use first/default address
+      reset({
+        paymentType: "mpesa",
+        country: addr.country || "Kenya",
+        firstName: addr.firstName || "",
+        lastName: addr.lastName || "",
+        company: addr.company || "",
+        streetAddress: addr.streetAddress || "",
+        apartment: addr.apartment || "",
+        city: addr.city || "",
+        postalCode: addr.postalCode || "",
+        phone: addr.phone || "",
+        email: currentUser.email || "",
+        deliveryInstructions: "",
+      });
+      // Set phone country code if available
+      if (addr.phoneCountryCode) {
+        setPhoneCountryCode(addr.phoneCountryCode);
+      }
+    } else if (currentUser) {
+      // At least pre-fill email from user account
+      setValue("email", currentUser.email || "");
+    }
+  }, [currentUser, savedAddresses, reset, setValue]);
 
   // Fetch shipping methods only for Kenya, Uganda, Tanzania. Other countries show the "Enter your shipping address..." message.
   const hasShippingMethods =
@@ -481,10 +518,6 @@ export default function OrderSummary() {
     const fullPhone = (
       phoneCountryCode + toNational(data.phone, phoneCountryCode)
     ).trim();
-    const fullContactPhone = (
-      contactPhoneCountryCode +
-      toNational(data.phoneNumber, contactPhoneCountryCode)
-    ).trim();
 
     const payload = {
       orderItems: cart.map((item) => ({
@@ -512,8 +545,9 @@ export default function OrderSummary() {
       city: data.city || "",
       postalCode: data.postalCode || null,
       phone: fullPhone,
+      phoneNumber: fullPhone, // Use same phone for both
+      email: data.email || "",
       deliveryInstructions: data.deliveryInstructions || null,
-      phoneNumber: fullContactPhone,
       paymentType: data.paymentType,
       mpesaNumber: data.mpesaNumber || null,
     };
@@ -795,6 +829,41 @@ export default function OrderSummary() {
                         </p>
                       )}
                     </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Email
+                      </label>
+                      <input
+                        {...register("email", {
+                          required: "Email is required",
+                          pattern: {
+                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                            message: "Please enter a valid email address",
+                          },
+                        })}
+                        type="email"
+                        disabled={isSubmitting}
+                        placeholder="you@example.com"
+                        className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
+                      />
+                      {errors.email && (
+                        <p className="text-red-600 text-sm">
+                          {errors.email.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Delivery instructions (optional)
+                      </label>
+                      <textarea
+                        {...register("deliveryInstructions")}
+                        disabled={isSubmitting}
+                        rows={2}
+                        placeholder="e.g. Leave at gate, Call before delivery"
+                        className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
+                      />
+                    </div>
                     <div className="col-span-2 flex items-center">
                       <input
                         type="checkbox"
@@ -860,9 +929,9 @@ export default function OrderSummary() {
                               onChange={() => setSelectedShippingMethod(method)}
                               className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                             />
-                            <div className="flex-1 px-3 text-left">
+                            <div className="flex-1 px-3 text-left min-w-0">
                               <span
-                                className={`font-semibold ${
+                                className={`font-semibold block break-words ${
                                   selectedShippingMethod?._id === method._id
                                     ? "text-indigo-900"
                                     : "text-gray-800"
@@ -871,7 +940,7 @@ export default function OrderSummary() {
                                 {method.name}
                               </span>
                               {method.description && (
-                                <p className="text-sm text-slate-600">
+                                <p className="text-sm text-slate-600 break-words">
                                   {method.description}
                                 </p>
                               )}
@@ -967,121 +1036,6 @@ export default function OrderSummary() {
                     ))}
                   </div>
                 )}
-              </div>
-            )}
-
-            {/* Contact information */}
-            <div className="mt-10 border-t border-indigo-100 pt-10">
-              <h2 className="text-lg font-semibold text-indigo-800">
-                Contact information
-              </h2>
-              <div className="mt-4 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Name
-                  </label>
-                  <input
-                    {...register("name", { required: "Required" })}
-                    disabled={isSubmitting}
-                    className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
-                  />
-                  {errors.name && (
-                    <p className="text-red-600 text-sm">
-                      {errors.name.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <input
-                    {...register("email", { required: "Required" })}
-                    type="email"
-                    disabled={isSubmitting}
-                    className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
-                  />
-                  {errors.email && (
-                    <p className="text-red-600 text-sm">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-                    Phone Number
-                    <span
-                      className="text-gray-400"
-                      title="Include country code if not Kenya"
-                    >
-                      <QuestionMarkCircleIcon className="h-4 w-4" />
-                    </span>
-                  </label>
-                  <div
-                    className={`mt-1 flex rounded-md bg-white shadow-sm focus-within:ring-1 focus-within:ring-indigo-500 ${
-                      errors.phoneNumber
-                        ? "border border-red-500 focus-within:border-red-500"
-                        : "border border-gray-300 focus-within:border-indigo-500"
-                    }`}
-                  >
-                    <select
-                      value={contactPhoneCountryCode}
-                      onChange={(e) =>
-                        setContactPhoneCountryCode(e.target.value)
-                      }
-                      disabled={isSubmitting}
-                      className="flex items-center gap-1.5 border-0 bg-transparent py-2 pl-3 pr-2 text-gray-700 focus:ring-0 sm:text-sm"
-                    >
-                      {COUNTRY_DIAL_CODES.map((c) => (
-                        <option key={c.dial + c.label} value={c.dial}>
-                          {c.flag} +{c.dial}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      {...register("phoneNumber", {
-                        required: "Phone number is required",
-                        validate: (v) => {
-                          const digits = (v || "").replace(/\D/g, "");
-                          const national = digits.startsWith(
-                            contactPhoneCountryCode
-                          )
-                            ? digits.slice(contactPhoneCountryCode.length)
-                            : digits;
-                          const r = validatePhoneByDial(
-                            national || digits,
-                            contactPhoneCountryCode
-                          );
-                          return r.valid || r.message;
-                        },
-                      })}
-                      type="tel"
-                      disabled={isSubmitting}
-                      placeholder="791 061 920"
-                      className="block w-full min-w-0 flex-1 border-0 py-2 pr-3 pl-1 text-gray-900 placeholder-gray-400 focus:ring-0 sm:text-sm"
-                    />
-                  </div>
-                  {errors.phoneNumber && (
-                    <p className="text-red-600 text-sm">
-                      {errors.phoneNumber.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {deliveryType === "ship" && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Delivery instructions (optional)
-                </label>
-                <textarea
-                  {...register("deliveryInstructions")}
-                  disabled={isSubmitting}
-                  rows={3}
-                  placeholder="e.g. Leave at gate, Call before delivery"
-                  className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
-                />
               </div>
             )}
 

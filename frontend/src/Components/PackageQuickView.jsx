@@ -120,13 +120,6 @@ export default function PackageQuickView({
                 )}
               </div>
 
-              {!isLoading && products.length > 0 && (
-                <p className="mt-3 text-xs text-gray-500">
-                  This package includes {products.length} product
-                  {products.length !== 1 ? "s" : ""}:{" "}
-                  {products.map((prod) => prod.name).join(", ")}
-                </p>
-              )}
 
               <button
                 type="button"

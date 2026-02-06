@@ -50,7 +50,7 @@ async function googleLogin(req, res) {
     }
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role || 'user' },
+      { id: user._id, email: user.email, name: user.name || user.firstName || '', role: user.role || 'user' },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );

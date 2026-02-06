@@ -29,6 +29,7 @@ const AdminEditPackage = lazy(() => import("./Pages/AdminEditPackage"));
 const AdminShippingMethods = lazy(() => import("./Pages/AdminShippingMethods"));
 const AdminPickupLocations = lazy(() => import("./Pages/AdminPickupLocations"));
 const AdminOrders = lazy(() => import("./Pages/AdminOrders"));
+const TermsAndConditions = lazy(() => import("./Pages/TermsAndConditions"));
 
 function App() {
   return (
@@ -67,6 +68,7 @@ function App() {
             <Route path="package-details/:id" element={<PackageDetails />} />
             <Route path="orders" element={<OrderHistory />} />
             <Route path="orders/:orderId" element={<ProductDetails />} />
+            <Route path="terms" element={<TermsAndConditions />} />
           </Route>
 
           {/* Admin routes: separate layout, admin-only */}

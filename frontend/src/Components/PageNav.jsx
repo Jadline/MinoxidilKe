@@ -122,9 +122,15 @@ export default function PageNav() {
                 </div>
               </form>
 
-              <p className="flex-1 text-center text-sm font-medium text-white lg:flex-none">
-                Get free delivery on orders over Ksh 6000
-              </p>
+              <div className="flex-1 text-center text-sm font-medium text-white lg:flex-none overflow-hidden relative">
+                <p className="promo-text inline-flex items-center gap-2 animate-[shimmer_3s_ease-in-out_infinite]">
+                  <span className="text-yellow-300 animate-[twinkle_1.5s_ease-in-out_infinite]">🚚</span>
+                  <span className="bg-gradient-to-r from-white via-yellow-200 to-white bg-clip-text text-transparent bg-[length:200%_100%] animate-[gradient_3s_ease_infinite]">
+                    Get free delivery on orders over Ksh 6000
+                  </span>
+                  <span className="text-yellow-300 animate-[twinkle_1.5s_ease-in-out_infinite_0.5s]">🚚</span>
+                </p>
+              </div>
 
               <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
                 <Link

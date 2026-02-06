@@ -48,7 +48,7 @@ async function signupUser(req, res) {
     });
 
     const token = jwt.sign(
-      { id: newUser._id, email: newUser.email, role: newUser.role },
+      { id: newUser._id, email: newUser.email, name: newUser.name || newUser.firstName || '', role: newUser.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -102,7 +102,7 @@ async function loginUser(req, res) {
     }
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: user._id, email: user.email, name: user.name || user.firstName || '', role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
