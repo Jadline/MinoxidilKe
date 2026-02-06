@@ -16,7 +16,9 @@ export default function SearchBar({ onClose }) {
     queryKey: ["products"],
     queryFn: async () => {
       const res = await getProducts();
-      return res.data.data || [];
+      // Handle different response structures
+      const data = res.data?.data?.products || res.data?.products || res.data?.data || [];
+      return Array.isArray(data) ? data : [];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -26,13 +28,15 @@ export default function SearchBar({ onClose }) {
     queryKey: ["packages"],
     queryFn: async () => {
       const res = await getPackages();
-      return res.data.data || [];
+      // Handle different response structures
+      const data = res.data?.data?.packages || res.data?.packages || res.data?.data || [];
+      return Array.isArray(data) ? data : [];
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  const products = productsData || [];
-  const packages = packagesData || [];
+  const products = Array.isArray(productsData) ? productsData : [];
+  const packages = Array.isArray(packagesData) ? packagesData : [];
 
   // Filter results based on query
   const filteredProducts = query.length >= 2

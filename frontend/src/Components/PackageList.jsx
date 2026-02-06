@@ -55,21 +55,29 @@ function PackagesSkeleton() {
   );
 }
 
+const INITIAL_VISIBLE = 4; // Show 4 packages initially (1 row on desktop)
+
 export default function PackageList() {
   const navigate = useNavigate();
   const setCart = useCartStore((state) => state.setCart);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["packages"],
     queryFn: async () => {
-      const res = await getPackages({ limit: 20 });
+      const res = await getPackages({ limit: 50 }); // Fetch more, control display client-side
       return res.data?.data?.packages ?? [];
     },
   });
 
-  const packages = Array.isArray(data) ? data : [];
+  const allPackages = Array.isArray(data) ? data : [];
+  // Show all if showAll is true, or if there are few packages
+  const packages = showAll || allPackages.length <= INITIAL_VISIBLE 
+    ? allPackages 
+    : allPackages.slice(0, INITIAL_VISIBLE);
+  const hasMorePackages = allPackages.length > INITIAL_VISIBLE;
 
   const handleAddPackageToCart = (pkg) => {
     const cartId = packageCartId(pkg.id);
@@ -134,77 +142,105 @@ export default function PackageList() {
         )}
 
         {!error && packages.length > 0 && (
-          <div className="-mx-px grid grid-cols-2 border-l border-gray-200 sm:mx-0 md:grid-cols-3 lg:grid-cols-4">
-            {packages.map((pkg) => (
-              <div
-                key={pkg.id}
-                className="group relative border-r border-b border-gray-200 p-4 sm:p-6 cursor-pointer hover:shadow-md transition-shadow duration-150"
-                onClick={() => {
-                  const path =
-                    pkg.id != null
-                      ? `/package-details/${pkg.id}`
-                      : "/package-details";
-                  navigate(path, { state: { package: pkg } });
-                }}
-              >
-                <div className="aspect-square rounded-lg bg-gray-200 overflow-hidden flex items-center justify-center">
-                  {pkg.imageSrc ? (
-                    <img
-                      alt={pkg.imageAlt || pkg.name}
-                      src={packageImageSrc(pkg.imageSrc)}
-                      className="w-full h-full object-contain group-hover:opacity-75 transition duration-150"
-                    />
-                  ) : (
-                    <CubeIcon className="w-12 h-12 text-gray-400" />
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openQuickView(pkg);
+          <>
+            <div className="-mx-px grid grid-cols-2 border-l border-gray-200 sm:mx-0 md:grid-cols-3 lg:grid-cols-4">
+              {packages.map((pkg) => (
+                <div
+                  key={pkg.id}
+                  className="group relative border-r border-b border-gray-200 p-4 sm:p-6 cursor-pointer hover:shadow-md transition-shadow duration-150"
+                  onClick={() => {
+                    const path =
+                      pkg.id != null
+                        ? `/package-details/${pkg.id}`
+                        : "/package-details";
+                    navigate(path, { state: { package: pkg } });
                   }}
-                  className="mt-3 w-3/4 rounded-md bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
                 >
-                  View details
-                </button>
-
-                <div className="pt-10 pb-4 text-left">
-                  <h3 className="text-sm font-medium text-gray-900">
-                    <span className="relative line-clamp-2">{pkg.name}</span>
-                  </h3>
-
-                  <div className="mt-3 flex items-center gap-3">
-                    <div className="flex items-center">
-                      {[0, 1, 2, 3, 4].map((r) => (
-                        <StarIcon
-                          key={r}
-                          aria-hidden="true"
-                          className={classNames(
-                            (pkg.rating ?? 0) > r
-                              ? "text-yellow-400"
-                              : "text-gray-200",
-                            "size-5 shrink-0"
-                          )}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-sm text-gray-500 font-bold">
-                      {(pkg.rating ?? 0).toFixed(1)}
-                    </p>
+                  <div className="aspect-square rounded-lg bg-gray-200 overflow-hidden flex items-center justify-center">
+                    {pkg.imageSrc ? (
+                      <img
+                        alt={pkg.imageAlt || pkg.name}
+                        src={packageImageSrc(pkg.imageSrc)}
+                        className="w-full h-full object-contain group-hover:opacity-75 transition duration-150"
+                      />
+                    ) : (
+                      <CubeIcon className="w-12 h-12 text-gray-400" />
+                    )}
                   </div>
 
-                  <p className="mt-4 text-base font-medium text-gray-900">
-                    {pkg.quantityLabel || "1 pack"}
-                  </p>
-                  <p className="mt-1 text-base font-medium text-gray-900">
-                    <Price amount={pkg.bundlePrice ?? 0} />
-                  </p>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openQuickView(pkg);
+                    }}
+                    className="mt-3 w-3/4 rounded-md bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+                  >
+                    View details
+                  </button>
+
+                  <div className="pt-10 pb-4 text-left">
+                    <h3 className="text-sm font-medium text-gray-900">
+                      <span className="relative line-clamp-2">{pkg.name}</span>
+                    </h3>
+
+                    <div className="mt-3 flex items-center gap-3">
+                      <div className="flex items-center">
+                        {[0, 1, 2, 3, 4].map((r) => (
+                          <StarIcon
+                            key={r}
+                            aria-hidden="true"
+                            className={classNames(
+                              (pkg.rating ?? 0) > r
+                                ? "text-yellow-400"
+                                : "text-gray-200",
+                              "size-5 shrink-0"
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-sm text-gray-500 font-bold">
+                        {(pkg.rating ?? 0).toFixed(1)}
+                      </p>
+                    </div>
+
+                    <p className="mt-4 text-base font-medium text-gray-900">
+                      {pkg.quantityLabel || "1 pack"}
+                    </p>
+                    <p className="mt-1 text-base font-medium text-gray-900">
+                      <Price amount={pkg.bundlePrice ?? 0} />
+                    </p>
+                  </div>
                 </div>
+              ))}
+            </div>
+
+            {/* Show More / Show Less Button */}
+            {hasMorePackages && (
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowAll(!showAll)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  {showAll ? (
+                    <>
+                      Show Less
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    </>
+                  ) : (
+                    <>
+                      Show All {allPackages.length} Packages
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </>
+                  )}
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
 

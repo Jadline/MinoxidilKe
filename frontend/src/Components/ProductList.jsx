@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ProductQuickView from "./ProductQuickView";
-import StarRating from "./StarRating";
+import StarRating, { NewBadge, isNewProduct } from "./StarRating";
 import Price from "./Price";
 import WishlistButton from "./WishlistButton";
 import { useNavigate } from "react-router-dom";
@@ -115,6 +115,13 @@ export default function ProductList() {
                 <div className="absolute top-2 right-2 z-10">
                   <WishlistButton product={product} size="sm" className="shadow-sm" />
                 </div>
+                {/* New Badge - positioned at top left */}
+                {isNewProduct(product) && product.inStock !== false && (
+                  <div className="absolute top-2 left-2 z-10">
+                    <NewBadge />
+                  </div>
+                )}
+                {/* Out of Stock Badge */}
                 {product.inStock === false && (
                   <span className="absolute top-2 left-2 rounded-md bg-gray-800 px-2 py-1 text-xs font-medium text-white shadow-sm">
                     Out of stock
@@ -142,7 +149,7 @@ export default function ProductList() {
                     rating={product.rating ?? 0} 
                     size="sm" 
                     reviewCount={product.reviewCount ?? 0}
-                    showLabel={true}
+                    showLabel={!isNewProduct(product)}
                   />
                 </div>
 

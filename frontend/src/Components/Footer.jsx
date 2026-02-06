@@ -5,8 +5,9 @@ const navigation = {
   main: [
     { name: "Home", to: "/" },
     { name: "Shop", to: "/products" },
-    { name: "Contact", to: "/contact" },
+    { name: "Wishlist", to: "/wishlist" },
     { name: "Cart", to: "/cart" },
+    { name: "Contact", to: "/contact" },
     { name: "Terms & Conditions", to: "/terms" },
   ],
   social: [

@@ -7,7 +7,7 @@ export const useShopStore = create((set) => ({
   },
   sortBy: "name-asc",
   currentPage: 1,
-  itemsperPage: 6,
+  itemsperPage: 16, // 4 rows of 4 products on desktop
 
   setSelectedFilters: (updater) =>
     set((state) => ({

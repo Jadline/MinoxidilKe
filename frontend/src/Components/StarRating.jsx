@@ -4,12 +4,33 @@ import { StarIcon as StarIconOutline } from "@heroicons/react/24/outline";
 const MAX_STARS = 5;
 
 /**
+ * New Badge component - shows a badge for products without reviews
+ */
+export function NewBadge({ className = "" }) {
+  return (
+    <span className={`inline-flex items-center rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm ${className}`}>
+      New
+    </span>
+  );
+}
+
+/**
+ * Check if a product is "new" (no reviews)
+ */
+export function isNewProduct(product) {
+  return (
+    (product?.reviewCount === 0 || product?.reviewCount === undefined) &&
+    (product?.rating === 0 || product?.rating === undefined || product?.rating === null)
+  );
+}
+
+/**
  * Star rating: display only or interactive (click to set 1–5).
  * @param {number} rating - Current rating (0–5). For display can be decimal; for interactive use integer.
  * @param {function} [onChange] - If provided, component is interactive; called with 1–5 on click.
  * @param {string} [size] - 'sm' | 'md' | 'lg' (default 'md').
- * @param {number} [reviewCount] - Number of reviews. If 0 and not interactive, shows "New" badge.
- * @param {boolean} [showLabel] - Whether to show "New" or review count label.
+ * @param {number} [reviewCount] - Number of reviews.
+ * @param {boolean} [showLabel] - Whether to show review count label.
  */
 export default function StarRating({ rating = 0, onChange, size = "md", reviewCount, showLabel = false }) {
   const isInteractive = typeof onChange === "function";
@@ -20,17 +41,6 @@ export default function StarRating({ rating = 0, onChange, size = "md", reviewCo
 
   const sizeClasses = { sm: "h-4 w-4", md: "h-5 w-5", lg: "h-6 w-6" };
   const iconClass = sizeClasses[size] || sizeClasses.md;
-
-  // If no reviews and not interactive, show "New" badge
-  if (hasNoReviews && !isInteractive && showLabel) {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
-          New
-        </span>
-      </div>
-    );
-  }
 
   const handleClick = (star) => {
     if (isInteractive && star >= 1 && star <= MAX_STARS) onChange(star);
