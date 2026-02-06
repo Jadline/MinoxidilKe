@@ -174,7 +174,7 @@ export default function PackageOverview({ package: pkgProp }) {
                   className="mt-2 flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded-md"
                 >
                   <a
-                    href={`https://wa.me/254796866058?text=Hi! I'd like to know more about this package: ${encodeURIComponent(
+                    href={`https://wa.me/254726787330?text=Hi! I'd like to know more about this package: ${encodeURIComponent(
                       pkg.name
                     )}`}
                     target="_blank"

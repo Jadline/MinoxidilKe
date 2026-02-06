@@ -32,6 +32,7 @@ const AdminOrders = lazy(() => import("./Pages/AdminOrders"));
 const AdminSettings = lazy(() => import("./Pages/AdminSettings"));
 const AdminContacts = lazy(() => import("./Pages/AdminContacts"));
 const AdminSubscribers = lazy(() => import("./Pages/AdminSubscribers"));
+const AdminShippingInfo = lazy(() => import("./Pages/AdminShippingInfo"));
 const TermsAndConditions = lazy(() => import("./Pages/TermsAndConditions"));
 const NotFound = lazy(() => import("./Pages/NotFound"));
 const Wishlist = lazy(() => import("./Pages/Wishlist"));
@@ -101,6 +102,7 @@ function App() {
             <Route path="contacts" element={<AdminContacts />} />
             <Route path="subscribers" element={<AdminSubscribers />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="shipping-info" element={<AdminShippingInfo />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

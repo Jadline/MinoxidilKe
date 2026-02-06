@@ -19,6 +19,7 @@ import {
   CubeIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { useDarkModeStore } from "../stores/darkModeStore";
 
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 
@@ -43,6 +44,7 @@ function truncate(str, maxLen = 40) {
 
 export default function AdminPackagesList() {
   const queryClient = useQueryClient();
+  const { isDarkMode } = useDarkModeStore();
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editPackage, setEditPackage] = useState(null);
   const [deleteConfirmPackage, setDeleteConfirmPackage] = useState(null);
@@ -438,225 +440,116 @@ export default function AdminPackagesList() {
   };
 
   return (
-    <div className="w-full">
+    <div className="max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Manage Packages</h1>
-          <p className="text-white/80 mt-1">
+          <h1 className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Manage Packages</h1>
+          <p className={`mt-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
             Bundles of products that customers can buy together.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setAddModalOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-white text-[#082567] px-4 py-2.5 text-sm font-semibold shadow-md hover:bg-white/95 hover:shadow-lg transition-all"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 text-sm font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
         >
           <PlusIcon className="h-5 w-5" />
-          Add package
+          Add Package
         </button>
       </div>
 
-      <div className="rounded-xl border border-[#191970]/30 bg-white shadow-xl overflow-hidden w-full transition-all duration-200 hover:shadow-2xl hover:border-[#191970]/50">
+      <div className={`rounded-2xl shadow-sm border overflow-hidden ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
         {isLoading ? (
-          <div className="p-12 text-center text-gray-500">
-            Loading packages…
+          <div className="p-12 text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4" />
+            <p className={isDarkMode ? "text-gray-400" : "text-gray-500"}>Loading packages…</p>
           </div>
         ) : isError ? (
-          <div className="p-12 text-center text-red-600">
+          <div className="p-12 text-center text-red-500">
             {error?.response?.data?.message ||
               error?.message ||
               "Failed to load packages."}
           </div>
         ) : packages.length === 0 ? (
           <div className="p-12 text-center">
-            <CubeIcon className="mx-auto h-12 w-12 text-white/50" />
-            <p className="mt-2 text-white">No packages yet.</p>
-            <p className="mt-1 text-sm text-white/80">
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${isDarkMode ? "bg-indigo-900/30" : "bg-gradient-to-br from-indigo-100 to-purple-100"}`}>
+              <CubeIcon className={`w-10 h-10 ${isDarkMode ? "text-indigo-400" : "text-indigo-500"}`} />
+            </div>
+            <h3 className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>No packages yet</h3>
+            <p className={`mt-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
               Create a package to sell products together at a bundle price.
             </p>
             <button
               type="button"
               onClick={() => setAddModalOpen(true)}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#191970] px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-[#12125c] transition-colors"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-all"
             >
               <PlusIcon className="h-5 w-5" />
-              Add package
+              Add Package
             </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-[#191970]">
+              <thead className={isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}>
                 <tr>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Package
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Bundle price
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Description
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Features
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Rating
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Stock
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Lead time
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Category
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Products
-                  </th>
-                  <th scope="col" className="relative px-4 py-3">
-                    <span className="sr-only">Actions</span>
-                  </th>
+                  <th scope="col" className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Package</th>
+                  <th scope="col" className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Bundle price</th>
+                  <th scope="col" className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Description</th>
+                  <th scope="col" className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Stock</th>
+                  <th scope="col" className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Category</th>
+                  <th scope="col" className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Products</th>
+                  <th scope="col" className="relative px-4 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody className="bg-white/15 divide-y divide-white/20">
+              <tbody className={`divide-y ${isDarkMode ? "divide-gray-700" : "divide-gray-100"}`}>
                 {packages.map((pkg) => (
-                  <tr
-                    key={pkg.id}
-                    className="hover:bg-[#191970]/5 transition-colors duration-150"
-                  >
+                  <tr key={pkg.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-[#082567]/10">
-                          {(() => { console.log("[DEBUG] List pkg.imageSrc for", pkg.name, ":", pkg.imageSrc); return null; })()}
+                        <div className="relative h-12 w-12 shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100">
                           {pkg.imageSrc ? (
-                            <>
-                              <img
-                                src={(() => { const src = packageImageSrc(pkg.imageSrc); console.log("[DEBUG] List image src for", pkg.name, ":", src); return src; })()}
-                                alt={pkg.imageAlt || pkg.name}
-                                className="h-10 w-10 object-cover relative z-10"
-                                onError={(e) => {
-                                  console.error("[DEBUG] List image FAILED for", pkg.name, ":", e.target.src);
-                                  e.target.style.display = "none";
-                                }}
-                                onLoad={() => console.log("[DEBUG] List image loaded for", pkg.name)}
-                              />
-                              <div
-                                className="absolute inset-0 flex items-center justify-center z-0"
-                                aria-hidden
-                              >
-                                <CubeIcon className="h-5 w-5 text-[#082567]/40" />
-                              </div>
-                            </>
+                            <img
+                              src={packageImageSrc(pkg.imageSrc)}
+                              alt={pkg.imageAlt || pkg.name}
+                              className="h-12 w-12 object-cover"
+                              onError={(e) => { e.target.style.display = "none"; }}
+                            />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <CubeIcon className="h-5 w-5 text-[#082567]/40" />
+                              <CubeIcon className="h-6 w-6 text-indigo-400" />
                             </div>
                           )}
                         </div>
-                        <span className="font-medium text-gray-900">
-                          {pkg.name}
-                        </span>
+                        <span className="font-medium text-gray-900">{pkg.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-700">
-                      <span className="inline-block">
-                        <span className="block leading-tight">KSh</span>
-                        <span className="block leading-tight">
-                          {Number(pkg.bundlePrice ?? 0).toLocaleString()}
-                        </span>
-                      </span>
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-semibold text-gray-900">KSh {Number(pkg.bundlePrice ?? 0).toLocaleString()}</span>
                     </td>
-                    <td
-                      className="px-4 py-3 text-sm text-gray-600 max-w-[180px]"
-                      title={pkg.description || ""}
-                    >
+                    <td className="px-4 py-3 text-sm text-gray-600 max-w-[180px]" title={pkg.description || ""}>
                       {truncate(pkg.description, 35)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {(() => {
-                        const featuresDetail = (pkg.details || []).find(
-                          (d) => d.name === "Features"
-                        );
-                        const items = featuresDetail?.items ?? [];
-                        const text =
-                          items.length > 0 ? (items[0] ?? "").trim() : "";
-                        return text ? truncate(text, 35) : "—";
-                      })()}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {pkg.rating != null && pkg.rating !== ""
-                        ? Number(pkg.rating).toFixed(1)
-                        : "—"}
-                    </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          pkg.inStock !== false
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
+                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${pkg.inStock !== false ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
                         {pkg.inStock !== false ? "In stock" : "Out of stock"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {pkg.leadTime || "—"}
+                    <td className="px-4 py-3">
+                      <span className="inline-flex rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">{pkg.category || "—"}</span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {pkg.category || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {Array.isArray(pkg.productIds)
-                        ? pkg.productIds.length
-                        : 0}{" "}
-                      product(s)
+                      <span className="inline-flex items-center gap-1.5">
+                        <CubeIcon className="h-4 w-4 text-gray-400" />
+                        {Array.isArray(pkg.productIds) ? pkg.productIds.length : 0}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button
-                          type="button"
-                          onClick={() => setEditPackage(pkg)}
-                          className="rounded-lg p-2 text-gray-600 hover:bg-[#082567]/15 hover:text-[#082567] transition-colors"
-                          title="Edit"
-                        >
+                        <button type="button" onClick={() => setEditPackage(pkg)} className="rounded-lg p-2 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors" title="Edit">
                           <PencilSquareIcon className="h-5 w-5" />
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteClick(pkg.id, pkg.name)}
-                          disabled={isDeleting}
-                          className="rounded-lg p-2 text-gray-600 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors"
-                          title="Delete"
-                        >
+                        <button type="button" onClick={() => handleDeleteClick(pkg.id, pkg.name)} disabled={isDeleting} className="rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors" title="Delete">
                           <TrashIcon className="h-5 w-5" />
                         </button>
                       </div>

@@ -1,14 +1,12 @@
-import {
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from "@headlessui/react";
-import { ChevronDownIcon, FunnelIcon } from "@heroicons/react/20/solid";
-
+import { useState, Fragment } from "react";
+import { Dialog, Transition, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { 
+  ChevronDownIcon, 
+  FunnelIcon, 
+  XMarkIcon,
+  AdjustmentsHorizontalIcon,
+  CheckIcon 
+} from "@heroicons/react/20/solid";
 import { useShopStore } from "../stores/shopStore";
 
 const filters = {
@@ -35,6 +33,7 @@ const filters = {
     },
   ],
 };
+
 const sortOptions = [
   { name: "Price: Low to High", value: "price-asc" },
   { name: "Price: High to Low", value: "price-desc" },
@@ -42,12 +41,11 @@ const sortOptions = [
   { name: "Name: Z–A", value: "name-desc" },
 ];
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
-
 export default function CategoryFilters() {
   const { selectedFilters, setSelectedFilters, sortBy, setsortBy } = useShopStore();
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  
+  const totalFilters = selectedFilters.price.length + selectedFilters.category.length;
 
   function handleFilterChange(filterType, value, checked) {
     setSelectedFilters((prev) => {
@@ -75,220 +73,311 @@ export default function CategoryFilters() {
       return { ...prev, [filterType]: updatedValues };
     });
   }
-  return (
-    <div className="bg-white">
-      <div className="px-4 py-16 text-center sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-          Hair Regrowth Treatments
-        </h1>
-        <p className="mx-auto mt-4 max-w-xl text-base text-gray-500">
-          Restore your confidence with clinically proven solutions formulated to
-          stimulate hair follicles and promote visible growth. Explore our range
-          of Minoxidil-based treatments trusted by men and women across Kenya.
-        </p>
-      </div>
 
-      {/* Filters */}
-      <Disclosure
-        as="section"
-        aria-labelledby="filter-heading"
-        className="grid items-center border-t border-b border-gray-200"
-      >
-        <h2 id="filter-heading" className="sr-only">
-          Filters
-        </h2>
-        <div className="relative col-start-1 row-start-1 py-4">
-          <div className="mx-auto flex max-w-7xl divide-x divide-gray-200 px-4 text-sm sm:px-6 lg:px-8">
-            <div className="pr-6">
-              <DisclosureButton className="group flex items-center font-medium text-gray-700">
-                <FunnelIcon
-                  aria-hidden="true"
-                  className="mr-2 size-5 flex-none text-gray-400 group-hover:text-gray-500"
-                />
-                <span>
-                  Filters (
-                  {selectedFilters.price.length + selectedFilters.category.length})
-                </span>
-              </DisclosureButton>
-            </div>
-            <div className="pl-6">
+  const clearAllFilters = () => {
+    setSelectedFilters({ price: [], category: [] });
+  };
+
+  return (
+    <>
+      {/* Mobile Filter Dialog */}
+      <Transition.Root show={mobileFiltersOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50 lg:hidden" onClose={setMobileFiltersOpen}>
+          <Transition.Child
+            as={Fragment}
+            enter="transition-opacity ease-linear duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="transition-opacity ease-linear duration-300"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 z-50 flex">
+            <Transition.Child
+              as={Fragment}
+              enter="transition ease-in-out duration-300 transform"
+              enterFrom="translate-x-full"
+              enterTo="translate-x-0"
+              leave="transition ease-in-out duration-300 transform"
+              leaveFrom="translate-x-0"
+              leaveTo="translate-x-full"
+            >
+              <Dialog.Panel className="relative ml-auto flex h-full w-full max-w-xs flex-col overflow-y-auto bg-white shadow-xl">
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+                  <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+                  <button
+                    type="button"
+                    className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    onClick={() => setMobileFiltersOpen(false)}
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Filter Content */}
+                <div className="flex-1 px-4 py-6 space-y-8">
+                  {/* Price Filter */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4">Price Range</h3>
+                    <div className="space-y-3">
+                      {filters.price.map((option, optionIdx) => (
+                        <label 
+                          key={optionIdx}
+                          className="flex items-center gap-3 cursor-pointer group"
+                        >
+                          <div className="relative flex h-5 w-5 items-center justify-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedFilters.price.some(
+                                (p) => p.min === option.min && p.max === option.max
+                              )}
+                              onChange={(e) =>
+                                handleFilterChange("price", option, e.target.checked)
+                              }
+                              className="peer h-5 w-5 rounded-md border-2 border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-colors cursor-pointer"
+                            />
+                          </div>
+                          <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                            {option.label}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Category Filter */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4">Category</h3>
+                    <div className="space-y-3">
+                      {filters.category.map((option, optionIdx) => (
+                        <label 
+                          key={optionIdx}
+                          className="flex items-center gap-3 cursor-pointer group"
+                        >
+                          <div className="relative flex h-5 w-5 items-center justify-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedFilters.category.includes(option.value)}
+                              onChange={(e) =>
+                                handleFilterChange("category", option.value, e.target.checked)
+                              }
+                              className="peer h-5 w-5 rounded-md border-2 border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-colors cursor-pointer"
+                            />
+                          </div>
+                          <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                            {option.label}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="border-t border-gray-200 px-4 py-4 space-y-3">
+                  {totalFilters > 0 && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="w-full py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                    >
+                      Clear all filters
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setMobileFiltersOpen(false)}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold hover:from-indigo-500 hover:to-purple-500 transition-all"
+                  >
+                    View Results
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition.Root>
+
+      {/* Main Filter Section */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="py-10 lg:py-14 text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+              All Products
+            </h2>
+            <p className="mt-4 max-w-2xl mx-auto text-base text-gray-500">
+              Browse our complete collection of hair care and regrowth products. 
+              Use filters to find exactly what you need.
+            </p>
+          </div>
+
+          {/* Filter Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-t border-gray-200">
+            {/* Left Side - Filters */}
+            <div className="flex items-center gap-3">
+              {/* Mobile Filter Button */}
               <button
                 type="button"
-                className="text-gray-500"
-                onClick={() =>
-                  setSelectedFilters({
-                    price: [],
-                    category: [],
-                  })
-                }
+                onClick={() => setMobileFiltersOpen(true)}
+                className="lg:hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                Clear all
+                <AdjustmentsHorizontalIcon className="h-5 w-5 text-gray-500" />
+                Filters
+                {totalFilters > 0 && (
+                  <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-indigo-600 text-xs text-white">
+                    {totalFilters}
+                  </span>
+                )}
               </button>
-            </div>
-          </div>
-        </div>
-        <DisclosurePanel className="border-t border-gray-200 py-10">
-          <div className="mx-auto grid max-w-4xl grid-cols-2 gap-x-4 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
-            <div className="grid auto-rows-min grid-cols-1 gap-y-10 md:grid-cols-2 md:gap-x-6">
-              <fieldset>
-                <legend className="block font-medium">Price</legend>
-                <div className="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
-                  {filters.price.map((option, optionIdx) => (
-                    <div key={option.value} className="flex gap-3">
-                      <div className="flex h-5 shrink-0 items-center">
-                        <div className="group grid size-4 grid-cols-1">
+
+              {/* Desktop Filter Pills */}
+              <div className="hidden lg:flex items-center gap-3">
+                <span className="text-sm font-medium text-gray-700">Filters:</span>
+                
+                {/* Price Dropdown */}
+                <Menu as="div" className="relative">
+                  <MenuButton className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    Price
+                    {selectedFilters.price.length > 0 && (
+                      <span className="h-5 w-5 rounded-full bg-indigo-600 text-xs text-white flex items-center justify-center">
+                        {selectedFilters.price.length}
+                      </span>
+                    )}
+                    <ChevronDownIcon className="h-4 w-4 text-gray-500" />
+                  </MenuButton>
+                  <MenuItems className="absolute left-0 z-20 mt-2 w-56 origin-top-left rounded-xl bg-white shadow-lg ring-1 ring-black/5 focus:outline-none p-2">
+                    {filters.price.map((option, idx) => (
+                      <MenuItem key={idx} as="div">
+                        <label className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                           <input
-                            id={`price-${optionIdx}`}
-                            name="price[]"
                             type="checkbox"
                             checked={selectedFilters.price.some(
-                              (p) =>
-                                p.min === option.min && p.max === option.max
+                              (p) => p.min === option.min && p.max === option.max
                             )}
                             onChange={(e) =>
-                              handleFilterChange(
-                                "price",
-                                option,
-                                e.target.checked
-                              )
+                              handleFilterChange("price", option, e.target.checked)
                             }
-                            className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
+                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                           />
-                          <svg
-                            fill="none"
-                            viewBox="0 0 14 14"
-                            className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25"
-                          >
-                            <path
-                              d="M3 8L6 11L11 3.5"
-                              strokeWidth={2}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="opacity-0 group-has-checked:opacity-100"
-                            />
-                            <path
-                              d="M3 7H11"
-                              strokeWidth={2}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="opacity-0 group-has-indeterminate:opacity-100"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                      <label
-                        htmlFor={`price-${optionIdx}`}
-                        className="text-base text-gray-600 sm:text-sm"
-                      >
-                        {option.label}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </fieldset>
-            </div>
-            <div className="grid auto-rows-min grid-cols-1 gap-y-10 md:grid-cols-2 md:gap-x-6">
-              <fieldset>
-                <legend className="block font-medium">Category</legend>
-                <div className="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
-                  {filters.category.map((option, optionIdx) => (
-                    <div key={option.value} className="flex gap-3">
-                      <div className="flex h-5 shrink-0 items-center">
-                        <div className="group grid size-4 grid-cols-1">
-                          <input
-                            id={`category-${optionIdx}`}
-                            name="category[]"
-                            value={option.value}
-                            checked={selectedFilters.category.includes(
-                              option.value
-                            )}
-                            onChange={(e) =>
-                              handleFilterChange(
-                                "category",
-                                option.value,
-                                e.target.checked
-                              )
-                            }
-                            type="checkbox"
-                            className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
-                          />
-                          <svg
-                            fill="none"
-                            viewBox="0 0 14 14"
-                            className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25"
-                          >
-                            <path
-                              d="M3 8L6 11L11 3.5"
-                              strokeWidth={2}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="opacity-0 group-has-checked:opacity-100"
-                            />
-                            <path
-                              d="M3 7H11"
-                              strokeWidth={2}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="opacity-0 group-has-indeterminate:opacity-100"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                      <label
-                        htmlFor={`category-${optionIdx}`}
-                        className="text-base text-gray-600 sm:text-sm"
-                      >
-                        {option.label}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </fieldset>
-            </div>
-          </div>
-        </DisclosurePanel>
-        <div className="col-start-1 row-start-1 py-4">
-          <div className="mx-auto flex max-w-7xl justify-end px-4 sm:px-6 lg:px-8">
-            <Menu as="div" className="relative inline-block">
-              <div className="flex">
-                <MenuButton className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                  <span>Sort</span>
-                  <span className="ml-1 text-indigo-500">
-                    {sortOptions.find((opt) => opt.value === sortBy)?.name}
-                  </span>
-                  <ChevronDownIcon
-                    aria-hidden="true"
-                    className="-mr-1 ml-1 size-5 shrink-0 text-gray-400 group-hover:text-gray-500"
-                  />
-                </MenuButton>
-              </div>
+                          <span className="text-sm text-gray-700">{option.label}</span>
+                        </label>
+                      </MenuItem>
+                    ))}
+                  </MenuItems>
+                </Menu>
 
-              <MenuItems
-                transition
-                className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
-              >
-                <div className="py-1">
-                  {sortOptions.map((option) => (
-                    <MenuItem key={option.value}>
-                      <p
-                        onClick={() => setsortBy(option.value)}
-                        className={classNames(
-                          sortBy === option.value
-                            ? "font-medium text-gray-900"
-                            : "text-gray-500",
-                          "block px-4 py-2 text-sm data-focus:bg-gray-100 data-focus:outline-hidden cursor-pointer"
-                        )}
-                      >
-                        {option.name}
-                      </p>
-                    </MenuItem>
-                  ))}
-                </div>
+                {/* Category Dropdown */}
+                <Menu as="div" className="relative">
+                  <MenuButton className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    Category
+                    {selectedFilters.category.length > 0 && (
+                      <span className="h-5 w-5 rounded-full bg-indigo-600 text-xs text-white flex items-center justify-center">
+                        {selectedFilters.category.length}
+                      </span>
+                    )}
+                    <ChevronDownIcon className="h-4 w-4 text-gray-500" />
+                  </MenuButton>
+                  <MenuItems className="absolute left-0 z-20 mt-2 w-56 origin-top-left rounded-xl bg-white shadow-lg ring-1 ring-black/5 focus:outline-none p-2">
+                    {filters.category.map((option, idx) => (
+                      <MenuItem key={idx} as="div">
+                        <label className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={selectedFilters.category.includes(option.value)}
+                            onChange={(e) =>
+                              handleFilterChange("category", option.value, e.target.checked)
+                            }
+                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span className="text-sm text-gray-700">{option.label}</span>
+                        </label>
+                      </MenuItem>
+                    ))}
+                  </MenuItems>
+                </Menu>
+
+                {/* Clear All */}
+                {totalFilters > 0 && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                  >
+                    Clear all ({totalFilters})
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Right Side - Sort */}
+            <Menu as="div" className="relative">
+              <MenuButton className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                <span className="text-gray-500">Sort:</span>
+                <span className="text-indigo-600">{sortOptions.find((opt) => opt.value === sortBy)?.name || 'Default'}</span>
+                <ChevronDownIcon className="h-4 w-4 text-gray-500" />
+              </MenuButton>
+              <MenuItems className="absolute right-0 z-20 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black/5 focus:outline-none p-2">
+                {sortOptions.map((option) => (
+                  <MenuItem key={option.value}>
+                    <button
+                      onClick={() => setsortBy(option.value)}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                        sortBy === option.value
+                          ? "bg-indigo-50 text-indigo-700 font-medium"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      {option.name}
+                      {sortBy === option.value && (
+                        <CheckIcon className="h-4 w-4" />
+                      )}
+                    </button>
+                  </MenuItem>
+                ))}
               </MenuItems>
             </Menu>
           </div>
+
+          {/* Active Filters Tags */}
+          {totalFilters > 0 && (
+            <div className="flex flex-wrap items-center gap-2 pb-4">
+              {selectedFilters.price.map((filter, idx) => (
+                <span
+                  key={`price-${idx}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 text-sm text-indigo-700"
+                >
+                  {filter.label}
+                  <button
+                    onClick={() => handleFilterChange("price", filter, false)}
+                    className="hover:bg-indigo-100 rounded-full p-0.5 transition-colors"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+                </span>
+              ))}
+              {selectedFilters.category.map((catValue, idx) => {
+                const cat = filters.category.find(c => c.value === catValue);
+                return (
+                  <span
+                    key={`cat-${idx}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-50 text-sm text-purple-700"
+                  >
+                    {cat?.label || catValue}
+                    <button
+                      onClick={() => handleFilterChange("category", catValue, false)}
+                      className="hover:bg-purple-100 rounded-full p-0.5 transition-colors"
+                    >
+                      <XMarkIcon className="h-4 w-4" />
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
-      </Disclosure>
-    </div>
+      </div>
+    </>
   );
 }

@@ -19,6 +19,7 @@ import {
   ChevronRightIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { useDarkModeStore } from "../stores/darkModeStore";
 
 const PAGE_SIZES = [10, 25, 50, 100];
 
@@ -54,6 +55,7 @@ export default function AdminProductsList() {
   const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
+  const { isDarkMode } = useDarkModeStore();
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["admin-products"],
@@ -272,325 +274,201 @@ export default function AdminProductsList() {
   };
 
   return (
-    <div className="w-full">
+    <div className="max-w-7xl mx-auto">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Manage Products</h1>
-          <p className="text-white/80 mt-1">
+          <h1 className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Manage Products</h1>
+          <p className={`mt-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
             View, edit, or remove products from your shop.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setAddModalOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-white text-[#082567] px-4 py-2.5 text-sm font-semibold shadow-md hover:bg-white/95 hover:shadow-lg transition-all"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 text-sm font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
         >
           <PlusIcon className="h-5 w-5" />
-          Add product
+          Add Product
         </button>
       </div>
 
-      <div className="rounded-xl border border-[#191970]/30 bg-white shadow-xl overflow-hidden w-full transition-all duration-200 hover:shadow-2xl hover:border-[#191970]/50">
+      {/* Content Card */}
+      <div className={`rounded-2xl shadow-sm border overflow-hidden ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
         {isLoading ? (
-          <div className="p-12 text-center text-gray-500">
-            Loading products…
+          <div className="p-12 text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4" />
+            <p className={isDarkMode ? "text-gray-400" : "text-gray-500"}>Loading products…</p>
           </div>
         ) : isError ? (
-          <div className="p-12 text-center text-red-600">
-            {error?.response?.data?.message ||
-              error?.message ||
-              "Failed to load products."}
+          <div className="p-12 text-center">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDarkMode ? "bg-red-900/30" : "bg-red-100"}`}>
+              <XMarkIcon className="w-8 h-8 text-red-500" />
+            </div>
+            <p className="text-red-500 font-medium">
+              {error?.response?.data?.message || error?.message || "Failed to load products."}
+            </p>
           </div>
         ) : products.length === 0 ? (
           <div className="p-12 text-center">
-            <CubeIcon className="mx-auto h-12 w-12 text-white/50" />
-            <p className="mt-2 text-white">No products yet.</p>
-            <p className="mt-1 text-sm text-white/80">
-              Add your first product to get started.
-            </p>
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${isDarkMode ? "bg-indigo-900/30" : "bg-gradient-to-br from-indigo-100 to-purple-100"}`}>
+              <CubeIcon className={`w-10 h-10 ${isDarkMode ? "text-indigo-400" : "text-indigo-500"}`} />
+            </div>
+            <h3 className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>No products yet</h3>
+            <p className={`mt-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>Add your first product to get started.</p>
             <button
               type="button"
               onClick={() => setAddModalOpen(true)}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#191970] px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-[#12125c] transition-colors"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-all"
             >
               <PlusIcon className="h-5 w-5" />
-              Add product
+              Add Product
             </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-[#191970]">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Product
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Price
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Category
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Qty label
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Lead time
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Description
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Features
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Rating
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
-                  >
-                    Stock
-                  </th>
-                  <th scope="col" className="relative px-4 py-3">
-                    <span className="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white/15 divide-y divide-white/20">
-                {products.map((p, index) => {
-                  const rawImage =
-                    p.imageSrc ?? p.images?.[0]?.src ?? p.images?.[0]?.url;
-                  const rawStr =
-                    typeof rawImage === "string"
-                      ? rawImage
-                      : rawImage != null
-                      ? String(rawImage)
-                      : "";
-                  const imageUrl =
-                    rawStr && rawStr !== "[object Object]"
-                      ? productImageSrc(rawStr)
-                      : "";
-                  const imgSrc =
-                    imageUrl && rawStr.startsWith("/uploads/")
-                      ? `${imageUrl}?t=${encodeURIComponent(
-                          rawStr.slice(0, 200)
-                        )}`
-                      : imageUrl;
+          <>
+            {/* Product Cards Grid */}
+            <div className="p-6">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {displayedProducts.map((p, index) => {
+                  const rawImage = p.imageSrc ?? p.images?.[0]?.src ?? p.images?.[0]?.url;
+                  const rawStr = typeof rawImage === "string" ? rawImage : rawImage != null ? String(rawImage) : "";
+                  const imageUrl = rawStr && rawStr !== "[object Object]" ? productImageSrc(rawStr) : "";
+                  const imgSrc = imageUrl && rawStr.startsWith("/uploads/") ? `${imageUrl}?t=${encodeURIComponent(rawStr.slice(0, 200))}` : imageUrl;
+                  
                   return (
-                    <tr
+                    <div
                       key={p.id ?? p._id ?? index}
-                      className="hover:bg-[#191970]/5 transition-colors duration-150 cursor-default"
+                      className={`rounded-xl p-4 transition-colors group ${isDarkMode ? "bg-gray-700/50 hover:bg-gray-700" : "bg-gray-50 hover:bg-gray-100"}`}
                     >
-                      <td className="px-4 py-3 text-sm font-mono text-gray-700">
-                        {p.id ?? "—"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-[#082567]/10">
-                            {imgSrc ? (
-                              <>
-                                <img
-                                  key={`${p.id ?? index}-${rawStr.slice(
-                                    0,
-                                    50
-                                  )}`}
-                                  src={imgSrc}
-                                  alt={p.imageAlt || p.name || "Product"}
-                                  className="h-10 w-10 object-cover relative z-10 bg-white"
-                                  onError={(e) => {
-                                    e.target.style.display = "none";
-                                  }}
-                                />
-                                <div
-                                  className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none"
-                                  aria-hidden
-                                >
-                                  <CubeIcon className="h-5 w-5 text-gray-400" />
-                                </div>
-                              </>
-                            ) : (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <CubeIcon className="h-5 w-5 text-gray-400" />
-                              </div>
-                            )}
+                      {/* Image */}
+                      <div className={`relative aspect-square rounded-lg overflow-hidden mb-3 ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
+                        {imgSrc ? (
+                          <img
+                            src={imgSrc}
+                            alt={p.imageAlt || p.name || "Product"}
+                            className="w-full h-full object-contain p-2"
+                            onError={(e) => { e.target.style.display = "none"; }}
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <CubeIcon className={`h-12 w-12 ${isDarkMode ? "text-gray-600" : "text-gray-300"}`} />
                           </div>
-                          <span className="font-medium text-gray-900">
-                            {p.name}
+                        )}
+                        {/* Stock Badge */}
+                        <div className="absolute top-2 right-2">
+                          <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                            p.inStock !== false ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                          }`}>
+                            {p.inStock !== false ? "In Stock" : "Out of Stock"}
                           </span>
                         </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-700">
-                        <span className="inline-block">
-                          <span className="block leading-tight">KSh</span>
-                          <span className="block leading-tight">
-                            {Number(p.price ?? 0).toLocaleString()}
-                          </span>
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {p.category || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {p.quantityLabel || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {p.leadTime || "—"}
-                      </td>
-                      <td
-                        className="px-4 py-3 text-sm text-gray-600 max-w-[200px]"
-                        title={p.description || ""}
-                      >
-                        {truncate(p.description, 50)}
-                      </td>
-                      <td
-                        className="px-4 py-3 text-sm text-gray-600 max-w-[180px]"
-                        title={(() => {
-                          const featuresDetail = (p.details || []).find(
-                            (d) => d.name === "Features"
-                          );
-                          const items = featuresDetail?.items || [];
-                          return items.join("\n") || "—";
-                        })()}
-                      >
-                        {(() => {
-                          const featuresDetail = (p.details || []).find(
-                            (d) => d.name === "Features"
-                          );
-                          const items = featuresDetail?.items || [];
-                          return items.length
-                            ? truncate(items.join(", "), 40)
-                            : "—";
-                        })()}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {p.rating != null && p.rating !== ""
-                          ? Number(p.rating).toFixed(1)
-                          : "—"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            p.inStock !== false
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {p.inStock !== false ? "In stock" : "Out of stock"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      </div>
+
+                      {/* Info */}
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className={`font-semibold line-clamp-2 text-sm leading-tight ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                            {p.name}
+                          </h3>
+                          <span className="text-xs font-mono text-gray-400 shrink-0">#{p.id}</span>
+                        </div>
+                        
+                        <p className="text-lg font-bold text-indigo-600">
+                          KSh {Number(p.price ?? 0).toLocaleString()}
+                        </p>
+
+                        <div className="flex flex-wrap gap-1">
+                          {p.category && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
+                              {p.category}
+                            </span>
+                          )}
+                          {p.quantityLabel && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+                              {p.quantityLabel}
+                            </span>
+                          )}
+                        </div>
+
+                        {p.description && (
+                          <p className="text-xs text-gray-500 line-clamp-2">{p.description}</p>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 pt-2 border-t border-gray-200">
                           <button
                             type="button"
                             onClick={() => setEditProduct(p)}
-                            className="rounded-lg p-2 text-gray-600 hover:bg-[#191970]/10 hover:text-[#191970] transition-colors"
-                            title="Edit"
+                            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                           >
-                            <PencilSquareIcon className="h-5 w-5" />
+                            <PencilSquareIcon className="h-4 w-4" />
+                            Edit
                           </button>
                           <button
                             type="button"
-                            onClick={() =>
-                              setProductToDelete({ id: p.id, name: p.name })
-                            }
+                            onClick={() => setProductToDelete({ id: p.id, name: p.name })}
                             disabled={isDeleting}
-                            className="rounded-lg p-2 text-gray-600 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors"
+                            className="inline-flex items-center justify-center rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors"
                             title="Delete"
                           >
-                            <TrashIcon className="h-5 w-5" />
+                            <TrashIcon className="h-4 w-4" />
                           </button>
                         </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
-        )}
+              </div>
+            </div>
 
-        {!isLoading && !isError && products.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-gray-50 border-t border-gray-200">
-            <div className="flex items-center gap-4">
-              <p className="text-sm text-gray-700">
-                Showing <span className="font-medium">{startItem}</span>–
-                <span className="font-medium">{endItem}</span> of{" "}
-                <span className="font-medium">{total}</span> products
-              </p>
-              <label className="flex items-center gap-2 text-sm text-gray-700">
-                Per page
-                <select
-                  value={limit}
-                  onChange={(e) => {
-                    setLimit(Number(e.target.value));
-                    setPage(1);
-                  }}
-                  className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-800 focus:border-[#191970] focus:outline-none focus:ring-1 focus:ring-[#191970]"
+            {/* Pagination */}
+            <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t ${isDarkMode ? "bg-gray-800/50 border-gray-700" : "bg-gray-50 border-gray-100"}`}>
+              <div className="flex items-center gap-4">
+                <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  Showing <span className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{startItem}</span>–
+                  <span className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{endItem}</span> of{" "}
+                  <span className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{total}</span> products
+                </p>
+                <label className={`flex items-center gap-2 text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  Per page
+                  <select
+                    value={limit}
+                    onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+                    className={`rounded-lg border px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 ${isDarkMode ? "border-gray-600 bg-gray-700 text-white" : "border-gray-200 bg-white text-gray-900"}`}
+                  >
+                    {PAGE_SIZES.map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {PAGE_SIZES.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <ChevronLeftIcon className="h-4 w-4" />
+                  Previous
+                </button>
+                <span className="px-3 py-2 text-sm text-gray-600">
+                  Page <span className="font-semibold text-gray-900">{page}</span> of{" "}
+                  <span className="font-semibold text-gray-900">{totalPages}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                  <ChevronRightIcon className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-                className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeftIcon className="h-4 w-4" />
-                Previous
-              </button>
-              <span className="px-3 py-2 text-sm text-gray-700">
-                Page <span className="font-medium">{page}</span> of{" "}
-                <span className="font-medium">{totalPages}</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
-                className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-                <ChevronRightIcon className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+          </>
         )}
       </div>
 

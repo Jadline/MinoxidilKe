@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAdminOrders, updateOrder } from "../api";
 import toast from "react-hot-toast";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
+import { useDarkModeStore } from "../stores/darkModeStore";
 
 function formatDate(d) {
   if (!d) return "—";
@@ -37,6 +38,7 @@ export default function AdminOrders() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const limit = 20;
+  const { isDarkMode } = useDarkModeStore();
 
   const {
     data: ordersData,
@@ -75,81 +77,71 @@ export default function AdminOrders() {
   );
 
   return (
-    <div className="w-full">
+    <div className="max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Manage Orders</h1>
-        <p className="text-white/80 mt-1">View all customer orders.</p>
+        <h1 className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Manage Orders</h1>
+        <p className={`mt-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>View and manage all customer orders.</p>
       </div>
 
-      <div className="rounded-xl border border-[#191970]/30 bg-white shadow-xl overflow-hidden transition-all duration-200 hover:shadow-2xl hover:border-[#191970]/50">
+      <div className={`rounded-2xl shadow-sm border overflow-hidden ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
         {isLoading ? (
-          <div className="p-12 text-center text-gray-500">Loading orders…</div>
+          <div className="p-12 text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4" />
+            <p className={isDarkMode ? "text-gray-400" : "text-gray-500"}>Loading orders…</p>
+          </div>
         ) : isError ? (
-          <div className="p-12 text-center text-red-600">
+          <div className="p-12 text-center text-red-500">
             {error?.response?.data?.message ||
               error?.message ||
               "Failed to load orders."}
           </div>
         ) : orders.length === 0 ? (
           <div className="p-12 text-center">
-            <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-white/50" />
-            <p className="mt-2 text-white">No orders yet.</p>
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${isDarkMode ? "bg-indigo-900/30" : "bg-gradient-to-br from-indigo-100 to-purple-100"}`}>
+              <ClipboardDocumentListIcon className={`w-10 h-10 ${isDarkMode ? "text-indigo-400" : "text-indigo-500"}`} />
+            </div>
+            <h3 className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>No orders yet</h3>
+            <p className={`mt-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>Orders will appear here once customers start purchasing.</p>
           </div>
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-[#191970]">
+              <table className={`min-w-full divide-y ${isDarkMode ? "divide-gray-700" : "divide-gray-200"}`}>
+                <thead className={isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}>
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                      Order #
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                      Customer
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                      Phone
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                      Total
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                      Delivery
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                      Order status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                      Payment
-                    </th>
+                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Order #</th>
+                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Date</th>
+                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Customer</th>
+                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Phone</th>
+                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Total</th>
+                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Delivery</th>
+                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Order Status</th>
+                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Payment</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white/15 divide-y divide-white/20">
+                <tbody className={`divide-y ${isDarkMode ? "divide-gray-700" : "divide-gray-100"}`}>
                   {displayed.map((order) => (
-                    <tr key={order._id} className="hover:bg-[#191970]/5 transition-colors duration-150">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                    <tr key={order._id} className={`transition-colors ${isDarkMode ? "hover:bg-gray-700/50" : "hover:bg-gray-50"}`}>
+                      <td className={`px-4 py-3 text-sm font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>
                         {order.orderNumber || "—"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className={`px-4 py-3 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
                         {formatDate(order.date)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className={`px-4 py-3 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
                         {[order.firstName, order.lastName]
                           .filter(Boolean)
                           .join(" ") ||
                           order.email ||
                           "—"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className={`px-4 py-3 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
                         {order.phoneNumber || order.shippingPhone || "—"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                      <td className={`px-4 py-3 text-sm font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>
                         {formatCurrency(order.OrderTotal ?? order.Total)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className={`px-4 py-3 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
                         {order.deliveryType === "pickup"
                           ? "Pickup"
                           : "Shipping"}
@@ -215,8 +207,8 @@ export default function AdminOrders() {
               </table>
             </div>
             {totalPages > 1 && (
-              <div className="flex items-center justify-between gap-4 px-4 py-3 bg-gray-50 border-t border-gray-200">
-                <p className="text-sm text-gray-700">
+              <div className={`flex items-center justify-between gap-4 px-4 py-3 border-t ${isDarkMode ? "bg-gray-700/30 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+                <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                   Page <span className="font-medium">{page}</span> of{" "}
                   <span className="font-medium">{totalPages}</span> (
                   {orders.length} orders)
@@ -226,7 +218,11 @@ export default function AdminOrders() {
                     type="button"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 disabled:opacity-50 hover:bg-gray-50"
+                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium disabled:opacity-50 transition-colors ${
+                      isDarkMode 
+                        ? "border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" 
+                        : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
                   >
                     Previous
                   </button>
@@ -234,7 +230,11 @@ export default function AdminOrders() {
                     type="button"
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 disabled:opacity-50 hover:bg-gray-50"
+                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium disabled:opacity-50 transition-colors ${
+                      isDarkMode 
+                        ? "border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" 
+                        : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
                   >
                     Next
                   </button>

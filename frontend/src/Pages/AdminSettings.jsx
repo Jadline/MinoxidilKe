@@ -3,10 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPublicSettings, updatePromoBanner } from "../api";
 import toast from "react-hot-toast";
 import { useCurrencyStore } from "../stores/currencyStore";
+import { useDarkModeStore } from "../stores/darkModeStore";
 
 export default function AdminSettings() {
   const queryClient = useQueryClient();
   const formatPrice = useCurrencyStore((state) => state.formatPrice);
+  const { isDarkMode } = useDarkModeStore();
 
   // Fetch current settings
   const { data: settingsData, isLoading } = useQuery({
@@ -68,17 +70,17 @@ export default function AdminSettings() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Site Settings</h1>
-        <p className="mt-1 text-sm text-gray-600">
+        <h1 className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Site Settings</h1>
+        <p className={`mt-1 text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
           Manage your website settings and configurations
         </p>
       </div>
 
       {/* Promo Banner Settings */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h2 className="text-lg font-semibold text-gray-900">Promo Banner</h2>
-          <p className="text-sm text-gray-500">
+      <div className={`shadow rounded-lg overflow-hidden ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
+        <div className={`px-6 py-4 border-b ${isDarkMode ? "border-gray-700 bg-gray-700/50" : "border-gray-200 bg-gray-50"}`}>
+          <h2 className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Promo Banner</h2>
+          <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
             Configure the promotional banner displayed at the top of your website
           </p>
         </div>
@@ -86,7 +88,7 @@ export default function AdminSettings() {
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Preview */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
               Preview
             </label>
             <div className="bg-gradient-to-r from-[#000080] via-[#0066cc] to-[#39a9db] p-3 rounded-lg">

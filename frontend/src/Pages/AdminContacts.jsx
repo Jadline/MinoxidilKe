@@ -7,19 +7,41 @@ import {
   TrashIcon,
   CheckCircleIcon,
   ArchiveBoxIcon,
-  EyeIcon
+  EyeIcon,
+  ChatBubbleLeftRightIcon,
+  XMarkIcon,
+  InboxIcon,
+  PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
+import { useDarkModeStore } from "../stores/darkModeStore";
 
-const statusColors = {
-  new: "bg-blue-100 text-blue-800",
-  read: "bg-yellow-100 text-yellow-800",
-  replied: "bg-green-100 text-green-800",
-  archived: "bg-gray-100 text-gray-800",
+const statusConfig = {
+  new: { 
+    color: "bg-blue-100 text-blue-700 border-blue-200",
+    dotColor: "bg-blue-500",
+    label: "New"
+  },
+  read: { 
+    color: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    dotColor: "bg-yellow-500",
+    label: "Read"
+  },
+  replied: { 
+    color: "bg-green-100 text-green-700 border-green-200",
+    dotColor: "bg-green-500",
+    label: "Replied"
+  },
+  archived: { 
+    color: "bg-gray-100 text-gray-600 border-gray-200",
+    dotColor: "bg-gray-400",
+    label: "Archived"
+  },
 };
 
 export default function AdminContacts() {
   const queryClient = useQueryClient();
+  const { isDarkMode } = useDarkModeStore();
   const [filter, setFilter] = useState("");
   const [selectedContact, setSelectedContact] = useState(null);
 
@@ -33,6 +55,9 @@ export default function AdminContacts() {
     onSuccess: () => {
       queryClient.invalidateQueries(["admin-contacts"]);
       toast.success("Status updated");
+      if (selectedContact) {
+        setSelectedContact(prev => ({ ...prev, status: updateStatusMutation.variables?.status }));
+      }
     },
     onError: () => toast.error("Failed to update status"),
   });
@@ -59,213 +84,342 @@ export default function AdminContacts() {
     });
   };
 
+  const formatShortDate = (date) => {
+    const d = new Date(date);
+    const now = new Date();
+    const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    } else if (diffDays === 1) {
+      return "Yesterday";
+    } else if (diffDays < 7) {
+      return d.toLocaleDateString("en-US", { weekday: "short" });
+    } else {
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+  };
+
+  const openGmailReply = (contact) => {
+    const subject = encodeURIComponent(`Re: Your inquiry about ${contact.product} - MinoxidilKe`);
+    const body = encodeURIComponent(
+      `Hi ${contact.firstName},\n\nThank you for reaching out to us about ${contact.product}.\n\n[Your reply here]\n\nBest regards,\nMinoxidilKe Team`
+    );
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${contact.email}&su=${subject}&body=${body}`;
+    window.open(gmailUrl, "_blank");
+    
+    // Mark as replied after opening Gmail
+    if (contact.status !== "replied") {
+      updateStatusMutation.mutate({ id: contact._id, status: "replied" });
+    }
+  };
+
+  const stats = {
+    total: contacts.length,
+    new: contacts.filter(c => c.status === "new").length,
+    read: contacts.filter(c => c.status === "read").length,
+    replied: contacts.filter(c => c.status === "replied").length,
+  };
+
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Contact Submissions</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            View and manage customer inquiries from the contact form.
-          </p>
-        </div>
-      </div>
-
-      {/* Filter */}
-      <div className="mt-4 flex gap-2">
-        {["", "new", "read", "replied", "archived"].map((status) => (
-          <button
-            key={status}
-            onClick={() => setFilter(status)}
-            className={`px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
-              filter === status
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            {status === "" ? "All" : status.charAt(0).toUpperCase() + status.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      {isLoading ? (
-        <div className="mt-8 text-center text-gray-500">Loading...</div>
-      ) : error ? (
-        <div className="mt-8 text-center text-red-500">Failed to load contacts</div>
-      ) : contacts.length === 0 ? (
-        <div className="mt-8 text-center text-gray-500">No contact submissions yet.</div>
-      ) : (
-        <div className="mt-8 flow-root">
-          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-300">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">
-                        Customer
-                      </th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                        Product Interest
-                      </th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                        Status
-                      </th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                        Date
-                      </th>
-                      <th className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                        <span className="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {contacts.map((contact) => (
-                      <tr
-                        key={contact._id}
-                        className={`cursor-pointer hover:bg-gray-50 ${
-                          contact.status === "new" ? "bg-blue-50/30" : ""
-                        }`}
-                        onClick={() => setSelectedContact(contact)}
-                      >
-                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm">
-                          <div className="font-medium text-gray-900">
-                            {contact.firstName} {contact.lastName}
-                          </div>
-                          <div className="text-gray-500">{contact.email}</div>
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {contact.product}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm">
-                          <span
-                            className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                              statusColors[contact.status]
-                            }`}
-                          >
-                            {contact.status}
-                          </span>
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {formatDate(contact.createdAt)}
-                        </td>
-                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedContact(contact);
-                            }}
-                            className="text-indigo-600 hover:text-indigo-900"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+    <div className="max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className={`text-2xl font-bold flex items-center gap-3 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+              <div className={`p-2 rounded-xl ${isDarkMode ? "bg-indigo-600/20" : "bg-gradient-to-br from-indigo-100 to-purple-100"}`}>
+                <ChatBubbleLeftRightIcon className={`h-6 w-6 ${isDarkMode ? "text-indigo-400" : "text-indigo-600"}`} />
               </div>
+              Contact Submissions
+            </h1>
+            <p className={`mt-1 text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+              View and respond to customer inquiries
+            </p>
+          </div>
+          
+          {/* Stats */}
+          <div className="flex gap-3">
+            <div className={`rounded-xl px-4 py-2 border shadow-sm ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+              <div className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{stats.total}</div>
+              <div className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>Total</div>
+            </div>
+            <div className={`rounded-xl px-4 py-2 border ${isDarkMode ? "bg-blue-900/30 border-blue-700" : "bg-blue-50 border-blue-200"}`}>
+              <div className="text-2xl font-bold text-blue-500">{stats.new}</div>
+              <div className="text-xs text-blue-500">New</div>
+            </div>
+            <div className={`rounded-xl px-4 py-2 border ${isDarkMode ? "bg-green-900/30 border-green-700" : "bg-green-50 border-green-200"}`}>
+              <div className="text-2xl font-bold text-green-500">{stats.replied}</div>
+              <div className="text-xs text-green-500">Replied</div>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Filter Pills */}
+        <div className="mt-6 flex flex-wrap gap-2">
+          {[
+            { value: "", label: "All", count: stats.total },
+            { value: "new", label: "New", count: stats.new },
+            { value: "read", label: "Read", count: stats.read },
+            { value: "replied", label: "Replied", count: stats.replied },
+            { value: "archived", label: "Archived", count: null },
+          ].map((item) => (
+            <button
+              key={item.value}
+              onClick={() => setFilter(item.value)}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                filter === item.value
+                  ? "bg-indigo-600 text-white shadow-lg"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+              }`}
+            >
+              {item.label}
+              {item.count !== null && (
+                <span className={`px-2 py-0.5 rounded-full text-xs ${
+                  filter === item.value
+                    ? "bg-white/20 text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}>
+                  {item.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-600 border-t-transparent"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <div className="text-red-600 mb-2">Failed to load contacts</div>
+            <button 
+              onClick={() => queryClient.invalidateQueries(["admin-contacts"])}
+              className="text-sm text-indigo-600 hover:text-indigo-700"
+            >
+              Try again
+            </button>
+          </div>
+        ) : contacts.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <InboxIcon className="h-10 w-10 text-indigo-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No messages yet</h3>
+            <p className="text-gray-500">
+              {filter ? `No ${filter} messages found` : "Contact submissions will appear here"}
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {contacts.map((contact) => (
+              <div
+                key={contact._id}
+                onClick={() => {
+                  setSelectedContact(contact);
+                  if (contact.status === "new") {
+                    updateStatusMutation.mutate({ id: contact._id, status: "read" });
+                  }
+                }}
+                className={`transition-all cursor-pointer hover:bg-gray-50 ${
+                  contact.status === "new" ? "bg-blue-50/50" : ""
+                }`}
+              >
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4 flex-1 min-w-0">
+                      {/* Avatar */}
+                      <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold ${
+                        contact.status === "new" 
+                          ? "bg-gradient-to-br from-blue-500 to-indigo-500 text-white" 
+                          : "bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600"
+                      }`}>
+                        {contact.firstName.charAt(0)}{contact.lastName.charAt(0)}
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-1">
+                          <h3 className="font-semibold text-gray-900 truncate">
+                            {contact.firstName} {contact.lastName}
+                          </h3>
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${statusConfig[contact.status].color}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${statusConfig[contact.status].dotColor}`}></span>
+                            {statusConfig[contact.status].label}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500 truncate">{contact.email}</p>
+                        <div className="mt-2 flex items-center gap-4 text-sm">
+                          <span className="text-indigo-600 font-medium">{contact.product}</span>
+                          <span className="text-gray-400">•</span>
+                          <span className="text-gray-500">{formatShortDate(contact.createdAt)}</span>
+                        </div>
+                        <p className="mt-2 text-sm text-gray-600 line-clamp-2">{contact.message}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Quick Actions */}
+                    <div className="flex-shrink-0 flex items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openGmailReply(contact);
+                        }}
+                        className="p-2 rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition-colors"
+                        title="Reply via Gmail"
+                      >
+                        <PaperAirplaneIcon className="h-5 w-5" />
+                      </button>
+                      <a
+                        href={`https://wa.me/${contact.phoneNumber.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors"
+                        title="Chat on WhatsApp"
+                      >
+                        <PhoneIcon className="h-5 w-5" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Contact Detail Modal */}
       {selectedContact && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-start justify-between">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-semibold ${
+                  selectedContact.status === "new" 
+                    ? "bg-gradient-to-br from-blue-500 to-indigo-500 text-white" 
+                    : "bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600"
+                }`}>
+                  {selectedContact.firstName.charAt(0)}{selectedContact.lastName.charAt(0)}
+                </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-xl font-bold text-gray-900">
                     {selectedContact.firstName} {selectedContact.lastName}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {formatDate(selectedContact.createdAt)}
-                  </p>
+                  <p className="text-sm text-gray-500">{formatDate(selectedContact.createdAt)}</p>
                 </div>
-                <span
-                  className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                    statusColors[selectedContact.status]
-                  }`}
-                >
-                  {selectedContact.status}
+              </div>
+              <button
+                onClick={() => setSelectedContact(null)}
+                className="p-2 rounded-lg hover:bg-white/70 text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              {/* Status Badge */}
+              <div className="mb-6">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border ${statusConfig[selectedContact.status].color}`}>
+                  <span className={`w-2 h-2 rounded-full ${statusConfig[selectedContact.status].dotColor}`}></span>
+                  {statusConfig[selectedContact.status].label}
                 </span>
               </div>
 
-              <div className="mt-4 space-y-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <EnvelopeIcon className="h-4 w-4 text-gray-400" />
-                  <a
-                    href={`mailto:${selectedContact.email}`}
-                    className="text-indigo-600 hover:underline"
-                  >
-                    {selectedContact.email}
-                  </a>
+              {/* Contact Info */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <a
+                  href={`mailto:${selectedContact.email}`}
+                  className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group"
+                >
+                  <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200">
+                    <EnvelopeIcon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wider">Email</div>
+                    <div className="text-gray-900 font-medium">{selectedContact.email}</div>
+                  </div>
+                </a>
+                <a
+                  href={`tel:${selectedContact.phoneNumber}`}
+                  className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group"
+                >
+                  <div className="p-2 rounded-lg bg-green-100 text-green-600 group-hover:bg-green-200">
+                    <PhoneIcon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wider">Phone</div>
+                    <div className="text-gray-900 font-medium">{selectedContact.phoneNumber}</div>
+                  </div>
+                </a>
+              </div>
+
+              {/* Product Interest */}
+              <div className="mb-6">
+                <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Product Interest</div>
+                <div className="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 font-medium">
+                  {selectedContact.product}
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <PhoneIcon className="h-4 w-4 text-gray-400" />
-                  <a
-                    href={`tel:${selectedContact.phoneNumber}`}
-                    className="text-indigo-600 hover:underline"
-                  >
-                    {selectedContact.phoneNumber}
-                  </a>
+              </div>
+
+              {/* Message */}
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Message</div>
+                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                    {selectedContact.message}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <div className="mt-4">
-                <p className="text-sm font-medium text-gray-700">Product Interest:</p>
-                <p className="text-sm text-gray-900 mt-1">{selectedContact.product}</p>
-              </div>
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200 bg-gray-50">
+              <div className="flex flex-wrap gap-3">
+                {/* Reply via Gmail - Primary Action */}
+                <button
+                  onClick={() => openGmailReply(selectedContact)}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+                >
+                  <PaperAirplaneIcon className="h-5 w-5" />
+                  Reply via Gmail
+                </button>
 
-              <div className="mt-4">
-                <p className="text-sm font-medium text-gray-700">Message:</p>
-                <p className="text-sm text-gray-900 mt-1 whitespace-pre-wrap">
-                  {selectedContact.message}
-                </p>
-              </div>
+                {/* WhatsApp */}
+                <a
+                  href={`https://wa.me/${selectedContact.phoneNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${selectedContact.firstName}, thank you for your inquiry about ${selectedContact.product}. `)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-green-100 text-green-700 font-medium hover:bg-green-200 transition-colors border border-green-200"
+                >
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                  WhatsApp
+                </a>
 
-              {/* Status Actions */}
-              <div className="mt-6 flex flex-wrap gap-2">
-                {selectedContact.status === "new" && (
-                  <button
-                    onClick={() =>
-                      updateStatusMutation.mutate({
-                        id: selectedContact._id,
-                        status: "read",
-                      })
-                    }
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-yellow-700 bg-yellow-100 rounded-md hover:bg-yellow-200"
-                  >
-                    <EyeIcon className="h-4 w-4" />
-                    Mark as Read
-                  </button>
-                )}
+                {/* Status Actions */}
                 {selectedContact.status !== "replied" && (
                   <button
-                    onClick={() =>
-                      updateStatusMutation.mutate({
-                        id: selectedContact._id,
-                        status: "replied",
-                      })
-                    }
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200"
+                    onClick={() => updateStatusMutation.mutate({ id: selectedContact._id, status: "replied" })}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-green-600 font-medium hover:bg-green-50 transition-colors border border-gray-200"
                   >
-                    <CheckCircleIcon className="h-4 w-4" />
-                    Mark as Replied
+                    <CheckCircleIcon className="h-5 w-5" />
+                    Mark Replied
                   </button>
                 )}
                 {selectedContact.status !== "archived" && (
                   <button
-                    onClick={() =>
-                      updateStatusMutation.mutate({
-                        id: selectedContact._id,
-                        status: "archived",
-                      })
-                    }
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                    onClick={() => updateStatusMutation.mutate({ id: selectedContact._id, status: "archived" })}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-gray-600 font-medium hover:bg-gray-100 transition-colors border border-gray-200"
                   >
-                    <ArchiveBoxIcon className="h-4 w-4" />
+                    <ArchiveBoxIcon className="h-5 w-5" />
                     Archive
                   </button>
                 )}
@@ -275,19 +429,10 @@ export default function AdminContacts() {
                       deleteMutation.mutate(selectedContact._id);
                     }
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-100 rounded-md hover:bg-red-200"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-50 text-red-600 font-medium hover:bg-red-100 transition-colors border border-red-200"
                 >
-                  <TrashIcon className="h-4 w-4" />
+                  <TrashIcon className="h-5 w-5" />
                   Delete
-                </button>
-              </div>
-
-              <div className="mt-6 flex justify-end">
-                <button
-                  onClick={() => setSelectedContact(null)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                >
-                  Close
                 </button>
               </div>
             </div>

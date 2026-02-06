@@ -1,13 +1,23 @@
 import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   TrashIcon,
   TruckIcon,
   BuildingOfficeIcon,
-  QuestionMarkCircleIcon,
+  ShieldCheckIcon,
+  CreditCardIcon,
+  CheckCircleIcon,
+  MapPinIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  UserIcon,
+  HomeIcon,
+  ArrowLeftIcon,
+  LockClosedIcon,
 } from "@heroicons/react/24/outline";
+import { CheckIcon } from "@heroicons/react/20/solid";
 import { useCartStore } from "../stores/cartStore";
 import { useUserStore } from "../stores/userStore";
 import Price, { usePrice } from "./Price";
@@ -40,215 +50,48 @@ function productImageSrc(imageSrc) {
 }
 
 const paymentMethods = [
-  { id: "mpesa", title: "M-Pesa" },
-  { id: "pay-on-delivery", title: "Pay on Delivery" },
+  { id: "mpesa", title: "M-Pesa", icon: "📱", description: "Pay via Safaricom M-Pesa" },
+  { id: "pay-on-delivery", title: "Pay on Delivery", icon: "💵", description: "Cash on delivery" },
 ];
 
-// Countries that have defined shipping methods in the backend. Others see "Enter your shipping address..." message.
 const SHIPPING_COUNTRIES = ["Kenya", "Uganda", "Tanzania"];
 
-// Kenya first (primary market), then alphabetical
 const COUNTRIES = [
   "Kenya",
-  "Afghanistan",
-  "Albania",
-  "Algeria",
-  "Andorra",
-  "Angola",
-  "Antigua and Barbuda",
-  "Argentina",
-  "Armenia",
-  "Australia",
-  "Austria",
-  "Azerbaijan",
-  "Bahamas",
-  "Bahrain",
-  "Bangladesh",
-  "Barbados",
-  "Belarus",
-  "Belgium",
-  "Belize",
-  "Benin",
-  "Bhutan",
-  "Bolivia",
-  "Bosnia and Herzegovina",
-  "Botswana",
-  "Brazil",
-  "Brunei",
-  "Bulgaria",
-  "Burkina Faso",
-  "Burundi",
-  "Cambodia",
-  "Cameroon",
-  "Canada",
-  "Cape Verde",
-  "Central African Republic",
-  "Chad",
-  "Chile",
-  "China",
-  "Colombia",
-  "Comoros",
-  "Congo",
-  "Costa Rica",
-  "Croatia",
-  "Cuba",
-  "Cyprus",
-  "Czech Republic",
-  "Democratic Republic of the Congo",
-  "Denmark",
-  "Djibouti",
-  "Dominica",
-  "Dominican Republic",
-  "Ecuador",
-  "Egypt",
-  "El Salvador",
-  "Equatorial Guinea",
-  "Eritrea",
-  "Estonia",
-  "Eswatini",
-  "Ethiopia",
-  "Fiji",
-  "Finland",
-  "France",
-  "Gabon",
-  "Gambia",
-  "Georgia",
-  "Germany",
-  "Ghana",
-  "Greece",
-  "Grenada",
-  "Guatemala",
-  "Guinea",
-  "Guinea-Bissau",
-  "Guyana",
-  "Haiti",
-  "Honduras",
-  "Hungary",
-  "Iceland",
-  "India",
-  "Indonesia",
-  "Iran",
-  "Iraq",
-  "Ireland",
-  "Israel",
-  "Italy",
-  "Ivory Coast",
-  "Jamaica",
-  "Japan",
-  "Jordan",
-  "Kazakhstan",
-  "Kiribati",
-  "Kosovo",
-  "Kuwait",
-  "Kyrgyzstan",
-  "Laos",
-  "Latvia",
-  "Lebanon",
-  "Lesotho",
-  "Liberia",
-  "Libya",
-  "Liechtenstein",
-  "Lithuania",
-  "Luxembourg",
-  "Madagascar",
-  "Malawi",
-  "Malaysia",
-  "Maldives",
-  "Mali",
-  "Malta",
-  "Marshall Islands",
-  "Mauritania",
-  "Mauritius",
-  "Mexico",
-  "Micronesia",
-  "Moldova",
-  "Monaco",
-  "Mongolia",
-  "Montenegro",
-  "Morocco",
-  "Mozambique",
-  "Myanmar",
-  "Namibia",
-  "Nauru",
-  "Nepal",
-  "Netherlands",
-  "New Zealand",
-  "Nicaragua",
-  "Niger",
-  "Nigeria",
-  "North Korea",
-  "North Macedonia",
-  "Norway",
-  "Oman",
-  "Pakistan",
-  "Palau",
-  "Palestine",
-  "Panama",
-  "Papua New Guinea",
-  "Paraguay",
-  "Peru",
-  "Philippines",
-  "Poland",
-  "Portugal",
-  "Qatar",
-  "Romania",
-  "Russia",
-  "Rwanda",
-  "Saint Kitts and Nevis",
-  "Saint Lucia",
-  "Saint Vincent and the Grenadines",
-  "Samoa",
-  "San Marino",
-  "Sao Tome and Principe",
-  "Saudi Arabia",
-  "Senegal",
-  "Serbia",
-  "Seychelles",
-  "Sierra Leone",
-  "Singapore",
-  "Slovakia",
-  "Slovenia",
-  "Solomon Islands",
-  "Somalia",
-  "South Africa",
-  "South Korea",
-  "South Sudan",
-  "Spain",
-  "Sri Lanka",
-  "Sudan",
-  "Suriname",
-  "Sweden",
-  "Switzerland",
-  "Syria",
-  "Taiwan",
-  "Tajikistan",
-  "Tanzania",
-  "Thailand",
-  "Timor-Leste",
-  "Togo",
-  "Tonga",
-  "Trinidad and Tobago",
-  "Tunisia",
-  "Turkey",
-  "Turkmenistan",
-  "Tuvalu",
-  "Uganda",
-  "Ukraine",
-  "United Arab Emirates",
-  "United Kingdom",
-  "United States",
-  "Uruguay",
-  "Uzbekistan",
-  "Vanuatu",
-  "Vatican City",
-  "Venezuela",
-  "Vietnam",
-  "Yemen",
-  "Zambia",
-  "Zimbabwe",
+  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda",
+  "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain",
+  "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
+  "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria",
+  "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde",
+  "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros",
+  "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic",
+  "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica",
+  "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea",
+  "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France",
+  "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada",
+  "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary",
+  "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy",
+  "Ivory Coast", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kiribati", "Kosovo",
+  "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia",
+  "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi",
+  "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania",
+  "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro",
+  "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands",
+  "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia",
+  "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea",
+  "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania",
+  "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia",
+  "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe",
+  "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore",
+  "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea",
+  "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland",
+  "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo",
+  "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu",
+  "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States",
+  "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam",
+  "Yemen", "Zambia", "Zimbabwe",
 ];
 
-// Country dial codes: Kenya first, then common/regional. Format: { dial: "254", label: "Kenya", flag: "🇰🇪" }
 const COUNTRY_DIAL_CODES = [
   { dial: "254", label: "Kenya", flag: "🇰🇪" },
   { dial: "256", label: "Uganda", flag: "🇺🇬" },
@@ -260,7 +103,6 @@ const COUNTRY_DIAL_CODES = [
   { dial: "252", label: "Somalia", flag: "🇸🇴" },
   { dial: "249", label: "Sudan", flag: "🇸🇩" },
   { dial: "211", label: "South Sudan", flag: "🇸🇸" },
-  { dial: "255", label: "Zanzibar", flag: "🇹🇿" },
   { dial: "27", label: "South Africa", flag: "🇿🇦" },
   { dial: "234", label: "Nigeria", flag: "🇳🇬" },
   { dial: "233", label: "Ghana", flag: "🇬🇭" },
@@ -271,27 +113,37 @@ const COUNTRY_DIAL_CODES = [
   { dial: "971", label: "UAE", flag: "🇦🇪" },
   { dial: "86", label: "China", flag: "🇨🇳" },
   { dial: "81", label: "Japan", flag: "🇯🇵" },
-  { dial: "886", label: "Taiwan", flag: "🇹🇼" },
   { dial: "49", label: "Germany", flag: "🇩🇪" },
   { dial: "33", label: "France", flag: "🇫🇷" },
   { dial: "61", label: "Australia", flag: "🇦🇺" },
   { dial: "55", label: "Brazil", flag: "🇧🇷" },
   { dial: "20", label: "Egypt", flag: "🇪🇬" },
   { dial: "212", label: "Morocco", flag: "🇲🇦" },
-  { dial: "213", label: "Algeria", flag: "🇩🇿" },
-  { dial: "216", label: "Tunisia", flag: "🇹🇳" },
   { dial: "260", label: "Zambia", flag: "🇿🇲" },
   { dial: "263", label: "Zimbabwe", flag: "🇿🇼" },
-  { dial: "258", label: "Mozambique", flag: "🇲🇿" },
   { dial: "265", label: "Malawi", flag: "🇲🇼" },
-  { dial: "267", label: "Botswana", flag: "🇧🇼" },
-  { dial: "31", label: "Netherlands", flag: "🇳🇱" },
-  { dial: "32", label: "Belgium", flag: "🇧🇪" },
-  { dial: "39", label: "Italy", flag: "🇮🇹" },
-  { dial: "34", label: "Spain", flag: "🇪🇸" },
-  { dial: "353", label: "Ireland", flag: "🇮🇪" },
-  { dial: "254", label: "Other", flag: "🌐" },
 ];
+
+// Input component for consistent styling
+function FormInput({ label, error, icon: Icon, ...props }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+      <div className="relative">
+        {Icon && (
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Icon className="h-5 w-5 text-gray-400" />
+          </div>
+        )}
+        <input
+          {...props}
+          className={`w-full rounded-xl border ${error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-500'} ${Icon ? 'pl-10' : 'pl-4'} pr-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:ring-2 focus:ring-opacity-20 disabled:bg-gray-50 disabled:text-gray-500`}
+        />
+      </div>
+      {error && <p className="mt-1.5 text-sm text-red-600">{error}</p>}
+    </div>
+  );
+}
 
 export default function OrderSummary() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -305,9 +157,9 @@ export default function OrderSummary() {
   const { cart, setCart, subtotal } = useCartStore();
   const { currentUser } = useUserStore();
   const Total = subtotal();
-  const shippingCost =
-    deliveryType === "pickup" ? 0 : selectedShippingMethod?.costKes ?? 0;
+  const shippingCost = deliveryType === "pickup" ? 0 : selectedShippingMethod?.costKes ?? 0;
   const OrderTotal = Total + shippingCost;
+  const itemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -339,17 +191,15 @@ export default function OrderSummary() {
   const country = watch("country");
   const city = watch("city");
 
-  // Fetch saved addresses for logged-in users
   const { data: savedAddresses } = useQuery({
     queryKey: ["user-addresses"],
     queryFn: () => getAddresses().then((r) => r.data?.data?.addresses ?? []),
     enabled: !!currentUser,
   });
 
-  // Auto-fill form with saved address when user is logged in
   useEffect(() => {
     if (currentUser && savedAddresses?.length > 0) {
-      const addr = savedAddresses[0]; // Use first/default address
+      const addr = savedAddresses[0];
       reset({
         paymentType: "mpesa",
         country: addr.country || "Kenya",
@@ -364,47 +214,31 @@ export default function OrderSummary() {
         email: currentUser.email || "",
         deliveryInstructions: "",
       });
-      // Set phone country code if available
       if (addr.phoneCountryCode) {
         setPhoneCountryCode(addr.phoneCountryCode);
       }
     } else if (currentUser) {
-      // At least pre-fill email from user account
       setValue("email", currentUser.email || "");
     }
   }, [currentUser, savedAddresses, reset, setValue]);
 
-  // Fetch shipping methods only for Kenya, Uganda, Tanzania. Other countries show the "Enter your shipping address..." message.
-  const hasShippingMethods =
-    country && SHIPPING_COUNTRIES.includes(country.trim());
+  const hasShippingMethods = country && SHIPPING_COUNTRIES.includes(country.trim());
   const { data: shippingData, isLoading: shippingLoading } = useQuery({
     queryKey: ["shipping-methods", country, city],
     queryFn: () =>
-      getShippingMethods({
-        country: country || "Kenya",
-        city: city || "",
-      }).then((r) => r.data?.data?.shippingMethods ?? []),
+      getShippingMethods({ country: country || "Kenya", city: city || "" })
+        .then((r) => r.data?.data?.shippingMethods ?? []),
     enabled: deliveryType === "ship" && !!hasShippingMethods,
   });
   const shippingMethods = Array.isArray(shippingData) ? shippingData : [];
 
-  // Fetch pickup locations when Pick up – business is in Kenya, so only Kenya locations
-  const {
-    data: pickupData,
-    isLoading: pickupLoading,
-    isError: pickupError,
-    error: pickupErrorDetail,
-  } = useQuery({
+  const { data: pickupData, isLoading: pickupLoading, isError: pickupError } = useQuery({
     queryKey: ["pickup-locations", "Kenya"],
-    queryFn: () =>
-      getPickupLocations({ country: "Kenya" }).then(
-        (r) => r.data?.data?.pickupLocations ?? []
-      ),
+    queryFn: () => getPickupLocations({ country: "Kenya" }).then((r) => r.data?.data?.pickupLocations ?? []),
     enabled: deliveryType === "pickup",
   });
   const pickupLocations = Array.isArray(pickupData) ? pickupData : [];
 
-  // Reset selection when switching delivery type or when list changes
   useEffect(() => {
     setSelectedShippingMethod(null);
     setSelectedPickupLocation(null);
@@ -413,12 +247,7 @@ export default function OrderSummary() {
   const saveOrderMutation = useMutation({
     mutationFn: (data) => createOrder(data),
     onSuccess: async (response, variables) => {
-      if (
-        saveAddressForNextTime &&
-        deliveryType === "ship" &&
-        variables.streetAddress &&
-        variables.city
-      ) {
+      if (saveAddressForNextTime && deliveryType === "ship" && variables.streetAddress && variables.city) {
         try {
           await createAddress({
             country: variables.country,
@@ -432,9 +261,7 @@ export default function OrderSummary() {
             phone: variables.phone || variables.phoneNumber,
             isDefault: true,
           });
-        } catch (e) {
-          // non-blocking
-        }
+        } catch (e) { /* non-blocking */ }
       }
       toast.success("Order created successfully!");
       isProcessingRef.current = false;
@@ -442,9 +269,7 @@ export default function OrderSummary() {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       setCart([]);
       const createdOrder = response?.data?.data?.order;
-      navigate("/order-confirmation", {
-        state: createdOrder ? { order: createdOrder } : undefined,
-      });
+      navigate("/order-confirmation", { state: createdOrder ? { order: createdOrder } : undefined });
     },
     onError: (err) => {
       isProcessingRef.current = false;
@@ -459,10 +284,7 @@ export default function OrderSummary() {
     mutationFn: (data) =>
       fetch(`${import.meta.env.VITE_BASE_URL}/api/v1/mpesa-notify`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("userToken")}` },
         body: JSON.stringify(data),
       }).then((r) => r.json()),
     onSuccess: () => toast.success("Payment notification received!"),
@@ -512,29 +334,18 @@ export default function OrderSummary() {
 
     const toNational = (val, dial) => {
       const digits = (val || "").replace(/\D/g, "");
-      return digits.startsWith(dial)
-        ? digits.slice(dial.length)
-        : digits.replace(/^0+/, "");
+      return digits.startsWith(dial) ? digits.slice(dial.length) : digits.replace(/^0+/, "");
     };
-    const fullPhone = (
-      phoneCountryCode + toNational(data.phone, phoneCountryCode)
-    ).trim();
+    const fullPhone = (phoneCountryCode + toNational(data.phone, phoneCountryCode)).trim();
 
     const payload = {
       orderItems: cart.map((item) => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        leadTime: item.leadTime,
-        price: item.price,
-        quantity: item.quantity,
-        imageSrc: item.imageSrc,
-        imageAlt: item.imageAlt,
+        id: item.id, name: item.name, description: item.description, leadTime: item.leadTime,
+        price: item.price, quantity: item.quantity, imageSrc: item.imageSrc, imageAlt: item.imageAlt,
       })),
       deliveryType,
       shippingMethodName: selectedShippingMethod?.name ?? null,
-      shippingCost:
-        deliveryType === "ship" ? selectedShippingMethod?.costKes : 0,
+      shippingCost: deliveryType === "ship" ? selectedShippingMethod?.costKes : 0,
       pickupLocationName: selectedPickupLocation?.name ?? null,
       pickupLocationId: selectedPickupLocation?._id ?? null,
       country: data.country || "",
@@ -546,7 +357,7 @@ export default function OrderSummary() {
       city: data.city || "",
       postalCode: data.postalCode || null,
       phone: fullPhone,
-      phoneNumber: fullPhone, // Use same phone for both
+      phoneNumber: fullPhone,
       email: data.email || "",
       deliveryInstructions: data.deliveryInstructions || null,
       paymentType: data.paymentType,
@@ -556,663 +367,654 @@ export default function OrderSummary() {
     saveOrderMutation.mutate(payload);
   }
 
-  return (
-    <div className="bg-gradient-to-b from-indigo-50/50 to-gray-50">
-      <div className="mx-auto max-w-7xl px-4 pt-16 pb-24 sm:px-6 lg:px-8">
-        <h2 className="sr-only">Checkout</h2>
+  // Calculate progress steps
+  const steps = [
+    { name: 'Cart', completed: true },
+    { name: 'Shipping', completed: deliveryType === 'ship' ? !!selectedShippingMethod : !!selectedPickupLocation },
+    { name: 'Payment', completed: false },
+  ];
 
-        <form
-          onSubmit={handleSubmit(onhandleSubmit)}
-          className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16"
-        >
-          <div>
-            {/* Delivery: Ship vs Pick up */}
-            <div className="mb-10">
-              <h2 className="text-lg font-semibold text-indigo-800">
-                Delivery
-              </h2>
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <label
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition-colors ${
-                    deliveryType === "ship"
-                      ? "border-indigo-600 bg-indigo-50/80 shadow-sm"
-                      : "border-gray-200 bg-white hover:border-indigo-200 hover:bg-indigo-50/40"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="deliveryType"
-                    checked={deliveryType === "ship"}
-                    onChange={() => setDeliveryType("ship")}
-                    className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <TruckIcon
-                    className={`h-6 w-6 ${
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-4">
+            <Link to="/cart" className="inline-flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors">
+              <ArrowLeftIcon className="w-5 h-5" />
+              <span className="font-medium">Back to Cart</span>
+            </Link>
+            <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <LockClosedIcon className="w-4 h-4" />
+              <span>Secure Checkout</span>
+            </div>
+          </div>
+          
+          {/* Progress Steps */}
+          <div className="pb-4">
+            <div className="flex items-center justify-center gap-4">
+              {steps.map((step, idx) => (
+                <div key={step.name} className="flex items-center">
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors ${
+                    step.completed 
+                      ? 'bg-indigo-600 border-indigo-600' 
+                      : 'bg-white border-gray-300'
+                  }`}>
+                    {step.completed ? (
+                      <CheckIcon className="w-5 h-5 text-white" />
+                    ) : (
+                      <span className="text-sm font-medium text-gray-500">{idx + 1}</span>
+                    )}
+                  </div>
+                  <span className={`ml-2 text-sm font-medium ${step.completed ? 'text-indigo-600' : 'text-gray-500'}`}>
+                    {step.name}
+                  </span>
+                  {idx < steps.length - 1 && (
+                    <div className={`w-12 h-0.5 mx-4 ${step.completed ? 'bg-indigo-600' : 'bg-gray-200'}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <form onSubmit={handleSubmit(onhandleSubmit)} className="lg:grid lg:grid-cols-12 lg:gap-x-12">
+          {/* Main Form */}
+          <div className="lg:col-span-7 space-y-8">
+            {/* Delivery Type Selection */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-6 border-b border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <TruckIcon className="w-5 h-5 text-indigo-600" />
+                  Delivery Method
+                </h2>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryType("ship")}
+                    className={`relative flex flex-col items-center gap-3 p-6 rounded-xl border-2 transition-all ${
                       deliveryType === "ship"
-                        ? "text-indigo-600"
-                        : "text-indigo-400"
-                    }`}
-                  />
-                  <span
-                    className={`font-medium ${
-                      deliveryType === "ship"
-                        ? "text-indigo-900"
-                        : "text-gray-700"
+                        ? "border-indigo-600 bg-indigo-50 shadow-md"
+                        : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50"
                     }`}
                   >
-                    Ship
-                  </span>
-                </label>
-                <label
-                  className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-colors ${
-                    deliveryType === "pickup"
-                      ? "border-indigo-600 bg-indigo-50 shadow-sm"
-                      : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="deliveryType"
-                    checked={deliveryType === "pickup"}
-                    onChange={() => setDeliveryType("pickup")}
-                    className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <BuildingOfficeIcon
-                    className={`h-6 w-6 ${
+                    {deliveryType === "ship" && (
+                      <div className="absolute top-3 right-3">
+                        <CheckCircleIcon className="w-6 h-6 text-indigo-600" />
+                      </div>
+                    )}
+                    <div className={`p-3 rounded-full ${deliveryType === "ship" ? "bg-indigo-100" : "bg-gray-100"}`}>
+                      <TruckIcon className={`w-8 h-8 ${deliveryType === "ship" ? "text-indigo-600" : "text-gray-500"}`} />
+                    </div>
+                    <div className="text-center">
+                      <p className={`font-semibold ${deliveryType === "ship" ? "text-indigo-900" : "text-gray-700"}`}>
+                        Ship to Address
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">Delivery to your door</p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryType("pickup")}
+                    className={`relative flex flex-col items-center gap-3 p-6 rounded-xl border-2 transition-all ${
                       deliveryType === "pickup"
-                        ? "text-indigo-600"
-                        : "text-indigo-400"
-                    }`}
-                  />
-                  <span
-                    className={`font-medium ${
-                      deliveryType === "pickup"
-                        ? "text-indigo-900"
-                        : "text-gray-700"
+                        ? "border-indigo-600 bg-indigo-50 shadow-md"
+                        : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50"
                     }`}
                   >
-                    Pick up
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    (Leave phone in billing below)
-                  </span>
-                </label>
+                    {deliveryType === "pickup" && (
+                      <div className="absolute top-3 right-3">
+                        <CheckCircleIcon className="w-6 h-6 text-indigo-600" />
+                      </div>
+                    )}
+                    <div className={`p-3 rounded-full ${deliveryType === "pickup" ? "bg-indigo-100" : "bg-gray-100"}`}>
+                      <BuildingOfficeIcon className={`w-8 h-8 ${deliveryType === "pickup" ? "text-indigo-600" : "text-gray-500"}`} />
+                    </div>
+                    <div className="text-center">
+                      <p className={`font-semibold ${deliveryType === "pickup" ? "text-indigo-900" : "text-gray-700"}`}>
+                        Pick Up
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">Collect from store</p>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
 
+            {/* Shipping Address Form */}
             {deliveryType === "ship" && (
-              <>
-                <div className="border-t border-indigo-100 pt-10">
-                  <h2 className="text-lg font-semibold text-indigo-800">
-                    Shipping address
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100">
+                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <MapPinIcon className="w-5 h-5 text-indigo-600" />
+                    Shipping Address
                   </h2>
-                  <div className="mt-4 grid grid-cols-2 gap-4">
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Country / Region
-                      </label>
+                </div>
+                <div className="p-6 space-y-5">
+                  {/* Country */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Country / Region</label>
+                    <select
+                      {...register("country", { required: "Required" })}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-20 disabled:bg-gray-50"
+                    >
+                      {COUNTRIES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Name Row */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormInput
+                      label="First Name"
+                      icon={UserIcon}
+                      {...register("firstName", { required: "Required" })}
+                      disabled={isSubmitting}
+                      placeholder="John"
+                      error={errors.firstName?.message}
+                    />
+                    <FormInput
+                      label="Last Name"
+                      {...register("lastName", { required: "Required" })}
+                      disabled={isSubmitting}
+                      placeholder="Doe"
+                      error={errors.lastName?.message}
+                    />
+                  </div>
+
+                  {/* Company */}
+                  <FormInput
+                    label="Company (optional)"
+                    {...register("company")}
+                    disabled={isSubmitting}
+                    placeholder="Your company name"
+                  />
+
+                  {/* Address */}
+                  <FormInput
+                    label="Street Address"
+                    icon={HomeIcon}
+                    {...register("streetAddress", { required: "Street address is required" })}
+                    disabled={isSubmitting}
+                    placeholder="e.g. 123 Kenyatta Avenue, CBD"
+                    error={errors.streetAddress?.message}
+                  />
+
+                  <FormInput
+                    label="Apartment, suite, etc. (optional)"
+                    {...register("apartment")}
+                    disabled={isSubmitting}
+                    placeholder="e.g. Westlands Heights, Floor 3, Unit 12"
+                  />
+
+                  {/* City & Postal */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormInput
+                      label="City"
+                      {...register("city", { required: "City is required" })}
+                      disabled={isSubmitting}
+                      placeholder="e.g. Nairobi"
+                      error={errors.city?.message}
+                    />
+                    <FormInput
+                      label="Postal Code (optional)"
+                      {...register("postalCode", {
+                        validate: (v) => {
+                          const r = validatePostalByCountry(v, country);
+                          return r.valid || r.message;
+                        },
+                      })}
+                      disabled={isSubmitting}
+                      placeholder="e.g. 10300"
+                      error={errors.postalCode?.message}
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
+                    <div className={`flex rounded-xl border ${errors.phone ? 'border-red-300' : 'border-gray-200'} focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-opacity-20 overflow-hidden`}>
                       <select
-                        {...register("country", { required: "Required" })}
+                        value={phoneCountryCode}
+                        onChange={(e) => setPhoneCountryCode(e.target.value)}
                         disabled={isSubmitting}
-                        className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-50 sm:text-sm"
+                        className="border-0 bg-gray-50 py-3 pl-4 pr-2 text-gray-700 focus:ring-0"
                       >
-                        {COUNTRIES.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
+                        {COUNTRY_DIAL_CODES.map((c) => (
+                          <option key={c.dial + c.label} value={c.dial}>
+                            {c.flag} +{c.dial}
                           </option>
                         ))}
                       </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        First name
-                      </label>
                       <input
-                        {...register("firstName", { required: "Required" })}
-                        disabled={isSubmitting}
-                        className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
-                      />
-                      {errors.firstName && (
-                        <p className="text-red-600 text-sm">
-                          {errors.firstName.message}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Last name
-                      </label>
-                      <input
-                        {...register("lastName", { required: "Required" })}
-                        disabled={isSubmitting}
-                        className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
-                      />
-                      {errors.lastName && (
-                        <p className="text-red-600 text-sm">
-                          {errors.lastName.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Company (optional)
-                      </label>
-                      <input
-                        {...register("company")}
-                        disabled={isSubmitting}
-                        className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Address
-                      </label>
-                      <input
-                        {...register("streetAddress", {
-                          required: "Street address is required",
-                        })}
-                        disabled={isSubmitting}
-                        placeholder="e.g. P.o box 254, Kerugoya"
-                        className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
-                      />
-                      {errors.streetAddress && (
-                        <p className="text-red-600 text-sm">
-                          {errors.streetAddress.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Apartment, suite, etc. (optional)
-                      </label>
-                      <input
-                        {...register("apartment")}
-                        disabled={isSubmitting}
-                        placeholder="e.g. Peniel Apartments, juja"
-                        className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        City
-                      </label>
-                      <input
-                        {...register("city", { required: "City is required" })}
-                        disabled={isSubmitting}
-                        placeholder="e.g. Nairobi"
-                        className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
-                      />
-                      {errors.city && (
-                        <p className="text-red-600 text-sm">
-                          {errors.city.message}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Postal code (optional)
-                      </label>
-                      <input
-                        {...register("postalCode", {
+                        {...register("phone", {
+                          required: deliveryType === "ship" ? "Phone is required for shipping" : false,
                           validate: (v) => {
-                            const r = validatePostalByCountry(v, country);
+                            if (deliveryType !== "ship" && !(v || "").trim()) return true;
+                            const digits = (v || "").replace(/\D/g, "");
+                            const national = digits.startsWith(phoneCountryCode) ? digits.slice(phoneCountryCode.length) : digits;
+                            const r = validatePhoneByDial(national || digits, phoneCountryCode);
                             return r.valid || r.message;
                           },
                         })}
+                        type="tel"
                         disabled={isSubmitting}
-                        placeholder="e.g. 10300"
-                        className={`mt-1 w-full rounded-md px-3 py-2 shadow-sm sm:text-sm ${
-                          errors.postalCode
-                            ? "border-red-500 border"
-                            : "border-gray-300 border"
-                        }`}
-                      />
-                      {errors.postalCode && (
-                        <p className="text-red-600 text-sm mt-1">
-                          {errors.postalCode.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Phone
-                      </label>
-                      <div
-                        className={`mt-1 flex rounded-md bg-white shadow-sm focus-within:ring-1 focus-within:ring-indigo-500 ${
-                          errors.phone
-                            ? "border border-red-500 focus-within:border-red-500"
-                            : "border border-gray-300 focus-within:border-indigo-500"
-                        }`}
-                      >
-                        <select
-                          value={phoneCountryCode}
-                          onChange={(e) => setPhoneCountryCode(e.target.value)}
-                          disabled={isSubmitting}
-                          className="flex items-center gap-1.5 border-0 bg-transparent py-2 pl-3 pr-2 text-gray-700 focus:ring-0 sm:text-sm"
-                        >
-                          {COUNTRY_DIAL_CODES.map((c) => (
-                            <option key={c.dial + c.label} value={c.dial}>
-                              {c.flag} +{c.dial}
-                            </option>
-                          ))}
-                        </select>
-                        <input
-                          {...register("phone", {
-                            required:
-                              deliveryType === "ship"
-                                ? "Phone is required for shipping"
-                                : false,
-                            validate: (v) => {
-                              if (deliveryType !== "ship" && !(v || "").trim())
-                                return true;
-                              const digits = (v || "").replace(/\D/g, "");
-                              const national = digits.startsWith(
-                                phoneCountryCode
-                              )
-                                ? digits.slice(phoneCountryCode.length)
-                                : digits;
-                              const r = validatePhoneByDial(
-                                national || digits,
-                                phoneCountryCode
-                              );
-                              return r.valid || r.message;
-                            },
-                          })}
-                          type="tel"
-                          disabled={isSubmitting}
-                          placeholder="791 061 920"
-                          className="block w-full min-w-0 flex-1 border-0 py-2 pr-3 pl-1 text-gray-900 placeholder-gray-400 focus:ring-0 sm:text-sm"
-                        />
-                      </div>
-                      {errors.phone && (
-                        <p className="text-red-600 text-sm mt-1">
-                          {errors.phone.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Email
-                      </label>
-                      <input
-                        {...register("email", {
-                          required: "Email is required",
-                          pattern: {
-                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                            message: "Please enter a valid email address",
-                          },
-                        })}
-                        type="email"
-                        disabled={isSubmitting}
-                        placeholder="you@example.com"
-                        className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
-                      />
-                      {errors.email && (
-                        <p className="text-red-600 text-sm">
-                          {errors.email.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Delivery instructions (optional)
-                      </label>
-                      <textarea
-                        {...register("deliveryInstructions")}
-                        disabled={isSubmitting}
-                        rows={2}
-                        placeholder="e.g. Leave at gate, Call before delivery"
-                        className="mt-1 w-full rounded-md border-gray-300 px-3 py-2 shadow-sm sm:text-sm"
+                        placeholder="712 345 678"
+                        className="flex-1 border-0 py-3 pr-4 text-gray-900 placeholder-gray-400 focus:ring-0"
                       />
                     </div>
-                    <div className="col-span-2 flex items-center">
-                      <input
-                        type="checkbox"
-                        id="saveAddress"
-                        checked={saveAddressForNextTime}
-                        onChange={(e) =>
-                          setSaveAddressForNextTime(e.target.checked)
-                        }
-                        disabled={isSubmitting}
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      <label
-                        htmlFor="saveAddress"
-                        className="ml-2 text-sm text-gray-700"
-                      >
-                        Save this information for next time
-                      </label>
-                    </div>
+                    {errors.phone && <p className="mt-1.5 text-sm text-red-600">{errors.phone.message}</p>}
                   </div>
-                </div>
 
-                <div className="mt-10 border-t border-indigo-100 pt-10">
-                  <h2 className="text-lg font-semibold text-indigo-800">
-                    Shipping method
-                  </h2>
-                  {!country?.trim() ? (
-                    <div className="mt-4 rounded-lg bg-gray-100 px-4 py-6 text-center text-gray-600">
-                      Enter your shipping address to view available shipping
-                      methods.
-                    </div>
-                  ) : !hasShippingMethods ? (
-                    <div className="mt-4 rounded-lg bg-gray-100 px-4 py-6 text-center text-gray-600">
-                      Enter your shipping address to view available shipping
-                      methods.
-                    </div>
-                  ) : (
-                    <div className="mt-4 space-y-3">
-                      {shippingLoading && (
-                        <p className="text-indigo-600">Loading…</p>
-                      )}
-                      {!shippingLoading && shippingMethods.length === 0 && (
-                        <p className="text-slate-600">
-                          No shipping methods for this country/city. Try a
-                          different city or contact us.
-                        </p>
-                      )}
-                      {!shippingLoading &&
-                        shippingMethods.map((method) => (
-                          <label
-                            key={method._id}
-                            className={`flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-colors ${
-                              selectedShippingMethod?._id === method._id
-                                ? "border-indigo-600 bg-indigo-50 shadow-sm"
-                                : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50"
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name="shippingMethod"
-                              checked={
-                                selectedShippingMethod?._id === method._id
-                              }
-                              onChange={() => setSelectedShippingMethod(method)}
-                              className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                            />
-                            <div className="flex-1 px-3 text-left min-w-0">
-                              <span
-                                className={`font-semibold block break-words ${
-                                  selectedShippingMethod?._id === method._id
-                                    ? "text-indigo-900"
-                                    : "text-gray-800"
-                                }`}
-                              >
-                                {method.name}
-                              </span>
-                              {method.description && (
-                                <p className="text-sm text-slate-600 break-words">
-                                  {method.description}
-                                </p>
-                              )}
-                            </div>
-                            <span className="font-semibold text-indigo-600 whitespace-nowrap">
-                              <Price amount={method.costKes ?? 0} />
-                            </span>
-                          </label>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
+                  {/* Email */}
+                  <FormInput
+                    label="Email Address"
+                    icon={EnvelopeIcon}
+                    type="email"
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Please enter a valid email" },
+                    })}
+                    disabled={isSubmitting}
+                    placeholder="you@example.com"
+                    error={errors.email?.message}
+                  />
 
-            {deliveryType === "pickup" && (
-              <div className="border-t border-indigo-100 pt-10">
-                <h2 className="text-lg font-semibold text-indigo-800">
-                  Pickup locations
-                </h2>
-                <p className="mt-1 text-sm font-medium text-blue-600">
-                  Pickups are in Kenya.
-                </p>
-                {pickupLoading ? (
-                  <div className="mt-4 rounded-xl bg-indigo-50/70 border border-indigo-100 px-4 py-6 text-center text-indigo-700">
-                    Loading…
+                  {/* Delivery Instructions */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Delivery Instructions (optional)</label>
+                    <textarea
+                      {...register("deliveryInstructions")}
+                      disabled={isSubmitting}
+                      rows={3}
+                      placeholder="e.g. Leave at gate, Call before delivery"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-20"
+                    />
                   </div>
-                ) : pickupError ? (
-                  <div className="mt-4 rounded-xl bg-red-50 px-4 py-6 text-center text-red-700 border border-red-100">
-                    Could not load pickup locations. Check that the backend is
-                    running and the API is reachable.
-                    {pickupErrorDetail?.message && (
-                      <p className="mt-1 text-sm">
-                        {pickupErrorDetail.message}
-                      </p>
-                    )}
-                  </div>
-                ) : pickupLocations.length === 0 ? (
-                  <div className="mt-4 rounded-xl bg-amber-50 px-4 py-6 text-center text-amber-800 border border-amber-200">
-                    No pickup locations in Kenya yet. Run the seed script on the
-                    backend:{" "}
-                    <code className="text-sm">
-                      node dev-data/seedPickupLocations.js
-                    </code>
-                  </div>
-                ) : (
-                  <div className="mt-4 space-y-3">
-                    {pickupLocations.map((loc) => (
-                      <label
-                        key={loc._id}
-                        className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-colors ${
-                          selectedPickupLocation?._id === loc._id
-                            ? "border-indigo-600 bg-indigo-50 shadow-sm"
-                            : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="pickupLocation"
-                          checked={selectedPickupLocation?._id === loc._id}
-                          onChange={() => setSelectedPickupLocation(loc)}
-                          className="mt-1 h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                        />
-                        <div className="flex-1">
-                          <p
-                            className={`font-semibold ${
-                              selectedPickupLocation?._id === loc._id
-                                ? "text-indigo-900"
-                                : "text-gray-800"
-                            }`}
-                          >
-                            {loc.name}
-                          </p>
-                          <p className="text-sm text-slate-600">
-                            {loc.address}
-                          </p>
-                          {loc.distanceKm != null && (
-                            <p className="text-sm text-slate-500">
-                              {loc.distanceKm} km
-                            </p>
-                          )}
-                        </div>
-                        <span
-                          className={`font-semibold whitespace-nowrap ${
-                            loc.costKes === 0
-                              ? "text-emerald-600"
-                              : "text-indigo-600"
-                          }`}
-                        >
-                          {loc.costKes === 0 ? "FREE" : <Price amount={loc.costKes} />}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                )}
+
+                  {/* Save Address */}
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={saveAddressForNextTime}
+                      onChange={(e) => setSaveAddressForNextTime(e.target.checked)}
+                      disabled={isSubmitting}
+                      className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-sm text-gray-700">Save this address for future orders</span>
+                  </label>
+                </div>
               </div>
             )}
 
-            {/* Payment */}
-            <div className="mt-10 border-t border-indigo-100 pt-10">
-              <h2 className="text-lg font-semibold text-indigo-800">Payment</h2>
-              <fieldset className="mt-4">
-                <legend className="sr-only">Payment type</legend>
-                <div className="space-y-4 sm:flex sm:space-x-10 sm:space-y-0">
+            {/* Shipping Method / Pickup Location */}
+            {deliveryType === "ship" ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100">
+                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <TruckIcon className="w-5 h-5 text-indigo-600" />
+                    Shipping Method
+                  </h2>
+                </div>
+                <div className="p-6">
+                  {!country?.trim() || !hasShippingMethods ? (
+                    <div className="text-center py-8">
+                      <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <MapPinIcon className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-500">Enter your shipping address to view available shipping methods.</p>
+                    </div>
+                  ) : shippingLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4" />
+                      <p className="text-indigo-600">Loading shipping options...</p>
+                    </div>
+                  ) : shippingMethods.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      No shipping methods available for this location. Try a different city or contact us.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {shippingMethods.map((method) => (
+                        <label
+                          key={method._id}
+                          className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                            selectedShippingMethod?._id === method._id
+                              ? "border-indigo-600 bg-indigo-50 shadow-md"
+                              : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="shippingMethod"
+                            checked={selectedShippingMethod?._id === method._id}
+                            onChange={() => setSelectedShippingMethod(method)}
+                            className="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className={`font-semibold ${selectedShippingMethod?._id === method._id ? "text-indigo-900" : "text-gray-800"}`}>
+                              {method.name}
+                            </p>
+                            {method.description && (
+                              <p className="text-sm text-gray-500 mt-0.5">{method.description}</p>
+                            )}
+                          </div>
+                          <span className="font-bold text-indigo-600 whitespace-nowrap">
+                            <Price amount={method.costKes ?? 0} />
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100">
+                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <BuildingOfficeIcon className="w-5 h-5 text-indigo-600" />
+                    Pickup Location
+                  </h2>
+                  <p className="text-sm text-indigo-600 mt-1">Pickups available in Kenya</p>
+                </div>
+                <div className="p-6">
+                  {pickupLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4" />
+                      <p className="text-indigo-600">Loading pickup locations...</p>
+                    </div>
+                  ) : pickupError ? (
+                    <div className="text-center py-8 text-red-600 bg-red-50 rounded-xl">
+                      Could not load pickup locations. Please try again later.
+                    </div>
+                  ) : pickupLocations.length === 0 ? (
+                    <div className="text-center py-8 text-amber-700 bg-amber-50 rounded-xl">
+                      No pickup locations available yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {pickupLocations.map((loc) => (
+                        <label
+                          key={loc._id}
+                          className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                            selectedPickupLocation?._id === loc._id
+                              ? "border-indigo-600 bg-indigo-50 shadow-md"
+                              : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="pickupLocation"
+                            checked={selectedPickupLocation?._id === loc._id}
+                            onChange={() => setSelectedPickupLocation(loc)}
+                            className="mt-1 w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                          />
+                          <div className="flex-1">
+                            <p className={`font-semibold ${selectedPickupLocation?._id === loc._id ? "text-indigo-900" : "text-gray-800"}`}>
+                              {loc.name}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-0.5">{loc.address}</p>
+                          </div>
+                          <span className={`font-bold whitespace-nowrap ${loc.costKes === 0 ? "text-green-600" : "text-indigo-600"}`}>
+                            {loc.costKes === 0 ? "FREE" : <Price amount={loc.costKes} />}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Payment Method */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-6 border-b border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <CreditCardIcon className="w-5 h-5 text-indigo-600" />
+                  Payment Method
+                </h2>
+              </div>
+              <div className="p-6">
+                <div className="space-y-3">
                   {paymentMethods.map((method) => (
-                    <label key={method.id} className="flex items-center">
+                    <label
+                      key={method.id}
+                      className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                        watch("paymentType") === method.id
+                          ? "border-indigo-600 bg-indigo-50 shadow-md"
+                          : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50"
+                      }`}
+                    >
                       <input
                         type="radio"
                         value={method.id}
                         {...register("paymentType", { required: true })}
                         disabled={isSubmitting}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                       />
-                      <span className="ml-3 text-sm text-gray-700">
-                        {method.title}
-                      </span>
+                      <span className="text-2xl">{method.icon}</span>
+                      <div className="flex-1">
+                        <p className={`font-semibold ${watch("paymentType") === method.id ? "text-indigo-900" : "text-gray-800"}`}>
+                          {method.title}
+                        </p>
+                        <p className="text-sm text-gray-500">{method.description}</p>
+                      </div>
                     </label>
                   ))}
                 </div>
-              </fieldset>
-              <p className="mt-3 text-sm text-gray-600">
-                Want to pay by card?{" "}
-                <a
-                  href="https://wa.me/254726787330"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-green-600 hover:text-green-700 hover:underline"
-                >
-                  Contact us on WhatsApp +254 726 787330
-                </a>
-              </p>
 
-              {watch("paymentType") === "mpesa" && (
-                <div className="mt-6 space-y-3 rounded-md border border-gray-200 bg-gray-50 p-4">
-                  <p className="font-medium text-gray-700">
-                    Pay with Safaricom M-Pesa
-                  </p>
-                  <ol className="list-inside list-decimal text-sm text-gray-700">
-                    <li>
-                      Select <strong>Lipa na M-Pesa → Pay Bill</strong>
-                    </li>
-                    <li>
-                      Business Number: <strong>522533</strong>
-                    </li>
-                    <li>
-                      Account Number: <strong>8023258</strong>
-                    </li>
-                    <li>
-                      Amount: <strong>{OrderTotal}</strong>
-                    </li>
-                    <li>Enter your M-Pesa PIN and confirm</li>
-                  </ol>
-                  <input
-                    type="text"
-                    placeholder="Phone number used for payment"
-                    {...register("mpesaNumber", {
-                      pattern: {
-                        value: /^0\d{9}$/,
-                        message: "Valid Kenyan phone",
-                      },
-                    })}
-                    disabled={isSubmitting}
-                    className="w-full rounded-md border-gray-300 px-3 py-2 shadow-sm"
-                  />
-                  {errors.mpesaNumber && (
-                    <p className="text-red-600 text-sm">
-                      {errors.mpesaNumber.message}
-                    </p>
-                  )}
-                  <textarea
-                    placeholder="Optional: Payment reference"
-                    {...register("mpesaDescription")}
-                    disabled={isSubmitting}
-                    className="w-full rounded-md border-gray-300 px-3 py-2 shadow-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleMpesaNotification}
-                    disabled={isSubmitting}
-                    className="w-full rounded-md bg-green-600 px-4 py-3 text-white hover:bg-green-700"
+                <p className="mt-4 text-sm text-gray-600">
+                  Want to pay by card?{" "}
+                  <a
+                    href="https://wa.me/254726787330"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-green-600 hover:text-green-700 hover:underline"
                   >
-                    I've Made Payment
-                  </button>
-                </div>
-              )}
+                    Contact us on WhatsApp
+                  </a>
+                </p>
+
+                {/* M-Pesa Instructions */}
+                {watch("paymentType") === "mpesa" && (
+                  <div className="mt-6 p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-2xl">📱</span>
+                      <h3 className="font-semibold text-green-800">Pay with M-Pesa</h3>
+                    </div>
+                    <ol className="space-y-2 text-sm text-green-800">
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-6 h-6 bg-green-200 text-green-800 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                        <span>Select <strong>Lipa na M-Pesa → Pay Bill</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-6 h-6 bg-green-200 text-green-800 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                        <span>Business Number: <strong className="bg-green-200 px-2 py-0.5 rounded">522533</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-6 h-6 bg-green-200 text-green-800 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                        <span>Account Number: <strong className="bg-green-200 px-2 py-0.5 rounded">8023258</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-6 h-6 bg-green-200 text-green-800 rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                        <span>Amount: <strong className="bg-green-200 px-2 py-0.5 rounded"><Price amount={OrderTotal} /></strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-6 h-6 bg-green-200 text-green-800 rounded-full flex items-center justify-center text-xs font-bold">5</span>
+                        <span>Enter your M-Pesa PIN and confirm</span>
+                      </li>
+                    </ol>
+
+                    <div className="mt-5 space-y-3">
+                      <input
+                        type="text"
+                        placeholder="Phone number used for payment (e.g. 0712345678)"
+                        {...register("mpesaNumber")}
+                        disabled={isSubmitting}
+                        className="w-full rounded-xl border border-green-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:ring-opacity-20"
+                      />
+                      <textarea
+                        placeholder="Payment reference (optional)"
+                        {...register("mpesaDescription")}
+                        disabled={isSubmitting}
+                        rows={2}
+                        className="w-full rounded-xl border border-green-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:ring-opacity-20"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleMpesaNotification}
+                        disabled={isSubmitting}
+                        className="w-full py-3 px-6 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <CheckCircleIcon className="w-5 h-5" />
+                        I've Made Payment
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Order summary sidebar */}
-          <div className="mt-10 lg:mt-0">
-            <h2 className="text-lg font-semibold text-indigo-800">
-              Order summary
-            </h2>
-            <div className="mt-4 rounded-xl border-2 border-indigo-100 bg-white shadow-md shadow-indigo-100/50">
-              <ul className="divide-y divide-gray-200">
-                {cart.map((product) => (
-                  <li key={product.id} className="flex px-4 py-6 sm:px-6">
-                    <img
-                      src={productImageSrc(product.imageSrc)}
-                      alt={product.imageAlt}
-                      className="h-20 w-20 rounded-md object-contain"
-                    />
-                    <div className="ml-6 flex flex-1 flex-col">
-                      <div className="flex justify-between">
-                        <h4 className="text-sm font-medium text-gray-700">
-                          {product.name}
-                        </h4>
+          {/* Order Summary Sidebar */}
+          <div className="lg:col-span-5 mt-8 lg:mt-0">
+            <div className="sticky top-32">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100">
+                  <h2 className="text-lg font-bold text-gray-900">Order Summary</h2>
+                  <p className="text-sm text-gray-500">{itemCount} {itemCount === 1 ? 'item' : 'items'}</p>
+                </div>
+
+                {/* Cart Items */}
+                <div className="max-h-80 overflow-y-auto">
+                  <ul className="divide-y divide-gray-100">
+                    {cart.map((product) => (
+                      <li key={product.id} className="p-4 flex gap-4">
+                        <div className="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0">
+                          <img
+                            src={productImageSrc(product.imageSrc)}
+                            alt={product.imageAlt}
+                            className="w-full h-full object-contain p-1"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-medium text-gray-900 truncate">{product.name}</h4>
+                          <p className="text-sm text-gray-500">
+                            <Price amount={product.price} /> × {product.quantity}
+                          </p>
+                        </div>
                         <button
                           type="button"
-                          onClick={() =>
-                            setCart((prev) =>
-                              prev.filter((i) => i.id !== product.id)
-                            )
-                          }
-                          className="text-gray-400 hover:text-gray-600"
+                          onClick={() => setCart((prev) => prev.filter((i) => i.id !== product.id))}
+                          className="text-gray-400 hover:text-red-500 transition-colors"
                         >
-                          <TrashIcon className="h-5 w-5" />
+                          <TrashIcon className="w-5 h-5" />
                         </button>
-                      </div>
-                      <p className="mt-1 text-sm text-gray-500">
-                        <Price amount={product.price} /> × {product.quantity}
-                      </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Summary */}
+                <div className="p-6 bg-gray-50 space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-medium text-gray-900"><Price amount={Total} /></span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Shipping</span>
+                    <span className="font-medium text-gray-900">
+                      {deliveryType === "pickup" ? (
+                        selectedPickupLocation ? (
+                          <span className="text-green-600">FREE</span>
+                        ) : "—"
+                      ) : selectedShippingMethod ? (
+                        <Price amount={selectedShippingMethod.costKes ?? 0} />
+                      ) : "—"}
+                    </span>
+                  </div>
+                  <div className="border-t border-gray-200 pt-3">
+                    <div className="flex justify-between">
+                      <span className="text-base font-semibold text-gray-900">Total</span>
+                      <span className="text-xl font-bold text-indigo-600"><Price amount={OrderTotal} /></span>
                     </div>
-                  </li>
-                ))}
-              </ul>
-              <dl className="space-y-3 border-t border-indigo-100 px-4 py-6 sm:px-6">
-                <div className="flex justify-between text-sm text-gray-700">
-                  <dt>Subtotal</dt>
-                  <dd className="text-indigo-700 font-medium">
-                    <Price amount={Total} />
-                  </dd>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm text-gray-700">
-                  <dt>Shipping</dt>
-                  <dd className="text-indigo-700">
-                    {deliveryType === "pickup" ? (
-                      selectedPickupLocation ? (
-                        <span className="text-emerald-600 font-medium">
-                          Pickup – FREE
-                        </span>
-                      ) : (
-                        "—"
-                      )
-                    ) : selectedShippingMethod ? (
-                      <>{selectedShippingMethod.name} – <Price amount={selectedShippingMethod.costKes ?? 0} /></>
+
+                {/* Confirm Button */}
+                <div className="p-6">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`w-full py-4 px-6 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ${
+                      isSubmitting
+                        ? "bg-indigo-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                    }`}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+                        Processing...
+                      </>
                     ) : (
-                      "—"
+                      <>
+                        <LockClosedIcon className="w-5 h-5" />
+                        Confirm Order
+                      </>
                     )}
-                  </dd>
+                  </button>
                 </div>
-                <div className="flex justify-between border-t-2 border-indigo-100 pt-3 text-base font-semibold">
-                  <dt className="text-indigo-900">Total</dt>
-                  <dd className="text-indigo-600">
-                    <Price amount={OrderTotal} />
-                  </dd>
+
+                {/* Trust Badges */}
+                <div className="px-6 pb-6">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <ShieldCheckIcon className="w-5 h-5 text-green-500" />
+                      <span>Secure Checkout</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <TruckIcon className="w-5 h-5 text-blue-500" />
+                      <span>Fast Delivery</span>
+                    </div>
+                  </div>
                 </div>
-              </dl>
-              <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`w-full rounded-md px-4 py-3 text-base font-medium text-white ${
-                    isSubmitting
-                      ? "cursor-not-allowed bg-indigo-400"
-                      : "bg-indigo-600 hover:bg-indigo-700"
-                  }`}
-                >
-                  {isSubmitting ? "Processing…" : "Confirm Order"}
-                </button>
               </div>
+
+              {/* Free Shipping Progress */}
+              {Total < 6000 && deliveryType === "ship" && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100">
+                  <div className="flex items-center gap-3 mb-2">
+                    <TruckIcon className="w-5 h-5 text-amber-600" />
+                    <p className="text-sm font-medium text-amber-800">
+                      Add <Price amount={6000 - Total} /> more for free delivery!
+                    </p>
+                  </div>
+                  <div className="h-2 bg-amber-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-amber-400 to-orange-400 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min((Total / 6000) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {Total >= 6000 && deliveryType === "ship" && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                  <div className="flex items-center gap-3">
+                    <CheckCircleIcon className="w-5 h-5 text-green-600" />
+                    <p className="text-sm font-medium text-green-800">You qualify for FREE delivery!</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </form>
