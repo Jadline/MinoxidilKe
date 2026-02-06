@@ -95,15 +95,29 @@ export default function AdminEditPackage() {
     try {
       const formData = new FormData();
       formData.append("image", file);
+      // #region agent log
+      console.log("[DEBUG] AdminEditPackage handleImageUpload: Starting upload", { fileName: file.name });
+      // #endregion
       const res = await uploadPackageImage(formData);
       const path = res.data?.data?.path;
+      // #region agent log
+      console.log("[DEBUG] AdminEditPackage handleImageUpload: API response", { responseData: res.data, path });
+      // #endregion
       if (path) {
-        const base = BASE_URL.replace(/\/$/, "");
-        const fullUrl = base + path;
-        setValue("imageSrc", fullUrl);
+        // Cloudinary returns full URL (https://...), disk storage returns /uploads/...
+        const imageSrc = path.startsWith("http") ? path : (path.startsWith("/") ? path : "/" + path);
+        // #region agent log
+        console.log("[DEBUG] AdminEditPackage handleImageUpload: Setting imageSrc", { originalPath: path, finalImageSrc: imageSrc });
+        // #endregion
+        setValue("imageSrc", imageSrc);
         toast.success("Image uploaded.");
+      } else {
+        console.log("[DEBUG] AdminEditPackage handleImageUpload: No path in response!");
       }
     } catch (err) {
+      // #region agent log
+      console.error("[DEBUG] AdminEditPackage handleImageUpload: Error", { error: err?.message, responseData: err?.response?.data });
+      // #endregion
       const msg = err?.response?.data?.message || err?.message || "Upload failed.";
       toast.error(msg);
     } finally {

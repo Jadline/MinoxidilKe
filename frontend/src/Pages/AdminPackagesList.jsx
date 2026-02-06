@@ -209,7 +209,9 @@ export default function AdminPackagesList() {
       const res = await uploadPackageImage(formData);
       const path = res.data?.data?.path;
       if (path) {
-        addSetValue("imageSrc", path.startsWith("/") ? path : "/" + path);
+        // Cloudinary returns full URL (https://...), disk storage returns /uploads/...
+        const imageSrc = path.startsWith("http") ? path : (path.startsWith("/") ? path : "/" + path);
+        addSetValue("imageSrc", imageSrc);
         toast.success("Image uploaded.");
       } else {
         toast.error("Upload failed.");
@@ -235,15 +237,34 @@ export default function AdminPackagesList() {
     try {
       const formData = new FormData();
       formData.append("image", file);
+      // #region agent log
+      console.log("[DEBUG] handleEditImageUpload: Starting upload", { fileName: file.name, fileSize: file.size });
+      fetch('http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminPackagesList.jsx:handleEditImageUpload:before-upload',message:'Starting package image upload',data:{fileName:file.name,fileSize:file.size},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       const res = await uploadPackageImage(formData);
+      // #region agent log
+      console.log("[DEBUG] handleEditImageUpload: API response", { responseData: res.data, path: res.data?.data?.path });
+      fetch('http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminPackagesList.jsx:handleEditImageUpload:after-upload',message:'Upload API response',data:{responseData:res.data,path:res.data?.data?.path},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       const path = res.data?.data?.path;
       if (path) {
-        editSetValue("imageSrc", path.startsWith("/") ? path : "/" + path);
+        // Cloudinary returns full URL (https://...), disk storage returns /uploads/...
+        const imageSrc = path.startsWith("http") ? path : (path.startsWith("/") ? path : "/" + path);
+        // #region agent log
+        console.log("[DEBUG] handleEditImageUpload: Setting imageSrc", { originalPath: path, finalImageSrc: imageSrc, startsWithHttp: path.startsWith("http") });
+        fetch('http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminPackagesList.jsx:handleEditImageUpload:set-value',message:'Setting imageSrc value',data:{originalPath:path,finalImageSrc:imageSrc,startsWithHttp:path.startsWith("http")},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
+        editSetValue("imageSrc", imageSrc);
         toast.success("Image uploaded.");
       } else {
+        console.log("[DEBUG] handleEditImageUpload: No path in response!", { responseData: res.data });
         toast.error("Upload failed.");
       }
     } catch (err) {
+      // #region agent log
+      console.error("[DEBUG] handleEditImageUpload: Upload error", { error: err?.message, responseData: err?.response?.data });
+      fetch('http://127.0.0.1:7242/ingest/9682c5af-2357-4367-999b-d21175ed0f6d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminPackagesList.jsx:handleEditImageUpload:error',message:'Upload error',data:{error:err?.message,responseData:err?.response?.data},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
+      // #endregion
       toast.error(
         err?.response?.data?.message || err?.message || "Upload failed."
       );
@@ -535,15 +556,18 @@ export default function AdminPackagesList() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-[#082567]/10">
+                          {(() => { console.log("[DEBUG] List pkg.imageSrc for", pkg.name, ":", pkg.imageSrc); return null; })()}
                           {pkg.imageSrc ? (
                             <>
                               <img
-                                src={packageImageSrc(pkg.imageSrc)}
+                                src={(() => { const src = packageImageSrc(pkg.imageSrc); console.log("[DEBUG] List image src for", pkg.name, ":", src); return src; })()}
                                 alt={pkg.imageAlt || pkg.name}
                                 className="h-10 w-10 object-cover relative z-10"
                                 onError={(e) => {
+                                  console.error("[DEBUG] List image FAILED for", pkg.name, ":", e.target.src);
                                   e.target.style.display = "none";
                                 }}
+                                onLoad={() => console.log("[DEBUG] List image loaded for", pkg.name)}
                               />
                               <div
                                 className="absolute inset-0 flex items-center justify-center z-0"
@@ -1082,12 +1106,14 @@ export default function AdminPackagesList() {
                       {editWatch("imageSrc") && (
                         <div className="flex items-center gap-2 min-w-0">
                           <img
-                            src={packageImageSrc(editWatch("imageSrc"))}
+                            src={(() => { const src = packageImageSrc(editWatch("imageSrc")); console.log("[DEBUG] Edit modal image src:", src); return src; })()}
                             alt="Preview"
                             className="h-12 w-12 rounded-lg object-cover border border-gray-200"
                             onError={(e) => {
+                              console.error("[DEBUG] Edit modal image FAILED to load:", e.target.src);
                               e.target.style.display = "none";
                             }}
+                            onLoad={() => console.log("[DEBUG] Edit modal image loaded successfully")}
                           />
                           <span className="text-xs text-gray-500 truncate">
                             {editWatch("imageSrc")}
