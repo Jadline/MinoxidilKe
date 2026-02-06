@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { EnvelopeIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
+import axios from "axios";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState("");
@@ -17,14 +20,14 @@ export default function NewsletterSignup() {
 
     setIsSubmitting(true);
     
-    // Simulate API call (you can integrate with your email service later)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await axios.post(`${BASE_URL}/api/v1/subscribers/subscribe`, { email });
       setIsSubscribed(true);
-      toast.success("Thanks for subscribing! 🎉");
+      toast.success(response.data?.message || "Thanks for subscribing!");
       setEmail("");
     } catch (error) {
-      toast.error("Something went wrong. Please try again.");
+      const errorMsg = error.response?.data?.message || "Something went wrong. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

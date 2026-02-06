@@ -1,5 +1,7 @@
-// Email handling disabled for now (was causing connection timeouts on Render).
-// Contact form and order confirmation still respond successfully; no emails are sent.
+// Contact form submissions are now saved to database for admin review.
+// Email sending is disabled (was causing connection timeouts on Render).
+
+const Contact = require('../models/contactModel');
 
 async function sendContactEmail(req, res) {
   try {
@@ -12,8 +14,17 @@ async function sendContactEmail(req, res) {
       });
     }
 
-    // Email disabled - just acknowledge receipt
-    console.log('📧 Contact form submission (email disabled):', { firstName, lastName, email, product: product?.substring?.(0, 30) });
+    // Save to database for admin to view
+    const contact = await Contact.create({
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      product,
+      message,
+    });
+
+    console.log('📧 Contact form saved to database:', { id: contact._id, firstName, email });
 
     res.status(200).json({
       status: "success",

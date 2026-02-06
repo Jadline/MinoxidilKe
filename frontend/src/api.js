@@ -124,4 +124,16 @@ export const updateSetting = (key, value) =>
 export const updatePromoBanner = (data) =>
   api.put("/api/v1/settings/promo-banner/update", data);
 
+// Contact submissions (admin)
+export const getContacts = (params) => api.get("/api/v1/contacts", { params });
+export const getUnreadContactCount = () => api.get("/api/v1/contacts/unread-count");
+export const updateContactStatus = (id, status) =>
+  api.patch(`/api/v1/contacts/${id}/status`, { status });
+export const deleteContact = (id) => api.delete(`/api/v1/contacts/${id}`);
+
+// Newsletter subscribers (admin)
+export const getSubscribers = (params) => api.get("/api/v1/subscribers", { params });
+export const getSubscriberCount = () => api.get("/api/v1/subscribers/count");
+export const exportSubscribers = () => api.get("/api/v1/subscribers/export", { responseType: 'blob' });
+
 export default api;

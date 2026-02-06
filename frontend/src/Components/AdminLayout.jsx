@@ -9,15 +9,19 @@ import {
   MapPinIcon,
   ClipboardDocumentListIcon,
   Cog6ToothIcon,
+  ChatBubbleLeftRightIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 
 const adminNav = [
   { name: "Dashboard", to: "/admin", icon: Squares2X2Icon },
-  { name: "Manage Products", to: "/admin/products", icon: ListBulletIcon },
-  { name: "Manage Packages", to: "/admin/packages", icon: SquaresPlusIcon },
-  { name: "Shipping Methods", to: "/admin/shipping-methods", icon: TruckIcon },
-  { name: "Pickup Locations", to: "/admin/pickup-locations", icon: MapPinIcon },
+  { name: "Products", to: "/admin/products", icon: ListBulletIcon },
+  { name: "Packages", to: "/admin/packages", icon: SquaresPlusIcon },
   { name: "Orders", to: "/admin/orders", icon: ClipboardDocumentListIcon },
+  { name: "Contacts", to: "/admin/contacts", icon: ChatBubbleLeftRightIcon },
+  { name: "Subscribers", to: "/admin/subscribers", icon: EnvelopeIcon },
+  { name: "Shipping", to: "/admin/shipping-methods", icon: TruckIcon },
+  { name: "Pickup", to: "/admin/pickup-locations", icon: MapPinIcon },
   { name: "Settings", to: "/admin/settings", icon: Cog6ToothIcon },
 ];
 

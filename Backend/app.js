@@ -17,6 +17,8 @@ const shippingMethodRouter = require("./routes/shippingMethodRoute");
 const pickupLocationRouter = require("./routes/pickupLocationRoute");
 const addressRouter = require("./routes/addressRoute");
 const settingsRouter = require("./routes/settingsRoutes");
+const contactRouter = require("./routes/contactRoutes");
+const subscriberRouter = require("./routes/subscriberRoutes");
 const {
   ogProductPage,
   FRONTEND_DIST,
@@ -46,6 +48,8 @@ app.use("/api/v1/make-card-payment", paymentRouter);
 app.use("/api/v1/orders", OrderRouter);
 app.use("/api/v1/mpesa-notify", mpesaRouter);
 app.use("/api/v1/contact", emailRouter);
+app.use("/api/v1/contacts", contactRouter);
+app.use("/api/v1/subscribers", subscriberRouter);
 app.use("/api/v1/account", userRouter);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/package-reviews", packageReviewRoutes);
