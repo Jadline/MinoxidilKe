@@ -38,7 +38,6 @@ function createCloudinaryStorage(folder) {
     params: {
       folder: `minoxidilke/${folder}`,
       allowed_formats: ["jpg", "jpeg", "png", "webp", "gif"],
-      transformation: [{ width: 1000, height: 1000, crop: "limit", quality: "auto" }],
     },
   });
 }
