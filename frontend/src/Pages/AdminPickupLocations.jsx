@@ -118,7 +118,7 @@ export default function AdminPickupLocations() {
     },
   });
 
-  // Form styling classes
+  // Shared classes for form styling
   const labelClass = `block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`;
   const inputClass = `mt-1 block w-full rounded-md border px-3 py-2 text-sm ${
     isDarkMode 
@@ -211,7 +211,7 @@ export default function AdminPickupLocations() {
           type="checkbox"
           id={`${prefix}isActive`}
           {...form.register("isActive")}
-          className="h-4 w-4 rounded border-gray-300 text-[#082567]"
+          className="h-4 w-4 rounded border-gray-300 text-indigo-600"
         />
         <label htmlFor={`${prefix}isActive`} className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
           Active (visible to customers)
@@ -318,6 +318,7 @@ export default function AdminPickupLocations() {
         )}
       </div>
 
+      {/* Add Modal */}
       {addModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
@@ -367,6 +368,7 @@ export default function AdminPickupLocations() {
         </div>
       )}
 
+      {/* Edit Modal */}
       {editItem && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
@@ -418,6 +420,7 @@ export default function AdminPickupLocations() {
         </div>
       )}
 
+      {/* Delete Confirm Modal */}
       {deleteConfirm && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"

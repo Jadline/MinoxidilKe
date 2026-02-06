@@ -170,7 +170,9 @@ export default function AdminContacts() {
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 filter === item.value
                   ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                  : isDarkMode 
+                    ? "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+                    : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
               }`}
             >
               {item.label}
@@ -178,7 +180,7 @@ export default function AdminContacts() {
                 <span className={`px-2 py-0.5 rounded-full text-xs ${
                   filter === item.value
                     ? "bg-white/20 text-white"
-                    : "bg-gray-100 text-gray-600"
+                    : isDarkMode ? "bg-gray-700 text-gray-400" : "bg-gray-100 text-gray-600"
                 }`}>
                   {item.count}
                 </span>
@@ -189,7 +191,7 @@ export default function AdminContacts() {
       </div>
 
       {/* Content */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className={`rounded-2xl shadow-sm border overflow-hidden ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-600 border-t-transparent"></div>
@@ -206,16 +208,16 @@ export default function AdminContacts() {
           </div>
         ) : contacts.length === 0 ? (
           <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <InboxIcon className="h-10 w-10 text-indigo-500" />
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${isDarkMode ? "bg-indigo-900/30" : "bg-gradient-to-br from-indigo-100 to-purple-100"}`}>
+              <InboxIcon className={`h-10 w-10 ${isDarkMode ? "text-indigo-400" : "text-indigo-500"}`} />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No messages yet</h3>
-            <p className="text-gray-500">
+            <h3 className={`text-lg font-semibold mb-2 ${isDarkMode ? "text-white" : "text-gray-900"}`}>No messages yet</h3>
+            <p className={isDarkMode ? "text-gray-400" : "text-gray-500"}>
               {filter ? `No ${filter} messages found` : "Contact submissions will appear here"}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className={`divide-y ${isDarkMode ? "divide-gray-700" : "divide-gray-100"}`}>
             {contacts.map((contact) => (
               <div
                 key={contact._id}
@@ -225,8 +227,10 @@ export default function AdminContacts() {
                     updateStatusMutation.mutate({ id: contact._id, status: "read" });
                   }
                 }}
-                className={`transition-all cursor-pointer hover:bg-gray-50 ${
-                  contact.status === "new" ? "bg-blue-50/50" : ""
+                className={`transition-all cursor-pointer ${
+                  isDarkMode 
+                    ? contact.status === "new" ? "bg-blue-900/20 hover:bg-gray-700/50" : "hover:bg-gray-700/50"
+                    : contact.status === "new" ? "bg-blue-50/50 hover:bg-gray-50" : "hover:bg-gray-50"
                 }`}
               >
                 <div className="p-5">
@@ -236,7 +240,9 @@ export default function AdminContacts() {
                       <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold ${
                         contact.status === "new" 
                           ? "bg-gradient-to-br from-blue-500 to-indigo-500 text-white" 
-                          : "bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600"
+                          : isDarkMode 
+                            ? "bg-gray-700 text-gray-300"
+                            : "bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600"
                       }`}>
                         {contact.firstName.charAt(0)}{contact.lastName.charAt(0)}
                       </div>
@@ -244,7 +250,7 @@ export default function AdminContacts() {
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-1">
-                          <h3 className="font-semibold text-gray-900 truncate">
+                          <h3 className={`font-semibold truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>
                             {contact.firstName} {contact.lastName}
                           </h3>
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${statusConfig[contact.status].color}`}>
@@ -252,13 +258,13 @@ export default function AdminContacts() {
                             {statusConfig[contact.status].label}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-500 truncate">{contact.email}</p>
+                        <p className={`text-sm truncate ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{contact.email}</p>
                         <div className="mt-2 flex items-center gap-4 text-sm">
                           <span className="text-indigo-600 font-medium">{contact.product}</span>
-                          <span className="text-gray-400">•</span>
-                          <span className="text-gray-500">{formatShortDate(contact.createdAt)}</span>
+                          <span className={isDarkMode ? "text-gray-600" : "text-gray-400"}>•</span>
+                          <span className={isDarkMode ? "text-gray-400" : "text-gray-500"}>{formatShortDate(contact.createdAt)}</span>
                         </div>
-                        <p className="mt-2 text-sm text-gray-600 line-clamp-2">{contact.message}</p>
+                        <p className={`mt-2 text-sm line-clamp-2 ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>{contact.message}</p>
                       </div>
                     </div>
                     
@@ -296,27 +302,29 @@ export default function AdminContacts() {
       {/* Contact Detail Modal */}
       {selectedContact && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+          <div className={`rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+            <div className={`flex items-center justify-between p-6 border-b ${isDarkMode ? "border-gray-700 bg-indigo-900/20" : "border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50"}`}>
               <div className="flex items-center gap-4">
                 <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-semibold ${
                   selectedContact.status === "new" 
                     ? "bg-gradient-to-br from-blue-500 to-indigo-500 text-white" 
-                    : "bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600"
+                    : isDarkMode
+                      ? "bg-gray-700 text-gray-300"
+                      : "bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600"
                 }`}>
                   {selectedContact.firstName.charAt(0)}{selectedContact.lastName.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">
+                  <h3 className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
                     {selectedContact.firstName} {selectedContact.lastName}
                   </h3>
-                  <p className="text-sm text-gray-500">{formatDate(selectedContact.createdAt)}</p>
+                  <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{formatDate(selectedContact.createdAt)}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedContact(null)}
-                className="p-2 rounded-lg hover:bg-white/70 text-gray-500 hover:text-gray-700 transition-colors"
+                className={`p-2 rounded-lg transition-colors ${isDarkMode ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200" : "hover:bg-white/70 text-gray-500 hover:text-gray-700"}`}
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
@@ -336,43 +344,43 @@ export default function AdminContacts() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <a
                   href={`mailto:${selectedContact.email}`}
-                  className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group"
+                  className={`flex items-center gap-3 p-4 rounded-xl transition-colors group ${isDarkMode ? "bg-gray-700/50 hover:bg-gray-700" : "bg-gray-50 hover:bg-gray-100"}`}
                 >
                   <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200">
                     <EnvelopeIcon className="h-5 w-5" />
                   </div>
                   <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wider">Email</div>
-                    <div className="text-gray-900 font-medium">{selectedContact.email}</div>
+                    <div className={`text-xs uppercase tracking-wider ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}>Email</div>
+                    <div className={`font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>{selectedContact.email}</div>
                   </div>
                 </a>
                 <a
                   href={`tel:${selectedContact.phoneNumber}`}
-                  className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group"
+                  className={`flex items-center gap-3 p-4 rounded-xl transition-colors group ${isDarkMode ? "bg-gray-700/50 hover:bg-gray-700" : "bg-gray-50 hover:bg-gray-100"}`}
                 >
                   <div className="p-2 rounded-lg bg-green-100 text-green-600 group-hover:bg-green-200">
                     <PhoneIcon className="h-5 w-5" />
                   </div>
                   <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wider">Phone</div>
-                    <div className="text-gray-900 font-medium">{selectedContact.phoneNumber}</div>
+                    <div className={`text-xs uppercase tracking-wider ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}>Phone</div>
+                    <div className={`font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>{selectedContact.phoneNumber}</div>
                   </div>
                 </a>
               </div>
 
               {/* Product Interest */}
               <div className="mb-6">
-                <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Product Interest</div>
-                <div className="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 font-medium">
+                <div className={`text-xs uppercase tracking-wider mb-2 ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}>Product Interest</div>
+                <div className={`inline-flex items-center px-4 py-2 rounded-lg font-medium ${isDarkMode ? "bg-indigo-900/30 border border-indigo-700 text-indigo-400" : "bg-indigo-50 border border-indigo-200 text-indigo-700"}`}>
                   {selectedContact.product}
                 </div>
               </div>
 
               {/* Message */}
               <div>
-                <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Message</div>
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
-                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                <div className={`text-xs uppercase tracking-wider mb-2 ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}>Message</div>
+                <div className={`p-4 rounded-xl border ${isDarkMode ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"}`}>
+                  <p className={`whitespace-pre-wrap leading-relaxed ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     {selectedContact.message}
                   </p>
                 </div>
@@ -380,7 +388,7 @@ export default function AdminContacts() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-gray-200 bg-gray-50">
+            <div className={`p-6 border-t ${isDarkMode ? "border-gray-700 bg-gray-700/30" : "border-gray-200 bg-gray-50"}`}>
               <div className="flex flex-wrap gap-3">
                 {/* Reply via Gmail - Primary Action */}
                 <button
@@ -408,7 +416,7 @@ export default function AdminContacts() {
                 {selectedContact.status !== "replied" && (
                   <button
                     onClick={() => updateStatusMutation.mutate({ id: selectedContact._id, status: "replied" })}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-green-600 font-medium hover:bg-green-50 transition-colors border border-gray-200"
+                    className={`inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-colors border ${isDarkMode ? "bg-gray-700 text-green-400 border-gray-600 hover:bg-gray-600" : "bg-white text-green-600 border-gray-200 hover:bg-green-50"}`}
                   >
                     <CheckCircleIcon className="h-5 w-5" />
                     Mark Replied
@@ -417,7 +425,7 @@ export default function AdminContacts() {
                 {selectedContact.status !== "archived" && (
                   <button
                     onClick={() => updateStatusMutation.mutate({ id: selectedContact._id, status: "archived" })}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-gray-600 font-medium hover:bg-gray-100 transition-colors border border-gray-200"
+                    className={`inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-colors border ${isDarkMode ? "bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-100"}`}
                   >
                     <ArchiveBoxIcon className="h-5 w-5" />
                     Archive

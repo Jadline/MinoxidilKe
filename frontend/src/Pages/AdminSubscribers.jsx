@@ -198,51 +198,53 @@ export default function AdminSubscribers() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <div className={`rounded-2xl p-6 border shadow-sm ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-xl">
-              <UserGroupIcon className="h-7 w-7 text-purple-600" />
+            <div className={`p-3 rounded-xl ${isDarkMode ? "bg-purple-900/30" : "bg-gradient-to-br from-purple-100 to-indigo-100"}`}>
+              <UserGroupIcon className={`h-7 w-7 ${isDarkMode ? "text-purple-400" : "text-purple-600"}`} />
             </div>
             <div>
-              <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
-              <div className="text-sm text-gray-500">Total Subscribers</div>
+              <div className={`text-3xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{stats.total}</div>
+              <div className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>Total Subscribers</div>
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+        <div className={`rounded-2xl p-6 border ${isDarkMode ? "bg-green-900/20 border-green-800" : "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200"}`}>
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-green-100 rounded-xl">
-              <CheckCircleIcon className="h-7 w-7 text-green-600" />
+            <div className={`p-3 rounded-xl ${isDarkMode ? "bg-green-900/50" : "bg-green-100"}`}>
+              <CheckCircleIcon className={`h-7 w-7 ${isDarkMode ? "text-green-400" : "text-green-600"}`} />
             </div>
             <div>
-              <div className="text-3xl font-bold text-green-700">{stats.active}</div>
-              <div className="text-sm text-green-600">Active Subscribers</div>
+              <div className={`text-3xl font-bold ${isDarkMode ? "text-green-400" : "text-green-700"}`}>{stats.active}</div>
+              <div className={`text-sm ${isDarkMode ? "text-green-400" : "text-green-600"}`}>Active Subscribers</div>
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl p-6 border border-red-200">
+        <div className={`rounded-2xl p-6 border ${isDarkMode ? "bg-red-900/20 border-red-800" : "bg-gradient-to-br from-red-50 to-rose-50 border-red-200"}`}>
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-red-100 rounded-xl">
-              <XCircleIcon className="h-7 w-7 text-red-600" />
+            <div className={`p-3 rounded-xl ${isDarkMode ? "bg-red-900/50" : "bg-red-100"}`}>
+              <XCircleIcon className={`h-7 w-7 ${isDarkMode ? "text-red-400" : "text-red-600"}`} />
             </div>
             <div>
-              <div className="text-3xl font-bold text-red-700">{stats.inactive}</div>
-              <div className="text-sm text-red-600">Unsubscribed</div>
+              <div className={`text-3xl font-bold ${isDarkMode ? "text-red-400" : "text-red-700"}`}>{stats.inactive}</div>
+              <div className={`text-sm ${isDarkMode ? "text-red-400" : "text-red-600"}`}>Unsubscribed</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filter & List */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className={`rounded-2xl border shadow-sm overflow-hidden ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
         {/* Filter Tabs */}
-        <div className="flex items-center gap-2 p-4 border-b border-gray-100">
+        <div className={`flex items-center gap-2 p-4 border-b ${isDarkMode ? "border-gray-700" : "border-gray-100"}`}>
           <button
             onClick={() => setShowActive(true)}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               showActive
                 ? "bg-green-100 text-green-700 border border-green-200"
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent"
+                : isDarkMode 
+                  ? "bg-gray-700 text-gray-400 hover:bg-gray-600 border border-transparent"
+                  : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent"
             }`}
           >
             <CheckCircleIcon className="h-4 w-4" />
@@ -253,7 +255,9 @@ export default function AdminSubscribers() {
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               !showActive
                 ? "bg-red-100 text-red-700 border border-red-200"
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent"
+                : isDarkMode 
+                  ? "bg-gray-700 text-gray-400 hover:bg-gray-600 border border-transparent"
+                  : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent"
             }`}
           >
             <XCircleIcon className="h-4 w-4" />
@@ -278,34 +282,34 @@ export default function AdminSubscribers() {
           </div>
         ) : subscribers.length === 0 ? (
           <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <EnvelopeIcon className="h-10 w-10 text-purple-500" />
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${isDarkMode ? "bg-purple-900/30" : "bg-gradient-to-br from-purple-100 to-indigo-100"}`}>
+              <EnvelopeIcon className={`h-10 w-10 ${isDarkMode ? "text-purple-400" : "text-purple-500"}`} />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No subscribers yet</h3>
-            <p className="text-gray-500">
+            <h3 className={`text-lg font-semibold mb-2 ${isDarkMode ? "text-white" : "text-gray-900"}`}>No subscribers yet</h3>
+            <p className={isDarkMode ? "text-gray-400" : "text-gray-500"}>
               {showActive 
                 ? "Active subscribers will appear here" 
                 : "Unsubscribed users will appear here"}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className={`divide-y ${isDarkMode ? "divide-gray-700" : "divide-gray-100"}`}>
             {subscribers.map((subscriber, index) => (
               <div
                 key={subscriber._id}
-                className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                className={`flex items-center justify-between p-4 transition-colors ${isDarkMode ? "hover:bg-gray-700/50" : "hover:bg-gray-50"}`}
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
                     subscriber.isActive 
                       ? "bg-gradient-to-br from-purple-500 to-indigo-500 text-white" 
-                      : "bg-gray-200 text-gray-500"
+                      : isDarkMode ? "bg-gray-700 text-gray-400" : "bg-gray-200 text-gray-500"
                   }`}>
                     {subscriber.email.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">{subscriber.email}</div>
-                    <div className="text-sm text-gray-500">
+                    <div className={`font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>{subscriber.email}</div>
+                    <div className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                       Subscribed {formatDate(subscriber.subscribedAt)}
                     </div>
                   </div>
@@ -331,7 +335,7 @@ export default function AdminSubscribers() {
                   {subscriber.isActive && (
                     <a
                       href={`mailto:${subscriber.email}`}
-                      className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600 transition-colors"
+                      className={`p-2 rounded-lg transition-colors ${isDarkMode ? "bg-gray-700 text-gray-400 hover:bg-indigo-900/50 hover:text-indigo-400" : "bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600"}`}
                       title="Send email"
                     >
                       <EnvelopeIcon className="h-4 w-4" />
@@ -347,23 +351,23 @@ export default function AdminSubscribers() {
       {/* Newsletter Composer Modal */}
       {showComposer && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+          <div className={`rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
+            <div className={`flex items-center justify-between p-6 border-b ${isDarkMode ? "border-gray-700 bg-purple-900/20" : "border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50"}`}>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <PencilSquareIcon className="h-6 w-6 text-purple-600" />
+                <div className={`p-2 rounded-lg ${isDarkMode ? "bg-purple-900/50" : "bg-purple-100"}`}>
+                  <PencilSquareIcon className={`h-6 w-6 ${isDarkMode ? "text-purple-400" : "text-purple-600"}`} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Compose Newsletter</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Compose Newsletter</h3>
+                  <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                     Send to {stats.active} active subscriber{stats.active !== 1 ? 's' : ''}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowComposer(false)}
-                className="p-2 rounded-lg hover:bg-white/70 text-gray-500 hover:text-gray-700 transition-colors"
+                className={`p-2 rounded-lg transition-colors ${isDarkMode ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200" : "hover:bg-white/70 text-gray-500 hover:text-gray-700"}`}
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
@@ -373,8 +377,8 @@ export default function AdminSubscribers() {
             <div className="p-6 overflow-y-auto max-h-[60vh]">
               {/* Templates */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  <SparklesIcon className="h-4 w-4 inline mr-1 text-purple-500" />
+                <label className={`block text-sm font-medium mb-3 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                  <SparklesIcon className={`h-4 w-4 inline mr-1 ${isDarkMode ? "text-purple-400" : "text-purple-500"}`} />
                   Quick Templates
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -385,7 +389,9 @@ export default function AdminSubscribers() {
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         selectedTemplate.id === template.id
                           ? "bg-purple-100 text-purple-700 border border-purple-200"
-                          : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
+                          : isDarkMode 
+                            ? "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
+                            : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
                       }`}
                     >
                       {template.name}
@@ -396,7 +402,7 @@ export default function AdminSubscribers() {
 
               {/* Subject */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                   Subject Line
                 </label>
                 <input
@@ -404,13 +410,17 @@ export default function AdminSubscribers() {
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Enter email subject..."
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                  className={`w-full px-4 py-3 rounded-xl border transition-all ${
+                    isDarkMode 
+                      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                      : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                  }`}
                 />
               </div>
 
               {/* Content */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                   Email Content
                 </label>
                 <textarea
@@ -418,17 +428,21 @@ export default function AdminSubscribers() {
                   onChange={(e) => setContent(e.target.value)}
                   rows={12}
                   placeholder="Write your newsletter content here..."
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none font-mono text-sm"
+                  className={`w-full px-4 py-3 rounded-xl border transition-all resize-none font-mono text-sm ${
+                    isDarkMode 
+                      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                      : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                  }`}
                 />
               </div>
 
               {/* Preview Info */}
-              <div className="mt-4 p-4 rounded-xl bg-blue-50 border border-blue-200">
+              <div className={`mt-4 p-4 rounded-xl border ${isDarkMode ? "bg-blue-900/20 border-blue-800" : "bg-blue-50 border-blue-200"}`}>
                 <div className="flex items-start gap-3">
-                  <ChartBarIcon className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <ChartBarIcon className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isDarkMode ? "text-blue-400" : "text-blue-600"}`} />
                   <div className="text-sm">
-                    <p className="text-blue-700 font-medium">How this works:</p>
-                    <p className="text-blue-600 mt-1">
+                    <p className={`font-medium ${isDarkMode ? "text-blue-400" : "text-blue-700"}`}>How this works:</p>
+                    <p className={`mt-1 ${isDarkMode ? "text-blue-300" : "text-blue-600"}`}>
                       Clicking "Send Newsletter" will open Gmail in a new tab with all {stats.active} subscriber emails in BCC (hidden from each other for privacy), 
                       your subject line, and content pre-filled. You can review and make final edits before sending.
                     </p>
@@ -438,15 +452,15 @@ export default function AdminSubscribers() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-gray-200 bg-gray-50">
+            <div className={`p-6 border-t ${isDarkMode ? "border-gray-700 bg-gray-700/30" : "border-gray-200 bg-gray-50"}`}>
               <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600">
-                  Recipients: <span className="text-gray-900 font-medium">{stats.active} subscribers</span>
+                <div className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  Recipients: <span className={`font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>{stats.active} subscribers</span>
                 </div>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowComposer(false)}
-                    className="px-5 py-2.5 rounded-xl bg-white text-gray-700 font-medium hover:bg-gray-100 transition-colors border border-gray-200"
+                    className={`px-5 py-2.5 rounded-xl font-medium transition-colors border ${isDarkMode ? "bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100"}`}
                   >
                     Cancel
                   </button>

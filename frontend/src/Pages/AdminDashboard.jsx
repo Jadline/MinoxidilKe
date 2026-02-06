@@ -100,12 +100,12 @@ export default function AdminDashboard() {
   // Fetch stats
   const { data: productsData, isLoading: loadingProducts } = useQuery({
     queryKey: ["admin-products-count"],
-    queryFn: () => getProducts({ page: 1, limit: 1 }).then(r => r.data?.data?.totalProducts ?? 0),
+    queryFn: () => getProducts({ page: 1, limit: 1 }).then(r => r.data?.total ?? 0),
   });
 
   const { data: packagesData, isLoading: loadingPackages } = useQuery({
     queryKey: ["admin-packages-count"],
-    queryFn: () => getPackages({ page: 1, limit: 1 }).then(r => r.data?.data?.totalPackages ?? 0),
+    queryFn: () => getPackages().then(r => r.data?.data?.packages?.length ?? 0),
   });
 
   const { data: contactsData, isLoading: loadingContacts } = useQuery({

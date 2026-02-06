@@ -18,6 +18,7 @@ import {
   ChevronRightIcon,
   SunIcon,
   MoonIcon,
+  UsersIcon,
 } from "@heroicons/react/24/outline";
 import { useDarkModeStore } from "../stores/darkModeStore";
 
@@ -39,6 +40,7 @@ const navSections = [
     title: "Sales",
     items: [
       { name: "Orders", to: "/admin/orders", icon: ClipboardDocumentListIcon },
+      { name: "Customers", to: "/admin/customers", icon: UsersIcon },
     ],
   },
   {

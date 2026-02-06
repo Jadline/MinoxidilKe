@@ -490,7 +490,7 @@ export default function AdminPackagesList() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className={`min-w-full divide-y ${isDarkMode ? "divide-gray-700" : "divide-gray-200"}`}>
               <thead className={isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}>
                 <tr>
                   <th scope="col" className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Package</th>
@@ -504,10 +504,10 @@ export default function AdminPackagesList() {
               </thead>
               <tbody className={`divide-y ${isDarkMode ? "divide-gray-700" : "divide-gray-100"}`}>
                 {packages.map((pkg) => (
-                  <tr key={pkg.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={pkg.id} className={`transition-colors ${isDarkMode ? "hover:bg-gray-700/50" : "hover:bg-gray-50"}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="relative h-12 w-12 shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100">
+                        <div className={`relative h-12 w-12 shrink-0 rounded-xl overflow-hidden ${isDarkMode ? "bg-indigo-900/30" : "bg-gradient-to-br from-indigo-100 to-purple-100"}`}>
                           {pkg.imageSrc ? (
                             <img
                               src={packageImageSrc(pkg.imageSrc)}
@@ -521,13 +521,13 @@ export default function AdminPackagesList() {
                             </div>
                           )}
                         </div>
-                        <span className="font-medium text-gray-900">{pkg.name}</span>
+                        <span className={`font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>{pkg.name}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm font-semibold text-gray-900">KSh {Number(pkg.bundlePrice ?? 0).toLocaleString()}</span>
+                      <span className={`text-sm font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>KSh {Number(pkg.bundlePrice ?? 0).toLocaleString()}</span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 max-w-[180px]" title={pkg.description || ""}>
+                    <td className={`px-4 py-3 text-sm max-w-[180px] ${isDarkMode ? "text-gray-300" : "text-gray-600"}`} title={pkg.description || ""}>
                       {truncate(pkg.description, 35)}
                     </td>
                     <td className="px-4 py-3">
@@ -536,20 +536,20 @@ export default function AdminPackagesList() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">{pkg.category || "—"}</span>
+                      <span className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-medium ${isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"}`}>{pkg.category || "—"}</span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className={`px-4 py-3 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
                       <span className="inline-flex items-center gap-1.5">
-                        <CubeIcon className="h-4 w-4 text-gray-400" />
+                        <CubeIcon className={`h-4 w-4 ${isDarkMode ? "text-gray-500" : "text-gray-400"}`} />
                         {Array.isArray(pkg.productIds) ? pkg.productIds.length : 0}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button type="button" onClick={() => setEditPackage(pkg)} className="rounded-lg p-2 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors" title="Edit">
+                        <button type="button" onClick={() => setEditPackage(pkg)} className={`rounded-lg p-2 transition-colors ${isDarkMode ? "text-gray-400 hover:bg-indigo-900/30 hover:text-indigo-400" : "text-gray-500 hover:bg-indigo-50 hover:text-indigo-600"}`} title="Edit">
                           <PencilSquareIcon className="h-5 w-5" />
                         </button>
-                        <button type="button" onClick={() => handleDeleteClick(pkg.id, pkg.name)} disabled={isDeleting} className="rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors" title="Delete">
+                        <button type="button" onClick={() => handleDeleteClick(pkg.id, pkg.name)} disabled={isDeleting} className={`rounded-lg p-2 disabled:opacity-50 transition-colors ${isDarkMode ? "text-gray-400 hover:bg-red-900/30 hover:text-red-400" : "text-gray-500 hover:bg-red-50 hover:text-red-600"}`} title="Delete">
                           <TrashIcon className="h-5 w-5" />
                         </button>
                       </div>
@@ -565,23 +565,23 @@ export default function AdminPackagesList() {
       {/* Delete package confirmation modal */}
       {deleteConfirmPackage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           aria-modal="true"
           role="dialog"
           aria-labelledby="delete-package-title"
           onClick={handleDeleteCancel}
         >
           <div
-            className="bg-white rounded-xl shadow-xl max-w-md w-full p-6"
+            className={`rounded-xl shadow-xl max-w-md w-full p-6 ${isDarkMode ? "bg-gray-800" : "bg-white"}`}
             onClick={(e) => e.stopPropagation()}
           >
             <h2
               id="delete-package-title"
-              className="text-lg font-semibold text-gray-900"
+              className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}
             >
               Delete package?
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className={`mt-2 text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
               Delete package &quot;{deleteConfirmPackage.name}&quot;? This
               cannot be undone.
             </p>
@@ -590,7 +590,7 @@ export default function AdminPackagesList() {
                 type="button"
                 onClick={handleDeleteCancel}
                 disabled={isDeleting}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className={`rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50 ${isDarkMode ? "border-gray-600 text-gray-300 hover:bg-gray-700" : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"}`}
               >
                 Cancel
               </button>
@@ -610,21 +610,21 @@ export default function AdminPackagesList() {
       {/* Add package modal */}
       {addModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           aria-modal="true"
           role="dialog"
           onClick={closeAddModal}
         >
           <div
-            className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+            className={`rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col ${isDarkMode ? "bg-gray-800" : "bg-white"}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-[#082567]">Add package</h2>
+            <div className={`flex items-center justify-between px-6 py-4 border-b ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
+              <h2 className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-[#082567]"}`}>Add package</h2>
               <button
                 type="button"
                 onClick={closeAddModal}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                className={`rounded-lg p-2 ${isDarkMode ? "text-gray-400 hover:bg-gray-700" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"}`}
                 aria-label="Close"
               >
                 <XMarkIcon className="h-5 w-5" />
@@ -635,13 +635,13 @@ export default function AdminPackagesList() {
               className="overflow-y-auto flex-1 px-6 py-4 space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                   Package name *
                 </label>
                 <input
                   type="text"
                   {...addRegister("name", { required: "Name is required" })}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                  className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                 />
                 {addErrors.name && (
                   <p className="mt-1 text-sm text-red-600">
@@ -650,17 +650,17 @@ export default function AdminPackagesList() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                   Description
                 </label>
                 <textarea
                   rows={3}
                   {...addRegister("description")}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                  className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                   Bundle price (KSh) *
                 </label>
                 <input
@@ -671,7 +671,7 @@ export default function AdminPackagesList() {
                     required: "Bundle price is required",
                     min: { value: 0, message: "Must be ≥ 0" },
                   })}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                  className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                 />
                 {addErrors.bundlePrice && (
                   <p className="mt-1 text-sm text-red-600">
@@ -680,15 +680,15 @@ export default function AdminPackagesList() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                   Products in this package *
                 </label>
-                <p className="text-sm text-gray-500 mb-2">
+                <p className={`text-sm mb-2 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                   Select the products included in this bundle.
                 </p>
-                <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 space-y-2">
+                <div className={`max-h-48 overflow-y-auto border rounded-md p-3 space-y-2 ${isDarkMode ? "border-gray-600 bg-gray-700/50" : "border-gray-200"}`}>
                   {products.length === 0 ? (
-                    <p className="text-sm text-gray-500">
+                    <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                       No products found. Add products first.
                     </p>
                   ) : (
@@ -701,9 +701,9 @@ export default function AdminPackagesList() {
                           type="checkbox"
                           checked={addSelectedProductIds.includes(prod.id)}
                           onChange={() => toggleAddProductId(prod.id)}
-                          className="h-4 w-4 rounded border-gray-300 text-[#082567] focus:ring-[#082567]"
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
-                        <span className="text-sm text-gray-700">
+                        <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                           {prod.name} — KSh{" "}
                           {Number(prod.price ?? 0).toLocaleString()}
                         </span>
@@ -719,11 +719,11 @@ export default function AdminPackagesList() {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     Package image
                   </label>
                   <div className="mt-1 flex items-start gap-3">
-                    <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-[#082567]/30 bg-[#082567]/5 px-3 py-2 text-sm font-medium text-[#082567] hover:bg-[#082567]/10">
+                    <label className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium ${isDarkMode ? "border-indigo-500/30 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20" : "border-[#082567]/30 bg-[#082567]/5 text-[#082567] hover:bg-[#082567]/10"}`}>
                       <PlusIcon className="h-4 w-4" />
                       {isUploadingImage ? "Uploading…" : "Choose image"}
                       <input
@@ -739,38 +739,38 @@ export default function AdminPackagesList() {
                         <img
                           src={packageImageSrc(addWatch("imageSrc"))}
                           alt="Preview"
-                          className="h-12 w-12 rounded-lg object-cover border border-gray-200"
+                          className={`h-12 w-12 rounded-lg object-cover border ${isDarkMode ? "border-gray-600" : "border-gray-200"}`}
                           onError={(e) => {
                             e.target.style.display = "none";
                           }}
                         />
-                        <span className="text-xs text-gray-500 truncate">
+                        <span className={`text-xs truncate ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                           {addWatch("imageSrc")}
                         </span>
                       </div>
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className={`mt-1 text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                     JPG, PNG, WebP or GIF, max 5MB
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     Image alt text
                   </label>
                   <input
                     type="text"
                     {...addRegister("imageAlt")}
                     placeholder="Describe the image for accessibility"
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                    className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                   Features / usage information
                 </label>
-                <p className="text-sm text-gray-500 mt-0.5 mb-1">
+                <p className={`text-sm mt-0.5 mb-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                   Describe how to use the products or key information. Shown on
                   the package details page.
                 </p>
@@ -778,40 +778,40 @@ export default function AdminPackagesList() {
                   rows={4}
                   {...addRegister("featuresText")}
                   placeholder="e.g. Apply minoxidil once daily. Use the shampoo 2–3 times per week."
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                  className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                 />
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     Quantity label
                   </label>
                   <input
                     type="text"
                     {...addRegister("quantityLabel")}
                     placeholder="e.g. 1 pack"
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                    className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     Lead time
                   </label>
                   <input
                     type="text"
                     {...addRegister("leadTime")}
                     placeholder="e.g. 2-3 days"
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                    className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                   Category
                 </label>
                 <select
                   {...addRegister("category")}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                  className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                 >
                   <option value="">Select category</option>
                   {categories.map((c) => (
@@ -826,7 +826,7 @@ export default function AdminPackagesList() {
                     type="text"
                     {...addRegister("categoryCustom")}
                     placeholder="Type custom category"
-                    className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                    className={`mt-2 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                   />
                 )}
               </div>
@@ -835,29 +835,29 @@ export default function AdminPackagesList() {
                   type="checkbox"
                   id="addPkgInStock"
                   {...addRegister("inStock")}
-                  className="h-4 w-4 rounded border-gray-300 text-[#082567] focus:ring-[#082567]"
+                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <label
                   htmlFor="addPkgInStock"
-                  className="text-sm text-gray-700"
+                  className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}
                 >
                   In stock
                 </label>
               </div>
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <div className={`flex gap-3 pt-4 border-t ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
                 <button
                   type="submit"
                   disabled={
                     isAddingPackage || addSelectedProductIds.length === 0
                   }
-                  className="rounded-lg bg-[#082567] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#061d4d] disabled:opacity-50"
+                  className="rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50"
                 >
                   {isAddingPackage ? "Creating…" : "Create package"}
                 </button>
                 <button
                   type="button"
                   onClick={closeAddModal}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className={`rounded-lg border px-4 py-2 text-sm font-medium ${isDarkMode ? "border-gray-600 text-gray-300 hover:bg-gray-700" : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"}`}
                 >
                   Cancel
                 </button>
@@ -870,21 +870,21 @@ export default function AdminPackagesList() {
       {/* Edit package modal */}
       {editPackage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           aria-modal="true"
           role="dialog"
           onClick={closeEditModal}
         >
           <div
-            className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+            className={`rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col ${isDarkMode ? "bg-gray-800" : "bg-white"}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-[#082567]">Edit package</h2>
+            <div className={`flex items-center justify-between px-6 py-4 border-b ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
+              <h2 className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-[#082567]"}`}>Edit package</h2>
               <button
                 type="button"
                 onClick={closeEditModal}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                className={`rounded-lg p-2 ${isDarkMode ? "text-gray-400 hover:bg-gray-700" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"}`}
                 aria-label="Close"
               >
                 <XMarkIcon className="h-5 w-5" />
@@ -900,13 +900,13 @@ export default function AdminPackagesList() {
                 className="overflow-y-auto flex-1 px-6 py-4 space-y-4"
               >
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     Package name *
                   </label>
                   <input
                     type="text"
                     {...editRegister("name", { required: "Name is required" })}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                    className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                   />
                   {editErrors.name && (
                     <p className="mt-1 text-sm text-red-600">
@@ -915,17 +915,17 @@ export default function AdminPackagesList() {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     Description
                   </label>
                   <textarea
                     rows={3}
                     {...editRegister("description")}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                    className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     Bundle price (KSh) *
                   </label>
                   <input
@@ -936,7 +936,7 @@ export default function AdminPackagesList() {
                       required: "Bundle price is required",
                       min: { value: 0, message: "Must be ≥ 0" },
                     })}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                    className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                   />
                   {editErrors.bundlePrice && (
                     <p className="mt-1 text-sm text-red-600">
@@ -945,12 +945,12 @@ export default function AdminPackagesList() {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     Products in this package *
                   </label>
-                  <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 space-y-2">
+                  <div className={`max-h-48 overflow-y-auto border rounded-md p-3 space-y-2 ${isDarkMode ? "border-gray-600 bg-gray-700/50" : "border-gray-200"}`}>
                     {products.length === 0 ? (
-                      <p className="text-sm text-gray-500">
+                      <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                         No products found.
                       </p>
                     ) : (
@@ -963,9 +963,9 @@ export default function AdminPackagesList() {
                             type="checkbox"
                             checked={editSelectedProductIds.includes(prod.id)}
                             onChange={() => toggleEditProductId(prod.id)}
-                            className="h-4 w-4 rounded border-gray-300 text-[#082567] focus:ring-[#082567]"
+                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                           />
-                          <span className="text-sm text-gray-700">
+                          <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                             {prod.name} — KSh{" "}
                             {Number(prod.price ?? 0).toLocaleString()}
                           </span>
@@ -981,11 +981,11 @@ export default function AdminPackagesList() {
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                       Package image
                     </label>
                     <div className="mt-1 flex items-start gap-3">
-                      <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-[#082567]/30 bg-[#082567]/5 px-3 py-2 text-sm font-medium text-[#082567] hover:bg-[#082567]/10">
+                      <label className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium ${isDarkMode ? "border-indigo-500/30 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20" : "border-[#082567]/30 bg-[#082567]/5 text-[#082567] hover:bg-[#082567]/10"}`}>
                         <PlusIcon className="h-4 w-4" />
                         {isUploadingImage ? "Uploading…" : "Change image"}
                         <input
@@ -999,42 +999,40 @@ export default function AdminPackagesList() {
                       {editWatch("imageSrc") && (
                         <div className="flex items-center gap-2 min-w-0">
                           <img
-                            src={(() => { const src = packageImageSrc(editWatch("imageSrc")); console.log("[DEBUG] Edit modal image src:", src); return src; })()}
+                            src={packageImageSrc(editWatch("imageSrc"))}
                             alt="Preview"
-                            className="h-12 w-12 rounded-lg object-cover border border-gray-200"
+                            className={`h-12 w-12 rounded-lg object-cover border ${isDarkMode ? "border-gray-600" : "border-gray-200"}`}
                             onError={(e) => {
-                              console.error("[DEBUG] Edit modal image FAILED to load:", e.target.src);
                               e.target.style.display = "none";
                             }}
-                            onLoad={() => console.log("[DEBUG] Edit modal image loaded successfully")}
                           />
-                          <span className="text-xs text-gray-500 truncate">
+                          <span className={`text-xs truncate ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                             {editWatch("imageSrc")}
                           </span>
                         </div>
                       )}
                     </div>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className={`mt-1 text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                       JPG, PNG, WebP or GIF, max 5MB
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                       Image alt text
                     </label>
                     <input
                       type="text"
                       {...editRegister("imageAlt")}
                       placeholder="Describe the image for accessibility"
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                      className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     Features / usage information
                   </label>
-                  <p className="text-sm text-gray-500 mt-0.5 mb-1">
+                  <p className={`text-sm mt-0.5 mb-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                     Describe how to use the products or key information. Shown
                     on the package details page.
                   </p>
@@ -1042,15 +1040,15 @@ export default function AdminPackagesList() {
                     rows={4}
                     {...editRegister("featuresText")}
                     placeholder="e.g. Apply minoxidil once daily. Use the shampoo 2–3 times per week."
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                    className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                       Rating (read-only)
                     </label>
-                    <p className="mt-1 text-sm text-gray-600">
+                    <p className={`mt-1 text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
                       {editPackageData?.rating != null &&
                       editPackageData?.rating !== ""
                         ? Number(editPackageData.rating).toFixed(1)
@@ -1059,33 +1057,33 @@ export default function AdminPackagesList() {
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                       Quantity label
                     </label>
                     <input
                       type="text"
                       {...editRegister("quantityLabel")}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                      className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                       Lead time
                     </label>
                     <input
                       type="text"
                       {...editRegister("leadTime")}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                      className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className={`block text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     Category
                   </label>
                   <select
                     {...editRegister("category")}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                    className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                   >
                     <option value="">Select category</option>
                     {categories.map((c) => (
@@ -1100,7 +1098,7 @@ export default function AdminPackagesList() {
                       type="text"
                       {...editRegister("categoryCustom")}
                       placeholder="Type custom category"
-                      className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#082567] focus:ring-1 focus:ring-[#082567]"
+                      className={`mt-2 block w-full rounded-md border px-3 py-2 text-sm focus:ring-1 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500" : "border-gray-300 focus:border-[#082567] focus:ring-[#082567]"}`}
                     />
                   )}
                 </div>
@@ -1109,29 +1107,29 @@ export default function AdminPackagesList() {
                     type="checkbox"
                     id="editPkgInStock"
                     {...editRegister("inStock")}
-                    className="h-4 w-4 rounded border-gray-300 text-[#082567] focus:ring-[#082567]"
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                   />
                   <label
                     htmlFor="editPkgInStock"
-                    className="text-sm text-gray-700"
+                    className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}
                   >
                     In stock
                   </label>
                 </div>
-                <div className="flex gap-3 pt-4 border-t border-gray-200">
+                <div className={`flex gap-3 pt-4 border-t ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
                   <button
                     type="submit"
                     disabled={
                       isUpdatingPackage || editSelectedProductIds.length === 0
                     }
-                    className="rounded-lg bg-[#082567] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#061d4d] disabled:opacity-50"
+                    className="rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50"
                   >
                     {isUpdatingPackage ? "Saving…" : "Save changes"}
                   </button>
                   <button
                     type="button"
                     onClick={closeEditModal}
-                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className={`rounded-lg border px-4 py-2 text-sm font-medium ${isDarkMode ? "border-gray-600 text-gray-300 hover:bg-gray-700" : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"}`}
                   >
                     Cancel
                   </button>
