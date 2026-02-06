@@ -7,19 +7,19 @@ const {
   updateSetting,
   updatePromoBanner,
 } = require("../controllers/settingsController");
-const { protect, admin } = require("../middlewares/authMiddleware");
+const { authMiddleware, requireRole } = require("../middlewares/authMiddleware");
 
 // Public routes
 router.get("/public", getPublicSettings);
 
 // Admin routes
-router.get("/", protect, admin, getAllSettings);
+router.get("/", authMiddleware, requireRole(["admin"]), getAllSettings);
 
 // Specific routes MUST come before parameterized routes
-router.put("/promo-banner/update", protect, admin, updatePromoBanner);
+router.put("/promo-banner/update", authMiddleware, requireRole(["admin"]), updatePromoBanner);
 
 // Parameterized routes (must be last)
-router.get("/:key", protect, admin, getSetting);
-router.put("/:key", protect, admin, updateSetting);
+router.get("/:key", authMiddleware, requireRole(["admin"]), getSetting);
+router.put("/:key", authMiddleware, requireRole(["admin"]), updateSetting);
 
 module.exports = router;
