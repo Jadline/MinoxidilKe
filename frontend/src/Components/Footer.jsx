@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import NewsletterSignup from "./NewsletterSignup";
 
 const navigation = {
   main: [
@@ -44,40 +45,72 @@ const navigation = {
 };
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+  
   return (
     <footer className="bg-gradient-to-r from-[#000080] via-[#0066cc] to-[#39a9db] mt-4">
-      <div className="mx-auto max-w-7xl overflow-hidden px-6 py-20 sm:py-24 lg:px-8">
-        <nav
-          aria-label="Footer"
-          className="-mb-6 flex flex-wrap justify-center gap-x-12 gap-y-3 text-sm/6"
-        >
-          {navigation.main.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.to}
-              className="text-white hover:text-white"
-            >
-              {item.name}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="mt-16 flex justify-center gap-x-10">
-          {navigation.social.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white hover:text-white"
-            >
-              <span className="sr-only">{item.name}</span>
-              <item.icon aria-hidden="true" className="size-6" />
-            </a>
-          ))}
+      <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          {/* Brand & Newsletter */}
+          <div className="lg:col-span-1">
+            <h3 className="text-lg font-semibold text-white">MinoxidilKe</h3>
+            <p className="mt-2 text-sm text-gray-200">
+              Your trusted source for hair growth solutions in East Africa.
+            </p>
+            <NewsletterSignup />
+          </div>
+
+          {/* Quick Links */}
+          <div className="lg:col-span-1">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
+              Quick Links
+            </h3>
+            <nav className="mt-4 flex flex-col space-y-3">
+              {navigation.main.map((item) => (
+                <NavLink
+                  key={item.name}
+                  to={item.to}
+                  className="text-sm text-gray-200 hover:text-white transition-colors"
+                >
+                  {item.name}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+
+          {/* Social Links */}
+          <div className="lg:col-span-1">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
+              Follow Us
+            </h3>
+            <div className="mt-4 flex gap-x-6">
+              {navigation.social.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-200 hover:text-white transition-colors"
+                  title={item.name}
+                >
+                  <span className="sr-only">{item.name}</span>
+                  <item.icon aria-hidden="true" className="size-6" />
+                </a>
+              ))}
+            </div>
+            <p className="mt-6 text-sm text-gray-200">
+              Have questions? Reach out to us on WhatsApp!
+            </p>
+          </div>
         </div>
-        <p className="mt-10 text-center text-sm/6 text-white">
-          &copy; 2024 MinoxidilKe, Inc. All rights reserved.
-        </p>
+
+        {/* Bottom Bar */}
+        <div className="mt-12 pt-8 border-t border-white/20">
+          <p className="text-center text-sm text-gray-200">
+            &copy; {currentYear} MinoxidilKe. All rights reserved.
+          </p>
+        </div>
       </div>
     </footer>
   );

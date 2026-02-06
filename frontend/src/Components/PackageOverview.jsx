@@ -14,6 +14,7 @@ import {
   DisclosurePanel,
 } from "@headlessui/react";
 import { getReviewsByPackage, createPackageReview } from "../api";
+import Breadcrumb from "./Breadcrumb";
 
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 const PACKAGE_CART_ID_PREFIX = "package-";
@@ -102,9 +103,20 @@ export default function PackageOverview({ package: pkgProp }) {
     });
   };
 
+  const breadcrumbItems = [
+    { name: "Shop", href: "/products" },
+    { name: "Packages", href: "/products?tab=packages" },
+    { name: pkg.name },
+  ];
+
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+        {/* Breadcrumb Navigation */}
+        <div className="mb-6">
+          <Breadcrumb items={breadcrumbItems} />
+        </div>
+        
         <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
           {/* Image - same layout as product */}
           <div className="aspect-square w-full rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center sm:rounded-lg">
@@ -134,10 +146,12 @@ export default function PackageOverview({ package: pkgProp }) {
             <div className="mt-3">
               <h3 className="sr-only">Rating</h3>
               <div className="flex items-center gap-2">
-                <StarRating rating={pkg.rating ?? 0} size="md" />
-                <span className="text-sm text-gray-500">
-                  ({(pkg.rating ?? 0).toFixed(1)})
-                </span>
+                <StarRating 
+                  rating={pkg.rating ?? 0} 
+                  size="md" 
+                  reviewCount={pkg.reviewCount ?? reviews.length}
+                  showLabel={true}
+                />
               </div>
             </div>
 

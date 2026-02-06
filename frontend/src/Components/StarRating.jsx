@@ -8,15 +8,29 @@ const MAX_STARS = 5;
  * @param {number} rating - Current rating (0–5). For display can be decimal; for interactive use integer.
  * @param {function} [onChange] - If provided, component is interactive; called with 1–5 on click.
  * @param {string} [size] - 'sm' | 'md' | 'lg' (default 'md').
+ * @param {number} [reviewCount] - Number of reviews. If 0 and not interactive, shows "New" badge.
+ * @param {boolean} [showLabel] - Whether to show "New" or review count label.
  */
-export default function StarRating({ rating = 0, onChange, size = "md" }) {
+export default function StarRating({ rating = 0, onChange, size = "md", reviewCount, showLabel = false }) {
   const isInteractive = typeof onChange === "function";
   const value = Math.min(MAX_STARS, Math.max(0, Number(rating) || 0));
   const fullStars = Math.floor(value);
   const hasHalf = value % 1 >= 0.25 && value % 1 < 0.75;
+  const hasNoReviews = reviewCount === 0 || (reviewCount === undefined && value === 0);
 
   const sizeClasses = { sm: "h-4 w-4", md: "h-5 w-5", lg: "h-6 w-6" };
   const iconClass = sizeClasses[size] || sizeClasses.md;
+
+  // If no reviews and not interactive, show "New" badge
+  if (hasNoReviews && !isInteractive && showLabel) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
+          New
+        </span>
+      </div>
+    );
+  }
 
   const handleClick = (star) => {
     if (isInteractive && star >= 1 && star <= MAX_STARS) onChange(star);
@@ -69,6 +83,16 @@ export default function StarRating({ rating = 0, onChange, size = "md" }) {
           <StarIconOutline key={star} {...starProps} />
         );
       })}
+      {showLabel && reviewCount !== undefined && reviewCount > 0 && (
+        <span className="ml-1.5 text-sm text-gray-500">
+          ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
+        </span>
+      )}
+      {showLabel && hasNoReviews && !isInteractive && (
+        <span className="ml-1.5 text-sm text-gray-400">
+          No reviews yet
+        </span>
+      )}
     </div>
   );
 }

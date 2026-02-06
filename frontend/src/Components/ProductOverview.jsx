@@ -19,7 +19,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCartStore } from "../stores/cartStore";
 import { useUserStore } from "../stores/userStore";
+import { useRecentlyViewedStore } from "../stores/recentlyViewedStore";
 import { getReviewsByProduct, createReview } from "../api";
+import Breadcrumb from "./Breadcrumb";
+import WishlistButton from "./WishlistButton";
+import RecentlyViewed from "./RecentlyViewed";
+import StockNotification from "./StockNotification";
+import { ProductDetailSEO } from "./SEO";
 
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 
@@ -113,13 +119,10 @@ const defaultproduct = {
   ],
 };
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
-
 export default function ProductOverview({ product: productProp }) {
   const { setCart } = useCartStore();
   const currentUser = useUserStore((s) => s.currentUser);
+  const addToRecentlyViewed = useRecentlyViewedStore((s) => s.addItem);
   const navigate = useNavigate();
   const location = useLocation();
   const product = productProp ?? location.state?.product ?? defaultproduct;
@@ -127,6 +130,13 @@ export default function ProductOverview({ product: productProp }) {
   const [reviews, setReviews] = useState([]);
 
   const productIdForReviews = product._id;
+
+  // Track recently viewed
+  useEffect(() => {
+    if (product && product._id) {
+      addToRecentlyViewed(product);
+    }
+  }, [product, addToRecentlyViewed]);
 
   useEffect(() => {
     if (!productIdForReviews) return;
@@ -187,7 +197,7 @@ export default function ProductOverview({ product: productProp }) {
       : `Hi! I'm interested in ${body}. Could you tell me more?`;
 
     return `https://wa.me/254726787330?text=${encodeURIComponent(message)}`;
-  }, [product]);
+  }, [product, formatPrice]);
 
   const handleAddReview = async (reviewData) => {
     if (!currentUser) {
@@ -203,11 +213,24 @@ export default function ProductOverview({ product: productProp }) {
   };
 
   if (!product) <p>Loading....</p>;
+  
+  const breadcrumbItems = [
+    { name: "Shop", href: "/products" },
+    { name: product.category || "Product", href: `/products?category=${encodeURIComponent(product.category || "")}` },
+    { name: product.name },
+  ];
+
   return (
     <div className="bg-white">
+      <ProductDetailSEO product={product} />
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+        {/* Breadcrumb Navigation */}
+        <div className="mb-6">
+          <Breadcrumb items={breadcrumbItems} />
+        </div>
+        
         <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
-          <TabGroup className="flex flex-col-reverse">
+          <TabGroup className="flex flex-col-reverse relative">
             <div className="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
               <TabList className="grid grid-cols-4 gap-6">
                 {images?.map((image) => (
@@ -234,7 +257,7 @@ export default function ProductOverview({ product: productProp }) {
 
             <TabPanels>
               {images.map((image) => (
-                <TabPanel key={image.id}>
+                <TabPanel key={image.id} className="relative">
                   <img
                     alt={image.alt || product.name}
                     src={productImageSrc(image.src)}
@@ -243,6 +266,10 @@ export default function ProductOverview({ product: productProp }) {
                 </TabPanel>
               ))}
             </TabPanels>
+            {/* Wishlist Button */}
+            <div className="absolute top-2 right-2 z-10">
+              <WishlistButton product={product} size="lg" className="shadow-md" />
+            </div>
           </TabGroup>
 
           <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
@@ -308,41 +335,51 @@ export default function ProductOverview({ product: productProp }) {
                 </fieldset>
               </div>
 
-              <div className="mt-10 flex">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
+              {/* Stock Status & Add to Cart */}
+              {product.inStock === false ? (
+                <div className="mt-10">
+                  <StockNotification 
+                    productId={product._id || product.id} 
+                    productName={product.name} 
+                  />
+                </div>
+              ) : (
+                <div className="mt-10 flex">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
 
-                    setCart((prevcart) => {
-                      const existingproduct = prevcart.find(
-                        (item) => item.id === product.id
-                      );
-                      if (existingproduct) {
-                        return prevcart.map((item) =>
-                          item.id === product.id
-                            ? { ...item, quantity: item.quantity + 1 }
-                            : item
+                      setCart((prevcart) => {
+                        const existingproduct = prevcart.find(
+                          (item) => item.id === product.id
                         );
-                      } else {
-                        return [...prevcart, { ...product, quantity: 1 }];
-                      }
-                    });
-                  }}
-                  className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-hidden sm:w-full"
-                >
-                  Add to Cart
-                </button>
+                        if (existingproduct) {
+                          return prevcart.map((item) =>
+                            item.id === product.id
+                              ? { ...item, quantity: item.quantity + 1 }
+                              : item
+                          );
+                        } else {
+                          return [...prevcart, { ...product, quantity: 1 }];
+                        }
+                      });
+                    }}
+                    className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-hidden sm:w-full"
+                  >
+                    Add to Cart
+                  </button>
 
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/products");
-                  }}
-                  className="ml-4 flex items-center justify-center rounded-md px-3 py-3 text-white gap-2 bg-indigo-600"
-                >
-                  Continue Shopping <FaArrowRight />
-                </button>
-              </div>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/products");
+                    }}
+                    className="ml-4 flex items-center justify-center rounded-md px-3 py-3 text-white gap-2 bg-indigo-600"
+                  >
+                    Continue Shopping <FaArrowRight />
+                  </button>
+                </div>
+              )}
             </form>
 
             <section aria-labelledby="details-heading" className="mt-12">
@@ -398,6 +435,9 @@ export default function ProductOverview({ product: productProp }) {
             </section>
           </div>
         </div>
+
+        {/* Recently Viewed Products */}
+        <RecentlyViewed excludeId={product._id || product.id} maxItems={4} />
       </div>
     </div>
   );

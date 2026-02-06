@@ -31,6 +31,8 @@ const AdminPickupLocations = lazy(() => import("./Pages/AdminPickupLocations"));
 const AdminOrders = lazy(() => import("./Pages/AdminOrders"));
 const AdminSettings = lazy(() => import("./Pages/AdminSettings"));
 const TermsAndConditions = lazy(() => import("./Pages/TermsAndConditions"));
+const NotFound = lazy(() => import("./Pages/NotFound"));
+const Wishlist = lazy(() => import("./Pages/Wishlist"));
 
 function App() {
   return (
@@ -70,6 +72,7 @@ function App() {
             <Route path="orders" element={<OrderHistory />} />
             <Route path="orders/:orderId" element={<ProductDetails />} />
             <Route path="terms" element={<TermsAndConditions />} />
+            <Route path="wishlist" element={<Wishlist />} />
           </Route>
 
           {/* Admin routes: separate layout, admin-only */}
@@ -96,7 +99,7 @@ function App() {
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

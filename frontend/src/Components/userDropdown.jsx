@@ -14,7 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useUserStore } from "../stores/userStore";
 import { useCartStore } from "../stores/cartStore";
 
-export default function UserDropdown() {
+export default function UserDropdown({ variant = "default" }) {
   const { currentUser, clearCurrentUser } = useUserStore();
   const { setCart } = useCartStore();
   const navigate = useNavigate();
@@ -25,15 +25,24 @@ export default function UserDropdown() {
     localStorage.removeItem("cart");
     navigate("/login");
   };
+
+  const isLight = variant === "light";
+
   return (
     <Menu as="div" className="relative inline-block">
-      <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-black inset-ring-1 inset-ring-white/5 hover:bg-white/20">
+      <MenuButton
+        className={`inline-flex w-full justify-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold ${
+          isLight
+            ? "bg-white/10 text-white hover:bg-white/20"
+            : "bg-white/10 text-black inset-ring-1 inset-ring-white/5 hover:bg-white/20"
+        }`}
+      >
         {currentUser
           ? currentUser.name || currentUser.email?.split("@")[0] || "My Account"
           : "Account"}
         <ChevronDownIcon
           aria-hidden="true"
-          className="-mr-1 size-5 text-gray-500"
+          className={`-mr-1 size-5 ${isLight ? "text-white/70" : "text-gray-500"}`}
         />
       </MenuButton>
 

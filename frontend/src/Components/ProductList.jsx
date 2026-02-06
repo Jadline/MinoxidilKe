@@ -2,6 +2,7 @@ import { useState } from "react";
 import ProductQuickView from "./ProductQuickView";
 import StarRating from "./StarRating";
 import Price from "./Price";
+import WishlistButton from "./WishlistButton";
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/cartStore";
 import { useShopProducts } from "../hooks/useShopProducts";
@@ -110,8 +111,12 @@ export default function ProductList() {
                       : "group-hover:opacity-75"
                   }`}
                 />
+                {/* Wishlist Button */}
+                <div className="absolute top-2 right-2 z-10">
+                  <WishlistButton product={product} size="sm" className="shadow-sm" />
+                </div>
                 {product.inStock === false && (
-                  <span className="absolute top-2 right-2 rounded-md bg-gray-800 px-2 py-1 text-xs font-medium text-white shadow-sm">
+                  <span className="absolute top-2 left-2 rounded-md bg-gray-800 px-2 py-1 text-xs font-medium text-white shadow-sm">
                     Out of stock
                   </span>
                 )}
@@ -133,12 +138,12 @@ export default function ProductList() {
                 </h3>
 
                 <div className="mt-3 flex items-center gap-3">
-                  <StarRating rating={product.rating ?? 0} size="sm" />
-                  <p className="text-sm text-gray-500 font-bold">
-                    {product.rating != null && product.rating !== ""
-                      ? Number(product.rating).toFixed(1)
-                      : "—"}
-                  </p>
+                  <StarRating 
+                    rating={product.rating ?? 0} 
+                    size="sm" 
+                    reviewCount={product.reviewCount ?? 0}
+                    showLabel={true}
+                  />
                 </div>
 
                 <p className="mt-4 text-base font-medium text-gray-900">

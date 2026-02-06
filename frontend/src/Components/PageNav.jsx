@@ -23,13 +23,16 @@ import {
   UserIcon,
   XMarkIcon,
   ArrowRightOnRectangleIcon,
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { useCartStore } from "../stores/cartStore";
 import { useCurrencyStore } from "../stores/currencyStore";
+import { useUserStore } from "../stores/userStore";
 import { getPublicSettings } from "../api";
 import UserDropdown from "./userDropdown";
 import CurrencySelector from "./CurrencySelector";
+import SearchBar from "./SearchBar";
 
 const navigation = {
   pages: [
@@ -53,7 +56,10 @@ export default function PageNav() {
   );
   // Subscribe to both formatPrice AND currency to trigger re-render when currency changes
   const { formatPrice, currency } = useCurrencyStore();
+  const { currentUser } = useUserStore();
+  const isLoggedIn = !!currentUser;
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   
   // Fetch promo banner settings from backend
   const { data: settingsData } = useQuery({
@@ -112,22 +118,70 @@ export default function PageNav() {
                   <CurrencySelector />
                 </div>
               </div>
-              <div className="flow-root">
-                <Link
-                  to="/account"
-                  className="-m-2 block p-2 font-medium text-gray-900"
-                >
-                  Create an account
-                </Link>
-              </div>
-              <div className="flow-root">
-                <Link
-                  to="/login"
-                  className="-m-2 block p-2 font-medium text-gray-900"
-                >
-                  Sign in
-                </Link>
-              </div>
+              {isLoggedIn ? (
+                <>
+                  <div className="flow-root">
+                    <span className="-m-2 block p-2 font-medium text-gray-900">
+                      Hi, {currentUser?.name || currentUser?.email?.split("@")[0] || "User"}
+                    </span>
+                  </div>
+                  {currentUser?.isAdmin && (
+                    <div className="flow-root">
+                      <Link
+                        to="/admin"
+                        className="-m-2 block p-2 font-medium text-indigo-600"
+                        onClick={() => setOpen(false)}
+                      >
+                        Admin Dashboard
+                      </Link>
+                    </div>
+                  )}
+                  <div className="flow-root">
+                    <Link
+                      to="/order-history"
+                      className="-m-2 block p-2 font-medium text-gray-900"
+                      onClick={() => setOpen(false)}
+                    >
+                      My Orders
+                    </Link>
+                  </div>
+                  <div className="flow-root">
+                    <button
+                      onClick={() => {
+                        useUserStore.getState().clearCurrentUser();
+                        useCartStore.getState().setCart([]);
+                        localStorage.removeItem("cart");
+                        setOpen(false);
+                        window.location.href = "/login";
+                      }}
+                      className="-m-2 block p-2 font-medium text-red-600"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flow-root">
+                    <Link
+                      to="/account"
+                      className="-m-2 block p-2 font-medium text-gray-900"
+                      onClick={() => setOpen(false)}
+                    >
+                      Create an account
+                    </Link>
+                  </div>
+                  <div className="flow-root">
+                    <Link
+                      to="/login"
+                      className="-m-2 block p-2 font-medium text-gray-900"
+                      onClick={() => setOpen(false)}
+                    >
+                      Sign in
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
@@ -170,19 +224,25 @@ export default function PageNav() {
               <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-4">
                 <CurrencySelector variant="compact" />
                 <span aria-hidden="true" className="h-6 w-px bg-gray-600" />
-                <Link
-                  to="/account"
-                  className="text-sm font-medium text-white hover:text-gray-100"
-                >
-                  Create an account
-                </Link>
-                <span aria-hidden="true" className="h-6 w-px bg-gray-600" />
-                <Link
-                  to="/login"
-                  className="text-sm font-medium text-white hover:text-gray-100"
-                >
-                  Sign in
-                </Link>
+                {isLoggedIn ? (
+                  <UserDropdown variant="light" />
+                ) : (
+                  <>
+                    <Link
+                      to="/account"
+                      className="text-sm font-medium text-white hover:text-gray-100"
+                    >
+                      Create an account
+                    </Link>
+                    <span aria-hidden="true" className="h-6 w-px bg-gray-600" />
+                    <Link
+                      to="/login"
+                      className="text-sm font-medium text-white hover:text-gray-100"
+                    >
+                      Sign in
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -242,25 +302,33 @@ export default function PageNav() {
                   <div className="flex flex-1 items-center justify-end">
                     <div className="flex items-center lg:ml-8">
                       <div className="flex space-x-8">
-                        <div className="hidden lg:flex">
-                          {/* <a
-                            href="#"
+                        <div className="flex">
+                          <button
+                            onClick={() => setSearchOpen(!searchOpen)}
                             className="-m-2 p-2 text-gray-400 hover:text-gray-500"
+                            title="Search"
                           >
                             <span className="sr-only">Search</span>
                             <MagnifyingGlassIcon
                               aria-hidden="true"
                               className="size-6"
                             />
-                          </a> */}
+                          </button>
                         </div>
 
                         <div className="flex cursor-pointer">
-                          <button className="-m-2 p-2 text-gray-400 hover:text-gray-500">
-                            <span className="sr-only">Account</span>
-                            <UserIcon aria-hidden="true" className="size-6" />
-                          </button>
-                          <UserDropdown />
+                          <Link
+                            to={isLoggedIn ? "/order-history" : "/login"}
+                            className="-m-2 p-2 text-gray-400 hover:text-gray-500 relative group"
+                            title={isLoggedIn ? "My Orders" : "Sign In"}
+                          >
+                            <span className="sr-only">{isLoggedIn ? "My Orders" : "Sign In"}</span>
+                            {isLoggedIn ? (
+                              <ClipboardDocumentListIcon aria-hidden="true" className="size-6" />
+                            ) : (
+                              <UserIcon aria-hidden="true" className="size-6" />
+                            )}
+                          </Link>
                         </div>
                       </div>
 
@@ -293,6 +361,15 @@ export default function PageNav() {
             </div>
           </div>
         </nav>
+
+        {/* Search Overlay */}
+        {searchOpen && (
+          <div className="absolute inset-x-0 top-full z-50 bg-white shadow-lg border-b border-gray-200">
+            <div className="mx-auto max-w-3xl px-4 py-4 sm:px-6 lg:px-8">
+              <SearchBar onClose={() => setSearchOpen(false)} />
+            </div>
+          </div>
+        )}
       </header>
     </div>
   );
