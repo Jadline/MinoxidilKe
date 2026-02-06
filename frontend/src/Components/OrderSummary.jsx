@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useCartStore } from "../stores/cartStore";
 import { useUserStore } from "../stores/userStore";
+import Price, { usePrice } from "./Price";
 import {
   createOrder,
   getShippingMethods,
@@ -946,7 +947,7 @@ export default function OrderSummary() {
                               )}
                             </div>
                             <span className="font-semibold text-indigo-600 whitespace-nowrap">
-                              Ksh {method.costKes?.toLocaleString()}.00
+                              <Price amount={method.costKes ?? 0} />
                             </span>
                           </label>
                         ))}
@@ -1030,7 +1031,7 @@ export default function OrderSummary() {
                               : "text-indigo-600"
                           }`}
                         >
-                          {loc.costKes === 0 ? "FREE" : `Ksh ${loc.costKes}`}
+                          {loc.costKes === 0 ? "FREE" : <Price amount={loc.costKes} />}
                         </span>
                       </label>
                     ))}
@@ -1161,7 +1162,7 @@ export default function OrderSummary() {
                         </button>
                       </div>
                       <p className="mt-1 text-sm text-gray-500">
-                        Ksh {product.price} × {product.quantity}
+                        <Price amount={product.price} /> × {product.quantity}
                       </p>
                     </div>
                   </li>
@@ -1171,7 +1172,7 @@ export default function OrderSummary() {
                 <div className="flex justify-between text-sm text-gray-700">
                   <dt>Subtotal</dt>
                   <dd className="text-indigo-700 font-medium">
-                    Ksh {Total?.toLocaleString()}
+                    <Price amount={Total} />
                   </dd>
                 </div>
                 <div className="flex justify-between text-sm text-gray-700">
@@ -1186,9 +1187,7 @@ export default function OrderSummary() {
                         "—"
                       )
                     ) : selectedShippingMethod ? (
-                      `${selectedShippingMethod.name} – Ksh ${(
-                        selectedShippingMethod.costKes ?? 0
-                      ).toLocaleString()}`
+                      <>{selectedShippingMethod.name} – <Price amount={selectedShippingMethod.costKes ?? 0} /></>
                     ) : (
                       "—"
                     )}
@@ -1197,7 +1196,7 @@ export default function OrderSummary() {
                 <div className="flex justify-between border-t-2 border-indigo-100 pt-3 text-base font-semibold">
                   <dt className="text-indigo-900">Total</dt>
                   <dd className="text-indigo-600">
-                    Ksh {OrderTotal?.toLocaleString()}
+                    <Price amount={OrderTotal} />
                   </dd>
                 </div>
               </dl>

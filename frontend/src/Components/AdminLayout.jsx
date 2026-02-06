@@ -8,6 +8,7 @@ import {
   TruckIcon,
   MapPinIcon,
   ClipboardDocumentListIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
 const adminNav = [
@@ -17,6 +18,7 @@ const adminNav = [
   { name: "Shipping Methods", to: "/admin/shipping-methods", icon: TruckIcon },
   { name: "Pickup Locations", to: "/admin/pickup-locations", icon: MapPinIcon },
   { name: "Orders", to: "/admin/orders", icon: ClipboardDocumentListIcon },
+  { name: "Settings", to: "/admin/settings", icon: Cog6ToothIcon },
 ];
 
 export default function AdminLayout() {

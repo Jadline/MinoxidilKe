@@ -3,6 +3,7 @@ import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { XMarkIcon, CubeIcon } from "@heroicons/react/24/outline";
 import { StarIcon } from "@heroicons/react/20/solid";
 import { getPackage } from "../api";
+import Price from "./Price";
 
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 
@@ -79,7 +80,7 @@ export default function PackageQuickView({
               <h2 className="text-2xl font-bold text-gray-900">{pkg.name}</h2>
 
               <p className="mt-2 text-lg font-semibold text-gray-900">
-                Ksh {Number(pkg.bundlePrice ?? 0).toLocaleString()}
+                <Price amount={pkg.bundlePrice ?? 0} />
               </p>
 
               <div className="mt-3 flex items-center gap-2">

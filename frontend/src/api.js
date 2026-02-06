@@ -113,4 +113,15 @@ export const updateAddress = (id, data) =>
   api.patch(`/api/v1/addresses/${id}`, data);
 export const deleteAddress = (id) => api.delete(`/api/v1/addresses/${id}`);
 
+// Settings (public)
+export const getPublicSettings = () => api.get("/api/v1/settings/public");
+
+// Settings (admin)
+export const getAllSettings = () => api.get("/api/v1/settings");
+export const getSetting = (key) => api.get(`/api/v1/settings/${key}`);
+export const updateSetting = (key, value) =>
+  api.put(`/api/v1/settings/${key}`, { value });
+export const updatePromoBanner = (data) =>
+  api.put("/api/v1/settings/promo-banner/update", data);
+
 export default api;

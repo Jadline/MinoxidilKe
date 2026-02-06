@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 
 import { Fragment, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogBackdrop,
@@ -25,7 +26,10 @@ import {
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { useCartStore } from "../stores/cartStore";
+import { useCurrencyStore } from "../stores/currencyStore";
+import { getPublicSettings } from "../api";
 import UserDropdown from "./userDropdown";
+import CurrencySelector from "./CurrencySelector";
 
 const navigation = {
   pages: [
@@ -35,11 +39,34 @@ const navigation = {
   ],
 };
 
+// Default promo banner settings (used while loading or on error)
+const DEFAULT_PROMO_BANNER = {
+  enabled: true,
+  text: "Get free delivery on orders over",
+  freeDeliveryThreshold: 6000,
+  showTruckEmoji: true,
+};
+
 export default function PageNav() {
   const cartCount = useCartStore((state) =>
     state.cart.reduce((sum, item) => sum + item.quantity, 0)
   );
+  // Subscribe to both formatPrice AND currency to trigger re-render when currency changes
+  const { formatPrice, currency } = useCurrencyStore();
   const [open, setOpen] = useState(false);
+  
+  // Fetch promo banner settings from backend
+  const { data: settingsData } = useQuery({
+    queryKey: ["publicSettings"],
+    queryFn: async () => {
+      const res = await getPublicSettings();
+      return res.data.data;
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    retry: 1,
+  });
+  
+  const promoBanner = settingsData?.promoBanner || DEFAULT_PROMO_BANNER;
 
   return (
     <div className="bg-white">
@@ -79,6 +106,12 @@ export default function PageNav() {
             </div>
 
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
+              <div className="flow-root">
+                <span className="text-sm font-medium text-gray-500">Currency</span>
+                <div className="mt-2">
+                  <CurrencySelector />
+                </div>
+              </div>
               <div className="flow-root">
                 <Link
                   to="/account"
@@ -122,17 +155,21 @@ export default function PageNav() {
                 </div>
               </form>
 
-              <div className="flex-1 text-center text-sm font-medium text-white lg:flex-none overflow-hidden relative">
-                <p className="promo-text inline-flex items-center gap-2 animate-[shimmer_3s_ease-in-out_infinite]">
-                  <span className="text-yellow-300 animate-[twinkle_1.5s_ease-in-out_infinite]">🚚</span>
-                  <span className="bg-gradient-to-r from-white via-yellow-200 to-white bg-clip-text text-transparent bg-[length:200%_100%] animate-[gradient_3s_ease_infinite]">
-                    Get free delivery on orders over Ksh 6000
-                  </span>
-                  <span className="text-yellow-300 animate-[twinkle_1.5s_ease-in-out_infinite_0.5s]">🚚</span>
-                </p>
-              </div>
+              {promoBanner.enabled && (
+                <div className="flex-1 text-center text-sm font-medium text-white lg:flex-none overflow-hidden">
+                  <p className="promo-text inline-flex items-center gap-2">
+                    {promoBanner.showTruckEmoji && <span className="animate-bounce">🚚</span>}
+                    <span className="font-semibold">
+                      {promoBanner.text} {formatPrice(promoBanner.freeDeliveryThreshold)}
+                    </span>
+                    {promoBanner.showTruckEmoji && <span className="animate-bounce" style={{ animationDelay: '0.3s' }}>🚚</span>}
+                  </p>
+                </div>
+              )}
 
-              <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
+              <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-4">
+                <CurrencySelector variant="compact" />
+                <span aria-hidden="true" className="h-6 w-px bg-gray-600" />
                 <Link
                   to="/account"
                   className="text-sm font-medium text-white hover:text-gray-100"

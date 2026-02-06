@@ -6,6 +6,7 @@ import { CubeIcon } from "@heroicons/react/24/outline";
 import { getPackages } from "../api";
 import { useCartStore } from "../stores/cartStore";
 import PackageQuickView from "./PackageQuickView";
+import Price from "./Price";
 
 const PACKAGE_CART_ID_PREFIX = "package-";
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
@@ -198,7 +199,7 @@ export default function PackageList() {
                     {pkg.quantityLabel || "1 pack"}
                   </p>
                   <p className="mt-1 text-base font-medium text-gray-900">
-                    Ksh {Number(pkg.bundlePrice ?? 0).toLocaleString()}
+                    <Price amount={pkg.bundlePrice ?? 0} />
                   </p>
                 </div>
               </div>

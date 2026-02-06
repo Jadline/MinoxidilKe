@@ -2,6 +2,7 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { CheckIcon, ClockIcon } from "@heroicons/react/20/solid";
 import { Link, useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/cartStore";
+import Price from "./Price";
 import toast from "react-hot-toast";
 
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
@@ -75,7 +76,7 @@ export default function CartContents() {
                           </div>
 
                           <p className="text-right text-sm font-medium text-gray-900">
-                            {product.price * product.quantity}
+                            <Price amount={product.price * product.quantity} />
                           </p>
                         </div>
 
@@ -160,7 +161,7 @@ export default function CartContents() {
                 <dl className="-my-4 divide-y divide-gray-200 text-sm">
                   <div className="flex items-center justify-between py-4">
                     <dt className="text-gray-600">Subtotal</dt>
-                    <dd className="font-medium text-gray-900">Ksh {Total}</dd>
+                    <dd className="font-medium text-gray-900"><Price amount={Total} /></dd>
                   </div>
                 </dl>
               </div>

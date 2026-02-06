@@ -29,6 +29,7 @@ const AdminEditPackage = lazy(() => import("./Pages/AdminEditPackage"));
 const AdminShippingMethods = lazy(() => import("./Pages/AdminShippingMethods"));
 const AdminPickupLocations = lazy(() => import("./Pages/AdminPickupLocations"));
 const AdminOrders = lazy(() => import("./Pages/AdminOrders"));
+const AdminSettings = lazy(() => import("./Pages/AdminSettings"));
 const TermsAndConditions = lazy(() => import("./Pages/TermsAndConditions"));
 
 function App() {
@@ -92,6 +93,7 @@ function App() {
             <Route path="shipping-methods" element={<AdminShippingMethods />} />
             <Route path="pickup-locations" element={<AdminPickupLocations />} />
             <Route path="orders" element={<AdminOrders />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

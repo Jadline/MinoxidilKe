@@ -16,6 +16,7 @@ const uploadRouter = require("./routes/uploadRoute");
 const shippingMethodRouter = require("./routes/shippingMethodRoute");
 const pickupLocationRouter = require("./routes/pickupLocationRoute");
 const addressRouter = require("./routes/addressRoute");
+const settingsRouter = require("./routes/settingsRoutes");
 const {
   ogProductPage,
   FRONTEND_DIST,
@@ -52,6 +53,7 @@ app.use("/api/v1/upload", uploadRouter);
 app.use("/api/v1/shipping-methods", shippingMethodRouter);
 app.use("/api/v1/pickup-locations", pickupLocationRouter);
 app.use("/api/v1/addresses", addressRouter);
+app.use("/api/v1/settings", settingsRouter);
 
 // Server-side Open Graph: when a crawler (e.g. WhatsApp) requests /product-details/:id,
 // return index.html with og:image etc. so the shared link shows the product photo.

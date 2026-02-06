@@ -2,6 +2,7 @@ import { FaArrowRight } from "react-icons/fa";
 import { FaWhatsapp } from "react-icons/fa";
 import Reviews from "./Reviews";
 import StarRating from "./StarRating";
+import Price, { usePrice } from "./Price";
 import { useState, useEffect, useMemo } from "react";
 import {
   Disclosure,
@@ -161,12 +162,14 @@ export default function ProductOverview({ product: productProp }) {
 
   const queryClient = useQueryClient();
 
+  const { format: formatPrice } = usePrice();
+  
   const whatsAppHref = useMemo(() => {
     if (!product) return "#";
     const name = product.name || "Product";
     const price =
       product.price != null
-        ? `KSh ${Number(product.price).toLocaleString()}`
+        ? formatPrice(product.price)
         : "";
     const qty = product.quantityLabel ? product.quantityLabel : "";
     const productId = product._id ?? product.id;
@@ -250,7 +253,7 @@ export default function ProductOverview({ product: productProp }) {
             <div className="mt-3">
               <h2 className="sr-only">Product information</h2>
               <p className="text-3xl tracking-tight text-gray-900">
-                Ksh {product.price}
+                <Price amount={product.price} />
               </p>
             </div>
 

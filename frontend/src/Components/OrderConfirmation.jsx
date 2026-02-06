@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { useOrders } from "../hooks/useOrders";
 import Spinner from "./Spinner";
+import Price from "./Price";
 
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 
@@ -187,16 +188,16 @@ export default function OrderConfirmation() {
             <dl className="space-y-6 border-t border-gray-200 pt-10 text-sm">
               <div className="flex justify-between">
                 <dt className="font-medium text-gray-900">Subtotal</dt>
-                <dd className="text-gray-700">Ksh {Total}</dd>
+                <dd className="text-gray-700"><Price amount={Total} /></dd>
               </div>
 
               <div className="flex justify-between">
                 <dt className="font-medium text-gray-900">Shipping</dt>
-                <dd className="text-gray-700">Ksh {shippingCost}</dd>
+                <dd className="text-gray-700"><Price amount={shippingCost} /></dd>
               </div>
               <div className="flex justify-between">
                 <dt className="font-medium text-gray-900">Total</dt>
-                <dd className="text-gray-900">Ksh {OrderTotal}</dd>
+                <dd className="text-gray-900"><Price amount={OrderTotal} /></dd>
               </div>
             </dl>
           </div>

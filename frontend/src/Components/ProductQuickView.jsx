@@ -1,6 +1,7 @@
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { StarIcon } from "@heroicons/react/20/solid";
+import Price from "./Price";
 
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 
@@ -51,7 +52,7 @@ export default function ProductQuickView({ open, setOpen, product, setCart }) {
               <h2 className="text-2xl font-bold text-gray-900">
                 {product.name}
               </h2>
-              <p className="mt-2 text-lg text-gray-900">Ksh {product.price}</p>
+              <p className="mt-2 text-lg text-gray-900"><Price amount={product.price} /></p>
 
               <div className="mt-3 flex items-center">
                 {[0, 1, 2, 3, 4].map((rating) => (

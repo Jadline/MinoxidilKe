@@ -2,6 +2,7 @@ import { FaArrowRight } from "react-icons/fa";
 import { FaWhatsapp } from "react-icons/fa";
 import StarRating from "./StarRating";
 import Reviews from "./Reviews";
+import Price from "./Price";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/cartStore";
@@ -126,7 +127,7 @@ export default function PackageOverview({ package: pkgProp }) {
             <div className="mt-3">
               <h2 className="sr-only">Package price</h2>
               <p className="text-3xl tracking-tight text-gray-900">
-                Ksh {Number(pkg.bundlePrice ?? 0).toLocaleString()}
+                <Price amount={pkg.bundlePrice ?? 0} />
               </p>
             </div>
 
@@ -330,7 +331,7 @@ export default function PackageOverview({ package: pkgProp }) {
                               {prod.name}
                             </span>
                             <span className="text-gray-500">
-                              — KSh {Number(prod.price ?? 0).toLocaleString()}
+                              — <Price amount={prod.price ?? 0} />
                             </span>
                           </li>
                         ))}

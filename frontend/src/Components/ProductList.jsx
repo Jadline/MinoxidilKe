@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ProductQuickView from "./ProductQuickView";
 import StarRating from "./StarRating";
+import Price from "./Price";
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/cartStore";
 import { useShopProducts } from "../hooks/useShopProducts";
@@ -144,7 +145,7 @@ export default function ProductList() {
                   {product.quantityLabel}
                 </p>
                 <p className="mt-1 text-base font-medium text-gray-900">
-                  Ksh {product.price}
+                  <Price amount={product.price} />
                 </p>
               </div>
             </div>
