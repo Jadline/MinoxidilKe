@@ -186,12 +186,12 @@ export default function PackageList() {
                       <span className="relative line-clamp-2">{pkg.name}</span>
                     </h3>
 
-                    <div className="mt-3 flex items-center gap-3">
+                    <div className="mt-3 flex items-center">
                       <StarRating 
                         rating={pkg.rating ?? 0} 
                         size="sm" 
                         reviewCount={pkg.reviewCount ?? 0}
-                        showLabel={!isNewProduct(pkg)}
+                        showLabel={true}
                       />
                     </div>
 

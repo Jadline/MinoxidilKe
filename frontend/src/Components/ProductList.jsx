@@ -144,12 +144,12 @@ export default function ProductList() {
                   <p className="relative line-clamp-2">{product.name}</p>
                 </h3>
 
-                <div className="mt-3 flex items-center gap-3">
+                <div className="mt-3 flex items-center">
                   <StarRating 
                     rating={product.rating ?? 0} 
                     size="sm" 
                     reviewCount={product.reviewCount ?? 0}
-                    showLabel={!isNewProduct(product)}
+                    showLabel={true}
                   />
                 </div>
 

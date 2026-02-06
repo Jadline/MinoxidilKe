@@ -72,15 +72,19 @@ export default function SearchBar({ onClose }) {
     }
   };
 
-  const handleProductClick = (productId) => {
-    navigate(`/product-details/${productId}`);
+  const handleProductClick = (product) => {
+    // Use numeric id if available, fallback to _id
+    const productId = product.id ?? product._id;
+    navigate(`/product-details/${productId}`, { state: { product } });
     setQuery("");
     setIsOpen(false);
     onClose?.();
   };
 
-  const handlePackageClick = (packageId) => {
-    navigate(`/package-details/${packageId}`);
+  const handlePackageClick = (pkg) => {
+    // Use numeric id if available, fallback to _id
+    const packageId = pkg.id ?? pkg._id;
+    navigate(`/package-details/${packageId}`, { state: { package: pkg } });
     setQuery("");
     setIsOpen(false);
     onClose?.();
@@ -137,8 +141,8 @@ export default function SearchBar({ onClose }) {
                   </div>
                   {filteredProducts.map((product) => (
                     <button
-                      key={product._id}
-                      onClick={() => handleProductClick(product._id)}
+                      key={product._id || product.id}
+                      onClick={() => handleProductClick(product)}
                       className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
                     >
                       {product.imageSrc && (
@@ -146,6 +150,7 @@ export default function SearchBar({ onClose }) {
                           src={product.imageSrc.startsWith("http") ? product.imageSrc : product.imageSrc}
                           alt={product.name}
                           className="h-12 w-12 rounded-md object-cover bg-gray-100"
+                          onError={(e) => { e.target.style.display = 'none'; }}
                         />
                       )}
                       <div className="flex-1 min-w-0">
@@ -169,8 +174,8 @@ export default function SearchBar({ onClose }) {
                   </div>
                   {filteredPackages.map((pkg) => (
                     <button
-                      key={pkg._id}
-                      onClick={() => handlePackageClick(pkg._id)}
+                      key={pkg._id || pkg.id}
+                      onClick={() => handlePackageClick(pkg)}
                       className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
                     >
                       {pkg.imageSrc && (
@@ -178,6 +183,7 @@ export default function SearchBar({ onClose }) {
                           src={pkg.imageSrc.startsWith("http") ? pkg.imageSrc : pkg.imageSrc}
                           alt={pkg.name}
                           className="h-12 w-12 rounded-md object-cover bg-gray-100"
+                          onError={(e) => { e.target.style.display = 'none'; }}
                         />
                       )}
                       <div className="flex-1 min-w-0">
