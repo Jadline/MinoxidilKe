@@ -115,7 +115,7 @@ export default function AdminDashboard() {
 
   const { data: subscribersData, isLoading: loadingSubscribers } = useQuery({
     queryKey: ["admin-subscribers-count"],
-    queryFn: () => getSubscriberCount().then(r => r.data?.data?.count ?? 0),
+    queryFn: () => getSubscriberCount().then(r => r.data?.data?.total ?? 0),
   });
 
   return (
