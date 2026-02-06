@@ -16,12 +16,16 @@ export function NewBadge({ className = "" }) {
 
 /**
  * Check if a product is "new" (no reviews)
+ * A product is NOT new if it has a rating > 0 OR reviewCount > 0
  */
 export function isNewProduct(product) {
-  return (
-    (product?.reviewCount === 0 || product?.reviewCount === undefined) &&
-    (product?.rating === 0 || product?.rating === undefined || product?.rating === null)
-  );
+  // If product has a non-zero rating, it has been reviewed
+  const hasRating = product?.rating && Number(product.rating) > 0;
+  // If product has reviewCount > 0, it has been reviewed
+  const hasReviews = product?.reviewCount && Number(product.reviewCount) > 0;
+  
+  // Product is "new" only if it has NO rating AND NO reviews
+  return !hasRating && !hasReviews;
 }
 
 /**

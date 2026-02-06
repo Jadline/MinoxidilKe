@@ -1,19 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { StarIcon } from "@heroicons/react/20/solid";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { getPackages } from "../api";
 import { useCartStore } from "../stores/cartStore";
 import PackageQuickView from "./PackageQuickView";
 import Price from "./Price";
+import StarRating, { isNewProduct, NewBadge } from "./StarRating";
 
 const PACKAGE_CART_ID_PREFIX = "package-";
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
 
 function packageCartId(pkgId) {
   return `${PACKAGE_CART_ID_PREFIX}${pkgId}`;
@@ -156,7 +152,7 @@ export default function PackageList() {
                     navigate(path, { state: { package: pkg } });
                   }}
                 >
-                  <div className="aspect-square rounded-lg bg-gray-200 overflow-hidden flex items-center justify-center">
+                  <div className="relative aspect-square rounded-lg bg-gray-200 overflow-hidden flex items-center justify-center">
                     {pkg.imageSrc ? (
                       <img
                         alt={pkg.imageAlt || pkg.name}
@@ -165,6 +161,12 @@ export default function PackageList() {
                       />
                     ) : (
                       <CubeIcon className="w-12 h-12 text-gray-400" />
+                    )}
+                    {/* New Badge for packages without reviews */}
+                    {isNewProduct(pkg) && (
+                      <div className="absolute top-2 left-2 z-10">
+                        <NewBadge />
+                      </div>
                     )}
                   </div>
 
@@ -185,23 +187,12 @@ export default function PackageList() {
                     </h3>
 
                     <div className="mt-3 flex items-center gap-3">
-                      <div className="flex items-center">
-                        {[0, 1, 2, 3, 4].map((r) => (
-                          <StarIcon
-                            key={r}
-                            aria-hidden="true"
-                            className={classNames(
-                              (pkg.rating ?? 0) > r
-                                ? "text-yellow-400"
-                                : "text-gray-200",
-                              "size-5 shrink-0"
-                            )}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-sm text-gray-500 font-bold">
-                        {(pkg.rating ?? 0).toFixed(1)}
-                      </p>
+                      <StarRating 
+                        rating={pkg.rating ?? 0} 
+                        size="sm" 
+                        reviewCount={pkg.reviewCount ?? 0}
+                        showLabel={!isNewProduct(pkg)}
+                      />
                     </div>
 
                     <p className="mt-4 text-base font-medium text-gray-900">
